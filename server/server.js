@@ -381,6 +381,7 @@ Hard-code all raw data as JS const arrays in the script. Do not fetch at runtime
 4. Use sx prop for all styling. No external CSS classes.
 5. Make the UI interactive — use at least one useState hook. If the user mentions filters or sorting, implement them fully.
 6. Make the dashboard visually complete and polished.
+7. CRITICAL — JSX tag matching: Every opening tag must have a matching closing tag in the correct order. The most common mistake is writing </Card> before </CardContent>. Always close innermost components first: </CardContent></Card>, </ListItemText></ListItem>, </AccordionDetails></Accordion>. Count your open tags before finishing.
 
 ## DATA CONTEXT:
 ${dataContext}`;
@@ -556,6 +557,7 @@ Hard-code all computed arrays. Do not fetch data at runtime.
 4. Use sx prop for all MUI styling.
 5. Build a multi-chart dashboard (4–6 charts in a Grid layout). Add at least one interactive element (tab, toggle, or time-range selector).
 6. Mix chart types — don't use only BarChart. Consider ComposedChart, RadarChart, or Treemap for variety.
+7. CRITICAL — JSX tag matching: Every opening tag must have a matching closing tag in the correct order. Close innermost first: </CardContent></Card>, </ResponsiveContainer> before </CardContent>. Count open tags. The most common mistake is </Card> before </CardContent>.
 
 ## DATA CONTEXT:
 ${dataContext}`;
@@ -563,7 +565,7 @@ ${dataContext}`;
 
 // ── Shared Claude call ────────────────────────────────────────────────────────
 
-async function callClaude(systemPrompt, userPrompt, apiKey) {
+async function callClaude(systemPrompt, userPrompt, apiKey, maxTokens = 16000) {
   const response = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -573,7 +575,7 @@ async function callClaude(systemPrompt, userPrompt, apiKey) {
     },
     body: JSON.stringify({
       model: "claude-sonnet-4-20250514",
-      max_tokens: 8096,
+      max_tokens: maxTokens,
       system: systemPrompt,
       messages: [{ role: "user", content: userPrompt }],
     }),
@@ -663,7 +665,7 @@ CURRENT HTML:
 ${html}`;
 
   try {
-    const updated = await callClaude(systemPrompt, instruction, apiKey);
+    const updated = await callClaude(systemPrompt, instruction, apiKey, 16000);
     res.json({ html: updated });
   } catch (err) {
     console.error("/edit error:", err.message);
