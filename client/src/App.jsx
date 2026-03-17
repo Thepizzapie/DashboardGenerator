@@ -44,7 +44,7 @@ export default function App() {
   }, []);
 
   function startStepTicker() {
-    const steps = ['planning','styling','generating','critiquing','refining'];
+    const steps = ['planning','styling','generating','inspecting','critiquing','refining'];
     let i = 0;
     setPipelineStep(steps[0]);
     stepTickerRef.current = setInterval(() => {

@@ -1008,6 +1008,53 @@ Rules:
 - Output ONLY the JSON object.`;
 }
 
+function buildLayoutInspectorPrompt(mode) {
+  const isEditorial = mode === "infographic" || mode === "diagram";
+  return `You are a frontend layout inspector. Your job is to statically analyze HTML/CSS/SVG source code and identify elements that will visually clip, overflow, or not render correctly in a browser iframe.
+
+Output ONLY valid JSON — no markdown, no prose, no code fences.
+
+Schema:
+{
+  "severity": "none" | "minor" | "major",
+  "clippingIssues": [string],
+  "overflowIssues": [string],
+  "sizingIssues": [string],
+  "fixes": [string]
+}
+
+Scan specifically for these patterns:
+
+CLIPPING — elements likely to get cut off:
+- SVG elements that lack \`overflow="visible"\` when labels/text extend near the edges
+- SVG \`<text>\` nodes near the top/bottom of the viewBox without padding
+- Funnel, pyramid, or trapezoid shapes where bottom labels fall outside the SVG height
+- D3 or inline SVG charts where the SVG height is too small for axis labels
+- \`clip-path\` applied to a container that cuts off child elements
+- Recharts containers where \`height\` is a fixed small value (< 200px)
+- Any chart legend that overlaps or overflows the chart area
+
+OVERFLOW — containers hiding content:
+- \`overflow: hidden\` on a flex/grid container that holds a chart or diagram
+- \`overflow: hidden\` on a card/div that contains an SVG with labels
+- Parent container with a fixed \`max-height\` smaller than chart content
+- \`white-space: nowrap\` on labels that may get cut
+
+SIZING — wrong dimensions:
+- SVG \`width\` or \`height\` attributes set to 0 or very small values
+- Recharts \`<ResponsiveContainer>\` with \`height="100%"\` inside a flex parent with no fixed height
+- Absolute-positioned elements with no containing block
+- Elements wider than their container causing horizontal scroll inside the canvas
+
+For each issue found, write a concrete, specific fix in the "fixes" array (e.g. "Add overflow='visible' to the funnel SVG on line ~N" or "Change the KPI row container from overflow:hidden to overflow:visible").
+
+If no issues are found, set severity to "none" and leave all arrays empty.
+
+${isEditorial ? "This is an editorial infographic/diagram — pay special attention to SVG viewBox bounds and text label overflow." : "This is a dashboard — pay special attention to Recharts ResponsiveContainer heights and card overflow:hidden."}
+
+Output ONLY the JSON object.`;
+}
+
 // ── Multi-agent pipeline ───────────────────────────────────────────────────────
 
 async function runPipeline(prompt, mode, dataContext, apiKey) {
@@ -1090,6 +1137,43 @@ USER REQUEST:\n${prompt}`;
 
   let html = await callClaude(sysPrompt, visualizerPrompt, apiKey, 16000);
 
+  // Step 3.5: Layout Inspector — scan for clipping/overflow/sizing issues
+  const layoutRaw = await callClaude(
+    buildLayoutInspectorPrompt(mode),
+    `HTML TO INSPECT:\n${html}`,
+    apiKey, 1500
+  );
+  let layoutReport;
+  try { layoutReport = JSON.parse(layoutRaw); }
+  catch { layoutReport = { severity: "none", clippingIssues: [], overflowIssues: [], sizingIssues: [], fixes: [] }; }
+
+  // If layout issues found, do a targeted fix pass before the Critic
+  if (layoutReport.severity !== "none" && layoutReport.fixes && layoutReport.fixes.length > 0) {
+    const allLayoutIssues = [
+      ...(layoutReport.clippingIssues || []),
+      ...(layoutReport.overflowIssues || []),
+      ...(layoutReport.sizingIssues || []),
+    ];
+    const layoutFixPrompt = `You previously generated this ${isEditorial ? mode : "dashboard"}. A layout inspector found display issues that will cause elements to clip or overflow in the browser. Fix ALL of them exactly as specified.
+
+LAYOUT ISSUES DETECTED:
+${allLayoutIssues.map((v, i) => `${i+1}. ${v}`).join("\n")}
+
+SPECIFIC FIXES TO APPLY:
+${layoutReport.fixes.map((v, i) => `${i+1}. ${v}`).join("\n")}
+
+RULES:
+- Apply every fix listed above
+- Do NOT change colors, data, or layout structure — only fix the clipping/overflow/sizing
+- Add overflow="visible" to SVGs that clip labels
+- Ensure all chart containers have explicit heights
+- Remove overflow:hidden from any container that wraps a chart
+- Return the complete corrected HTML
+
+CURRENT HTML:\n${html}`;
+    html = await callClaude(sysPrompt, layoutFixPrompt, apiKey, 16000);
+  }
+
   // Step 4: Critic
   const criticRaw = await callClaude(
     buildCriticPrompt(mode),
@@ -1099,6 +1183,20 @@ USER REQUEST:\n${prompt}`;
   let criticFeedback;
   try { criticFeedback = JSON.parse(criticRaw); }
   catch { criticFeedback = { score: 7, issues: [], suggestions: [] }; }
+
+  // Merge layout issues into critic feedback so UI can show them
+  if (layoutReport.severity !== "none") {
+    const layoutIssuesSummary = [
+      ...(layoutReport.clippingIssues || []).map(i => `[Layout] ${i}`),
+      ...(layoutReport.overflowIssues || []).map(i => `[Layout] ${i}`),
+      ...(layoutReport.sizingIssues || []).map(i => `[Layout] ${i}`),
+    ];
+    criticFeedback.issues = [...(criticFeedback.issues || []), ...layoutIssuesSummary];
+    criticFeedback.suggestions = [
+      ...(criticFeedback.suggestions || []),
+      ...(layoutReport.fixes || []).map(f => `[Layout fix] ${f}`),
+    ];
+  }
 
   // Step 5: Refiner loop
   let refinements = 0;
@@ -1123,7 +1221,7 @@ USER REQUEST:\n${prompt}`;
     }
   }
 
-  return { html, planSpec, styleGuide, criticFeedback, refinements };
+  return { html, planSpec, styleGuide, criticFeedback, layoutReport, refinements };
 }
 
 // ── Shared Claude call ────────────────────────────────────────────────────────
