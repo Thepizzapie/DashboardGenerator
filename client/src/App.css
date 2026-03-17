@@ -181,3 +181,203 @@ body {
   font-size: 13px;
 }
 .rendered .list-item:last-child { border-bottom: none; }
+
+/* ── Alert banners ─────────────────────────────────────────────────────────── */
+.rendered .alert {
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.rendered .alert-info    { background: rgba(56,189,248,0.08);  color: #38bdf8; border-color: rgba(56,189,248,0.2);  }
+.rendered .alert-success { background: rgba(16,185,129,0.08);  color: #10b981; border-color: rgba(16,185,129,0.2);  }
+.rendered .alert-warning { background: rgba(245,158,11,0.08);  color: #f59e0b; border-color: rgba(245,158,11,0.2);  }
+.rendered .alert-error   { background: rgba(239,68,68,0.08);   color: #ef4444; border-color: rgba(239,68,68,0.2);   }
+
+/* ── Tab bar (JS-driven: add/remove .active on .tab-btn) ────────────────────── */
+.rendered .tabs-bar {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  margin-bottom: 16px;
+}
+.rendered .tab-btn {
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  border-radius: 6px 6px 0 0;
+  background: transparent;
+  color: rgba(255,255,255,0.38);
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+}
+.rendered .tab-btn:hover  { color: rgba(255,255,255,0.7); }
+.rendered .tab-btn.active { color: #60a5fa; border-bottom-color: #2563eb; background: rgba(37,99,235,0.08); }
+.rendered .tab-panel { display: none; }
+.rendered .tab-panel.active { display: block; }
+
+/* ── Timeline ───────────────────────────────────────────────────────────────── */
+.rendered .timeline { display: flex; flex-direction: column; gap: 0; }
+.rendered .timeline-item {
+  display: flex;
+  gap: 12px;
+  padding-bottom: 16px;
+  position: relative;
+}
+.rendered .timeline-item:last-child { padding-bottom: 0; }
+.rendered .timeline-track {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  width: 20px;
+}
+.rendered .timeline-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #2563eb;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+.rendered .timeline-dot.green  { background: #10b981; }
+.rendered .timeline-dot.amber  { background: #f59e0b; }
+.rendered .timeline-dot.red    { background: #ef4444; }
+.rendered .timeline-line {
+  flex: 1;
+  width: 1px;
+  background: rgba(255,255,255,0.07);
+  margin-top: 4px;
+}
+.rendered .timeline-item:last-child .timeline-line { display: none; }
+.rendered .timeline-content { flex: 1; padding-top: 0; }
+.rendered .timeline-title { font-size: 13px; font-weight: 600; color: #e2e8f0; }
+.rendered .timeline-meta  { font-size: 11px; color: #475569; margin-top: 2px; }
+
+/* ── Kanban columns ─────────────────────────────────────────────────────────── */
+.rendered .kanban {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  align-items: flex-start;
+}
+.rendered .kanban-col {
+  min-width: 200px;
+  flex: 1;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 10px;
+  padding: 12px;
+}
+.rendered .kanban-col-title {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #475569;
+  margin-bottom: 10px;
+}
+.rendered .kanban-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: #e2e8f0;
+  line-height: 1.5;
+}
+.rendered .kanban-card:last-child { margin-bottom: 0; }
+
+/* ── Activity feed ──────────────────────────────────────────────────────────── */
+.rendered .activity-feed { display: flex; flex-direction: column; gap: 0; }
+.rendered .activity-item {
+  display: flex;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  align-items: flex-start;
+}
+.rendered .activity-item:last-child { border-bottom: none; }
+.rendered .activity-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(37,99,235,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #60a5fa;
+  flex-shrink: 0;
+}
+.rendered .activity-body  { flex: 1; }
+.rendered .activity-text  { font-size: 12px; color: #cbd5e1; line-height: 1.5; }
+.rendered .activity-time  { font-size: 10px; color: #475569; margin-top: 2px; }
+
+/* ── Donut / ring chart (CSS conic-gradient) ────────────────────────────────── */
+.rendered .donut-wrap {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.rendered .donut {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  /* Usage: style="background: conic-gradient(#2563eb VALUE%, rgba(255,255,255,0.06) 0)" */
+}
+.rendered .donut-inner {
+  /* Place a smaller circle over .donut to create the ring cutout via CSS */
+}
+.rendered .donut-legend { display: flex; flex-direction: column; gap: 6px; }
+.rendered .donut-legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #cbd5e1; }
+.rendered .donut-legend-dot  { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+/* ── Heatmap grid ───────────────────────────────────────────────────────────── */
+.rendered .heat-grid {
+  display: grid;
+  gap: 3px;
+}
+.rendered .heat-cell {
+  height: 24px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: rgba(255,255,255,0.5);
+  transition: opacity 0.15s;
+}
+/* Intensity levels via inline style or add classes: */
+.rendered .heat-0  { background: rgba(37,99,235,0.06); }
+.rendered .heat-1  { background: rgba(37,99,235,0.18); }
+.rendered .heat-2  { background: rgba(37,99,235,0.35); }
+.rendered .heat-3  { background: rgba(37,99,235,0.55); }
+.rendered .heat-4  { background: rgba(37,99,235,0.80); color: #fff; }
+
+/* ── Sparkline container (use inline SVG inside) ────────────────────────────── */
+.rendered .sparkline {
+  display: inline-flex;
+  align-items: center;
+}
+.rendered .sparkline svg { display: block; }
+
+/* ── Two-column key-value pairs ─────────────────────────────────────────────── */
+.rendered .kv-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 16px;
+}
+.rendered .kv-row { display: contents; }
+.rendered .kv-key   { font-size: 11px; color: #475569; padding: 3px 0; }
+.rendered .kv-value { font-size: 12px; color: #e2e8f0; font-weight: 600; padding: 3px 0; text-align: right; }
