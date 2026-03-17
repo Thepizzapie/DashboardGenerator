@@ -160,13 +160,127 @@ body{font-family:"Plus Jakarta Sans",-apple-system,BlinkMacSystemFont,sans-serif
 
 // ── Export helpers ─────────────────────────────────────────────────────────────
 
+const EXPORT_DATE = () => new Date().toISOString().slice(0, 10);
+
+const HEADER_COMMENT = {
+  html: () => `<!--
+  ╔═══════════════════════════════════════════════════════════╗
+  ║  Exported from Dashy — https://github.com/Thepizzapie/DashboardGenerator
+  ║  Generated: ${EXPORT_DATE()}
+  ╠═══════════════════════════════════════════════════════════╣
+  ║  STACK — HTML Canvas mode
+  ║
+  ║  • No framework required — pure HTML + CSS + optional vanilla JS
+  ║  • Font: Plus Jakarta Sans (Google Fonts, loaded via <link> in <head>)
+  ║    CDN: https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800
+  ║
+  ║  COMPONENT CLASSES (all styles embedded in <style> block):
+  ║  Layout:    .rendered  .card  .stats-grid  .stat-card  .kv-grid
+  ║  Data:      table / thead / tbody / th / td
+  ║  Badges:    .badge  .badge-green  .badge-red  .badge-amber  .badge-blue
+  ║  Progress:  .progress-bar  .progress-fill
+  ║  Alerts:    .alert  .alert-info  .alert-success  .alert-warning  .alert-error
+  ║  Tabs:      .tabs-bar  .tab-btn  .tab-panel  (JS-driven, see <script> below)
+  ║  Timeline:  .timeline  .timeline-item  .timeline-dot  .timeline-content
+  ║  Kanban:    .kanban  .kanban-col  .kanban-card
+  ║  Activity:  .activity-feed  .activity-item  .activity-avatar
+  ║  Donut:     .donut-wrap  .donut  .donut-legend  (CSS conic-gradient)
+  ║  Heatmap:   .heat-grid  .heat-cell  .heat-0 → .heat-4
+  ║  Sparkline: .sparkline  (inline SVG container)
+  ║
+  ║  DEV NOTES:
+  ║  • All data is hard-coded. Replace with your real API calls.
+  ║  • Sortable tables use vanilla JS — wire up to your data layer.
+  ║  • No build step required — open directly in a browser.
+  ╚═══════════════════════════════════════════════════════════╝
+-->`,
+
+  mui: () => `<!--
+  ╔═══════════════════════════════════════════════════════════╗
+  ║  Exported from Dashy — https://github.com/Thepizzapie/DashboardGenerator
+  ║  Generated: ${EXPORT_DATE()}
+  ╠═══════════════════════════════════════════════════════════╣
+  ║  STACK — MUI Canvas mode
+  ║
+  ║  All dependencies are loaded via CDN — no npm install needed.
+  ║
+  ║  • React 18            https://unpkg.com/react@18/umd/react.production.min.js
+  ║  • ReactDOM 18         https://unpkg.com/react-dom@18/umd/react-dom.production.min.js
+  ║  • Material UI v5      https://unpkg.com/@mui/material@5/umd/material-ui.production.min.js
+  ║  • Babel Standalone    https://unpkg.com/@babel/standalone/babel.min.js
+  ║  • Font: Roboto        https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700
+  ║
+  ║  MUI COMPONENTS USED (destructured from MaterialUI global):
+  ║  Layout:      Box, Stack, Grid, Paper, Divider
+  ║  Content:     Card, CardContent, CardHeader, Typography
+  ║  Data:        Table, TableHead, TableBody, TableRow, TableCell, TableContainer
+  ║  Status:      Chip, Badge, LinearProgress, CircularProgress, Alert, AlertTitle
+  ║  Navigation:  Tabs, Tab, Accordion, AccordionSummary, AccordionDetails
+  ║  Actions:     Button, ButtonGroup, IconButton, Switch, ToggleButton, ToggleButtonGroup
+  ║  Display:     Avatar, AvatarGroup, List, ListItem, ListItemText, Tooltip, Rating, Skeleton
+  ║  Steps:       Stepper, Step, StepLabel
+  ║
+  ║  REACT HOOKS USED: useState, useMemo
+  ║
+  ║  DEV NOTES:
+  ║  • To productionize: replace CDN scripts with npm packages and a bundler (Vite/CRA).
+  ║  • All data is hard-coded as JS const arrays. Wire to your API in production.
+  ║  • The dark theme is configured inline — swap palette.mode to 'light' to flip it.
+  ╚═══════════════════════════════════════════════════════════╝
+-->`,
+
+  charts: () => `<!--
+  ╔═══════════════════════════════════════════════════════════╗
+  ║  Exported from Dashy — https://github.com/Thepizzapie/DashboardGenerator
+  ║  Generated: ${EXPORT_DATE()}
+  ╠═══════════════════════════════════════════════════════════╣
+  ║  STACK — Charts Canvas mode
+  ║
+  ║  All dependencies are loaded via CDN — no npm install needed.
+  ║
+  ║  • React 18            https://unpkg.com/react@18/umd/react.production.min.js
+  ║  • ReactDOM 18         https://unpkg.com/react-dom@18/umd/react-dom.production.min.js
+  ║  • prop-types 15       https://unpkg.com/prop-types@15/prop-types.min.js
+  ║  • Material UI v5      https://unpkg.com/@mui/material@5/umd/material-ui.production.min.js
+  ║  • Recharts 2.12.7     https://unpkg.com/recharts@2.12.7/umd/Recharts.js
+  ║  • Babel Standalone    https://unpkg.com/@babel/standalone/babel.min.js
+  ║  • Font: Roboto        https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700
+  ║
+  ║  RECHARTS COMPONENTS (destructured from Recharts global):
+  ║  Charts:  BarChart, LineChart, AreaChart, ComposedChart, PieChart
+  ║           RadarChart, RadialBarChart, ScatterChart, Treemap, FunnelChart
+  ║  Parts:   Bar, Line, Area, Pie, Cell, Radar, RadialBar, Scatter, Funnel
+  ║  Axes:    XAxis, YAxis, ZAxis, PolarGrid, PolarAngleAxis, PolarRadiusAxis
+  ║  Extras:  CartesianGrid, Tooltip, Legend, ReferenceLine, Brush, LabelList
+  ║  Wrapper: ResponsiveContainer (always required around every chart)
+  ║
+  ║  MUI COMPONENTS: Box, Stack, Grid, Card, CardContent, CardHeader,
+  ║                  Typography, Chip, Tabs, Tab, ToggleButton, ToggleButtonGroup,
+  ║                  Button, Alert, LinearProgress, Avatar, Divider, Paper
+  ║
+  ║  REACT HOOKS USED: useState, useMemo
+  ║
+  ║  DEV NOTES:
+  ║  • To productionize: replace CDN scripts with npm packages and a bundler.
+  ║    npm install react react-dom @mui/material @emotion/react @emotion/styled recharts
+  ║  • prop-types MUST be loaded before recharts (peer dependency).
+  ║  • All data is hard-coded as JS const arrays. Wire to your API in production.
+  ║  • Treemap requires a custom content renderer — see TreemapCell in the script.
+  ╚═══════════════════════════════════════════════════════════╝
+-->`,
+};
+
 function buildExportHtml(html, mode) {
+  const comment = HEADER_COMMENT[mode]?.() ?? HEADER_COMMENT.html();
+
   if (mode === "mui" || mode === "charts") {
-    // Already a full standalone doc
-    return html;
+    // Full standalone doc — inject comment right after <!DOCTYPE html>
+    return html.replace(/^(<!DOCTYPE html>)/i, `$1\n${comment}`);
   }
-  // HTML mode: wrap in full doc with embedded CSS
+
+  // HTML mode: wrap in full doc with embedded CSS + comment
   return `<!DOCTYPE html>
+${comment}
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
