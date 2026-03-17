@@ -698,13 +698,103 @@ svg.selectAll(".label").data(data).enter().append("text")
 \`\`\`
 
 ## SVG FLOWCHART RULES (for process/architecture diagrams)
-- Always define arrowhead marker:
-  <defs><marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#64748b"/></marker></defs>
-- Nodes: <rect rx="6" fill="white" stroke="#94a3b8" stroke-width="1.5"/> + centered <text>. For multi-line node labels use multiple <tspan> elements — do NOT use bullet characters, dashes as list markers, or any non-ASCII characters inside <text> nodes.
-- Group regions: <rect rx="8" fill="rgba(219,234,254,0.35)" stroke="#93c5fd" stroke-width="1.5"/> drawn BEFORE nodes
+- Always define arrowhead marker AND copy the full icon library <defs> block (below) into every SVG.
+- Nodes: <rect rx="6" fill="white" stroke="#94a3b8" stroke-width="1.5"/> + centered <text>. For multi-line node labels use multiple <tspan> elements.
+- To add an icon to a node: place <use href="#icon-X" x="nx+6" y="ny+10" width="16" height="16" color="#2563eb"/> inside the node group, then offset the label text right by 22px.
+- Group regions: <rect rx="8" fill="rgba(219,234,254,0.35)" stroke="#93c5fd" stroke-width="1.5"/> drawn BEFORE nodes.
 - Connections: <path d="M x1,y1 C cx1,cy1 cx2,cy2 x2,y2" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
-- Plan your x,y coordinates on a grid before writing SVG. Typical node: 120×40px. Gap between nodes: 60–80px.
-- Use text-only labels inside nodes — NO emoji, NO unicode symbols, NO bullet characters (•, →, ←, etc.). Use plain ASCII only: hyphens (-), arrows drawn as SVG paths, plain letters and numbers. Emoji and special unicode characters render as garbled text in PDF export.
+- Plan your x,y coordinates on a grid before writing SVG. Typical node: 140x44px. Gap between nodes: 60-80px.
+- NO emoji, NO unicode symbols, NO bullet characters inside <text>. Plain ASCII only. Emoji renders as garbled characters in PDF.
+
+## SVG ICON LIBRARY
+Copy this ENTIRE <defs> block verbatim into every SVG diagram you create (merge with your arrow marker defs):
+
+<defs>
+  <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#64748b"/></marker>
+  <marker id="arrow-blue" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#2563eb"/></marker>
+  <marker id="arrow-green" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#059669"/></marker>
+
+  <!-- Infrastructure -->
+  <symbol id="icon-server" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="14" width="20" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="6" cy="6.5" r="1" fill="currentColor"/><circle cx="6" cy="17.5" r="1" fill="currentColor"/><line x1="10" y1="6.5" x2="16" y2="6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="10" y1="17.5" x2="16" y2="17.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+
+  <symbol id="icon-database" viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="8" ry="3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M4 6v6c0 1.66 3.58 3 8 3s8-1.34 8-3V6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M4 12v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>
+
+  <symbol id="icon-cloud" viewBox="0 0 24 24"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></symbol>
+
+  <symbol id="icon-router" viewBox="0 0 24 24"><rect x="2" y="11" width="20" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="6" y1="11" x2="4" y2="7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="12" y1="11" x2="12" y2="7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="18" y1="11" x2="20" y2="7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="7" cy="15" r="1" fill="currentColor"/><circle cx="11" cy="15" r="1" fill="currentColor"/></symbol>
+
+  <symbol id="icon-cpu" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="9" y1="4" x2="9" y2="7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="12" y1="4" x2="12" y2="7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="15" y1="4" x2="15" y2="7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="9" y1="17" x2="9" y2="20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="12" y1="17" x2="12" y2="20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="15" y1="17" x2="15" y2="20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="4" y1="9" x2="7" y2="9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="4" y1="12" x2="7" y2="12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="4" y1="15" x2="7" y2="15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="17" y1="9" x2="20" y2="9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="17" y1="12" x2="20" y2="12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="17" y1="15" x2="20" y2="15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+
+  <symbol id="icon-container" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><polyline points="3.27,6.96 12,12.01 20.73,6.96" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="12" y1="22.08" x2="12" y2="12" stroke="currentColor" stroke-width="1.5"/></symbol>
+
+  <symbol id="icon-storage" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M21 12c0 1.66-4.03 3-9 3S3 13.66 3 12" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>
+
+  <symbol id="icon-layers" viewBox="0 0 24 24"><polygon points="12,2 2,7 12,12 22,7 12,2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><polyline points="2,17 12,22 22,17" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><polyline points="2,12 12,17 22,12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+
+  <!-- Apps & Interfaces -->
+  <symbol id="icon-browser" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="2" y1="9" x2="22" y2="9" stroke="currentColor" stroke-width="1.5"/><circle cx="6" cy="6" r="1" fill="currentColor"/><circle cx="9.5" cy="6" r="1" fill="currentColor"/></symbol>
+
+  <symbol id="icon-mobile" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="12" y1="18" x2="12.01" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+
+  <symbol id="icon-monitor" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="8" y1="21" x2="16" y2="21" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="12" y1="17" x2="12" y2="21" stroke="currentColor" stroke-width="1.5"/></symbol>
+
+  <symbol id="icon-api" viewBox="0 0 24 24"><polyline points="16,18 22,12 16,6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><polyline points="8,6 2,12 8,18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+
+  <!-- Security -->
+  <symbol id="icon-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>
+
+  <symbol id="icon-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></symbol>
+
+  <symbol id="icon-key" viewBox="0 0 24 24"><circle cx="7.5" cy="15.5" r="5.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M21 2l-9.6 9.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M15.5 7.5l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+
+  <!-- People -->
+  <symbol id="icon-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M4 20c0-4 3.58-7 8-7s8 3 8 7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+
+  <symbol id="icon-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M2 20c0-3.5 3.13-6 7-6s7 2.5 7 6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="17" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M15.5 14.3c.5-.2 1-.3 1.5-.3 3.5 0 6 2 6 6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+
+  <!-- Data & Process -->
+  <symbol id="icon-file" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><polyline points="14,2 14,8 20,8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></symbol>
+
+  <symbol id="icon-queue" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></symbol>
+
+  <symbol id="icon-filter" viewBox="0 0 24 24"><polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46 22,3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></symbol>
+
+  <symbol id="icon-transform" viewBox="0 0 24 24"><polyline points="17,1 21,5 17,9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 11V9a4 4 0 0 1 4-4h14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><polyline points="7,23 3,19 7,15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 13v2a4 4 0 0 1-4 4H3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+
+  <symbol id="icon-sync" viewBox="0 0 24 24"><polyline points="23,4 23,10 17,10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><polyline points="1,20 1,14 7,14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+
+  <symbol id="icon-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>
+
+  <symbol id="icon-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+
+  <!-- Analytics & Monitoring -->
+  <symbol id="icon-chart" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="12" y1="20" x2="12" y2="4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="6" y1="20" x2="6" y2="14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="2" y1="20" x2="22" y2="20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+
+  <symbol id="icon-email" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><polyline points="22,6 12,13 2,6" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>
+
+  <symbol id="icon-lightning" viewBox="0 0 24 24"><polyline points="13,2 3,14 12,14 11,22 21,10 12,10 13,2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></symbol>
+
+  <!-- Status -->
+  <symbol id="icon-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.5"/><polyline points="9,12 11,14 15,10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+
+  <symbol id="icon-warning" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><line x1="12" y1="9" x2="12" y2="13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="17" r="0.75" fill="currentColor"/></symbol>
+
+  <symbol id="icon-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.5"/><polyline points="12,7 12,12 15,15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+
+  <symbol id="icon-inbox" viewBox="0 0 24 24"><polyline points="22,12 16,12 14,15 10,15 8,12 2,12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></symbol>
+</defs>
+
+Available icon IDs (choose the best fit per node):
+- Infrastructure: icon-server, icon-database, icon-cloud, icon-router, icon-cpu, icon-container, icon-storage, icon-layers
+- Apps: icon-browser, icon-mobile, icon-monitor, icon-api
+- Security: icon-lock, icon-shield, icon-key
+- People: icon-user, icon-users
+- Data/Process: icon-file, icon-queue, icon-filter, icon-transform, icon-sync, icon-gear, icon-link
+- Analytics: icon-chart, icon-email, icon-lightning
+- Status: icon-check, icon-warning, icon-clock, icon-inbox
+
+Usage: <use href="#icon-server" x="NODE_X+6" y="NODE_Y+12" width="18" height="18" color="#2563eb"/>
+The color attribute sets currentColor — use your accent color or #64748b for neutral.
 
 ## DOCUMENT STRUCTURE
 \`\`\`html
