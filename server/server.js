@@ -835,13 +835,44 @@ The color attribute sets currentColor — use your accent color or #64748b for n
 </div>
 \`\`\`
 
+## D3 FORCE SIMULATION — WHITESPACE FIX (MANDATORY)
+When using d3.forceSimulation for network/node-link diagrams, you MUST fit the SVG to the actual node bounds after simulation ends. Use this pattern — do NOT set a fixed large SVG height:
+
+\`\`\`js
+simulation.on("end", () => {
+  // 1. Compute actual bounding box of all nodes
+  const xs = nodes.map(n => n.x), ys = nodes.map(n => n.y);
+  const x0 = Math.min(...xs) - 60, y0 = Math.min(...ys) - 60;
+  const x1 = Math.max(...xs) + 60, y1 = Math.max(...ys) + 60;
+  const bw = x1 - x0, bh = y1 - y0;
+
+  // 2. Set viewBox to content bounds — eliminates blank space
+  svg.attr("viewBox", \`\${x0} \${y0} \${bw} \${bh}\`)
+     .attr("width", "100%")
+     .attr("height", bh)
+     .attr("preserveAspectRatio", "xMidYMid meet");
+
+  // 3. Draw all nodes/links inside this callback so positions are final
+});
+\`\`\`
+
+Always run ALL node/link/label drawing code INSIDE the simulation "end" callback, not before it.
+Constrain force simulation to the visible area using:
+\`\`\`js
+.force("x", d3.forceX(400).strength(0.08))
+.force("y", d3.forceY(300).strength(0.08))
+.force("collide", d3.forceCollide(50))
+\`\`\`
+This prevents nodes from drifting far apart and leaving empty space.
+
 ## RULES
 1. Output ONLY the complete HTML document. No markdown. No prose.
-2. All data embedded as JS const arrays — no runtime fetching, no placeholder values.
+2. All data embedded as JS const arrays — copy EXACT names, values, and dates from DATA CONTEXT. NEVER invent names, project titles, salaries, or percentages not present in the data.
 3. Use D3 for all data-driven charts. Use hand-crafted SVG only for flowcharts/architecture.
 4. Every chart must have: axis labels with units, a title, and direct data labels or a legend.
 5. @media print styles must be included so the page prints/exports to PDF correctly.
 6. NEVER use dark backgrounds. NEVER add interactive buttons or tabs.
+7. DATA FIDELITY: Employee names, project names, budgets, salaries, dates, and percentages must be taken verbatim from the DATA CONTEXT below. If a value is not in the data, compute it from values that are (e.g. burn rate = spent/budget). Never substitute with generic names like "Project Alpha" or "Alice Chen".
 
 ## DATA CONTEXT:
 ${dataContext}`;
