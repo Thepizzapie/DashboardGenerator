@@ -1,10 +1,19 @@
 require("dotenv").config({ path: "../.env" });
 const express = require("express");
 const cors = require("cors");
+const { initDb, getAllSources } = require("./db");
 
 const app = express();
-app.use(cors({ origin: "http://localhost:5173" }));
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(",")
+  : ["http://localhost:5173"];
+app.use(cors({ origin: allowedOrigins }));
 app.use(express.json());
+
+// ── Init DB ───────────────────────────────────────────────────────────────────
+
+initDb();
+app.use("/api", require("./routes/sources"));
 
 // ── Mock data sources ────────────────────────────────────────────────────────
 
@@ -98,9 +107,15 @@ const mockData = {
 
 // ── Shared data context builder ───────────────────────────────────────────────
 
-function buildDataContext() {
-  return Object.entries(mockData)
-    .map(([key, val]) => `### ${key}\n${JSON.stringify(val, null, 2)}`)
+async function buildDataContext() {
+  const merged = { ...mockData };
+  const userSources = getAllSources();
+  for (const s of userSources) {
+    if (!s.cached_data) continue;
+    try { merged[s.name] = JSON.parse(s.cached_data); } catch (_) {}
+  }
+  return Object.entries(merged)
+    .map(([k, v]) => `### ${k}\n${JSON.stringify(v, null, 2)}`)
     .join("\n\n");
 }
 
@@ -276,6 +291,118 @@ Hard-code all computed results as JS literals inside the script. Do not fetch da
 ${dataContext}`;
 }
 
+// ── System prompt: Charts mode ────────────────────────────────────────────────
+
+function buildChartsSystemPrompt(dataContext) {
+  return `You are a React + MUI + Recharts dashboard generation engine. Your ONLY output is a complete, self-contained HTML document.
+
+OUTPUT FORMAT: Raw HTML document only. No markdown fences (\`\`\`). No prose. No explanation.
+
+## Page structure (follow this template exactly):
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" />
+  <style>html, body { margin: 0; padding: 0; }</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/prop-types@15/prop-types.min.js"></script>
+  <script crossorigin src="https://unpkg.com/@mui/material@5/umd/material-ui.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script type="text/babel" data-presets="react">
+    const {
+      ThemeProvider, createTheme, CssBaseline,
+      Box, Stack, Grid, Paper, Typography, Card, CardContent, Divider,
+    } = MaterialUI;
+    const {
+      BarChart, LineChart, AreaChart, PieChart,
+      Bar, Line, Area, Pie, Cell,
+      XAxis, YAxis, CartesianGrid, Tooltip, Legend,
+      ResponsiveContainer, ReferenceLine,
+    } = Recharts;
+
+    const theme = createTheme({
+      palette: {
+        mode: 'dark',
+        primary: { main: '#6366f1' },
+        success: { main: '#22c55e' },
+        warning: { main: '#f59e0b' },
+        error:   { main: '#ef4444' },
+        info:    { main: '#3b82f6' },
+        background: { default: '#0f1117', paper: '#161b27' },
+      },
+      shape: { borderRadius: 8 },
+      typography: { fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' },
+    });
+
+    function GeneratedUI() {
+      return (
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
+          <Box sx={{ p: 3, minHeight: '100vh' }}>
+            {/* YOUR GENERATED CONTENT HERE */}
+          </Box>
+        </ThemeProvider>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<GeneratedUI />);
+  </script>
+</body>
+</html>
+
+## Available Recharts components (destructured from Recharts global):
+- BarChart — bar charts (vertical or horizontal)
+- LineChart — trend lines over time
+- AreaChart — filled area under a line
+- PieChart + Pie + Cell — proportional slices with colors
+- ResponsiveContainer — ALWAYS wrap charts: <ResponsiveContainer width="100%" height={300}>
+- XAxis / YAxis — axes with dataKey and tick config
+- CartesianGrid strokeDasharray="3 3" — background gridlines
+- Tooltip + Legend — interactive overlays
+- ReferenceLine — target or threshold line: <ReferenceLine y={value} stroke="#f59e0b" />
+
+## Available MUI components (destructured from MaterialUI):
+- Box, Stack, Grid, Paper, Typography, Card, CardContent, Divider
+
+## Chart rules
+1. ALWAYS wrap every chart in <ResponsiveContainer width="100%" height={300}>
+2. ALWAYS wrap each chart in <Card><CardContent> for consistent dark card styling
+3. ALL chart data must be hard-coded as JS const arrays before the return statement — never fetch at runtime
+4. Aggregate/transform data BEFORE rendering: group rows, compute sums, build chart-ready arrays
+5. Use COLORS array like: const COLORS = ['#6366f1','#22c55e','#f59e0b','#ef4444','#3b82f6','#a855f7']
+6. For PieChart: always include <Pie dataKey="value"> with <Cell> for each slice
+
+## Derived / computed values
+Aggregate raw data into chart-ready arrays before using:
+- Budget: map department → { name, allocated, spent } for BarChart
+- Sprint velocity: filter by status, sum points
+- Sales pipeline: group by stage, sum values
+- KPIs: map to { name, current, target } pairs for comparison bars
+- Inventory: compute fill % per item for a bar chart
+
+Hard-code all computed results as JS const arrays. Do not fetch data at runtime.
+
+## Rules
+1. Output ONLY the complete HTML document. No markdown. No prose.
+2. Use only the components listed above.
+3. Use the real data from DATA CONTEXT — embed it as JS literals in the script tag.
+4. Use sx prop for all MUI styling.
+5. Make the dashboard visually complete, with multiple charts in a grid layout.
+
+## DATA CONTEXT:
+${dataContext}`;
+}
+
 // ── Shared Claude call ────────────────────────────────────────────────────────
 
 async function callClaude(systemPrompt, userPrompt, apiKey) {
@@ -313,7 +440,8 @@ app.post("/generate", async (req, res) => {
   if (!apiKey) return res.status(500).json({ error: "ANTHROPIC_API_KEY not set" });
 
   try {
-    const html = await callClaude(buildHtmlSystemPrompt(buildDataContext()), prompt, apiKey);
+    const dataContext = await buildDataContext();
+    const html = await callClaude(buildHtmlSystemPrompt(dataContext), prompt, apiKey);
     res.json({ html });
   } catch (err) {
     console.error("/generate error:", err.message);
@@ -329,10 +457,28 @@ app.post("/generate-mui", async (req, res) => {
   if (!apiKey) return res.status(500).json({ error: "ANTHROPIC_API_KEY not set" });
 
   try {
-    const html = await callClaude(buildMuiSystemPrompt(buildDataContext()), prompt, apiKey);
+    const dataContext = await buildDataContext();
+    const html = await callClaude(buildMuiSystemPrompt(dataContext), prompt, apiKey);
     res.json({ html });
   } catch (err) {
     console.error("/generate-mui error:", err.message);
+    res.status(502).json({ error: err.message });
+  }
+});
+
+app.post("/generate-charts", async (req, res) => {
+  const { prompt } = req.body;
+  if (!prompt) return res.status(400).json({ error: "prompt is required" });
+
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return res.status(500).json({ error: "ANTHROPIC_API_KEY not set" });
+
+  try {
+    const dataContext = await buildDataContext();
+    const html = await callClaude(buildChartsSystemPrompt(dataContext), prompt, apiKey);
+    res.json({ html });
+  } catch (err) {
+    console.error("/generate-charts error:", err.message);
     res.status(502).json({ error: err.message });
   }
 });
