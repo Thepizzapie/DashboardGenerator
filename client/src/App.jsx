@@ -1,10 +1,12 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import Box from "@mui/material/Box";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import Chip from "@mui/material/Chip";
 import Tooltip from "@mui/material/Tooltip";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import { createAppTheme } from "./theme";
@@ -29,6 +31,11 @@ export default function App() {
   const [userSources, setUserSources] = useState([]);
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [viewport, setViewport] = useState("desktop");
+  const [toast, setToast] = useState({ open: false, message: "", severity: "success" });
+
+  const showToast = useCallback((message, severity = "success") => {
+    setToast({ open: true, message, severity });
+  }, []);
 
   useEffect(() => { loadSources(); }, []);
 
@@ -198,9 +205,31 @@ export default function App() {
           error={error}
           viewport={viewport}
           onViewportChange={setViewport}
+          showToast={showToast}
         />
       </Box>
     </Box>
+      {/* ── Global toast ──────────────────────────────────────────────────── */}
+      <Snackbar
+        open={toast.open}
+        autoHideDuration={3500}
+        onClose={() => setToast(t => ({ ...t, open: false }))}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        sx={{ mb: 1 }}
+      >
+        <Alert
+          onClose={() => setToast(t => ({ ...t, open: false }))}
+          severity={toast.severity}
+          variant="filled"
+          sx={{
+            borderRadius: 2.5, fontSize: 13, fontWeight: 600,
+            boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
+            minWidth: 240,
+          }}
+        >
+          {toast.message}
+        </Alert>
+      </Snackbar>
     </ThemeProvider>
   );
 }

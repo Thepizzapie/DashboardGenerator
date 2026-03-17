@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Box from "@mui/material/Box";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
@@ -224,11 +224,19 @@ function EmptyState() {
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
-export default function GenerationArea({ mode, onModeChange, onGenerate, onApplyEdit, output, isLoading, isApplying, error, viewport, onViewportChange }) {
+export default function GenerationArea({ mode, onModeChange, onGenerate, onApplyEdit, output, isLoading, isApplying, error, viewport, onViewportChange, showToast }) {
   const [prompt, setPrompt] = useState("");
   const textareaRef = useRef(null);
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
+
+  const prevLoadingRef = useRef(false);
+  useEffect(() => {
+    if (prevLoadingRef.current && !isLoading && output && !error) {
+      showToast?.("Dashboard generated", "success");
+    }
+    prevLoadingRef.current = isLoading;
+  });
 
   function handleChipClick(chip) { setPrompt(chip); textareaRef.current?.focus(); }
   function handleSubmit(e) { e.preventDefault(); if (!prompt.trim() || isLoading) return; onGenerate(prompt.trim()); }
@@ -457,7 +465,7 @@ export default function GenerationArea({ mode, onModeChange, onGenerate, onApply
       </Box>
 
       {/* ── Edit panel ─────────────────────────────────────────────────────── */}
-      <EditPanel output={output} mode={mode} onApplyEdit={onApplyEdit} isApplying={isApplying} />
+      <EditPanel output={output} mode={mode} onApplyEdit={onApplyEdit} isApplying={isApplying} onToast={showToast} />
     </Box>
   );
 }

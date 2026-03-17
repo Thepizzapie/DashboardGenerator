@@ -485,7 +485,7 @@ OUTPUT FORMAT: Raw HTML document only. No markdown fences (\`\`\`). No prose. No
 - RadarChart + Radar + PolarGrid + PolarAngleAxis + PolarRadiusAxis — spider/radar chart for multi-metric comparison
 - RadialBarChart + RadialBar — circular progress bars; set startAngle={180} endAngle={0} for semicircle
 - ScatterChart + Scatter + ZAxis — bubble/scatter plot; data needs {x, y, z} shape
-- Treemap — proportional rectangles; data needs {name, size} shape
+- Treemap — proportional rectangles; data needs {name, size} shape; ALWAYS use a safe custom content renderer (see rule 9 below)
 - FunnelChart + Funnel + LabelList — funnel/conversion chart; data needs {name, value} shape
 
 ### Shared primitives
@@ -515,6 +515,22 @@ OUTPUT FORMAT: Raw HTML document only. No markdown fences (\`\`\`). No prose. No
 6. RadarChart data shape: [{ subject:'Metric', A: value, B: value }] — each <Radar> maps one series
 7. Treemap data: [{ name, size }] — use fill={COLORS[i%COLORS.length]} on each content renderer
 8. FunnelChart data: [{ name, value }] sorted descending — LabelList shows values inside bars
+9. Treemap ALWAYS requires this safe custom content renderer (copy exactly — do NOT use the default renderer as it crashes on undefined nodes):
+   const TreemapCell = ({ x, y, width, height, name, value, index }) => {
+     if (!name || width < 2 || height < 2) return null;
+     return (
+       <g>
+         <rect x={x} y={y} width={width} height={height} fill={COLORS[index % COLORS.length]} stroke="#0f1117" strokeWidth={2} rx={4} />
+         {width > 55 && height > 28 && (
+           <text x={x + width / 2} y={y + height / 2 - 6} textAnchor="middle" fill="#fff" fontSize={11} fontWeight={700}>{name}</text>
+         )}
+         {width > 55 && height > 40 && (
+           <text x={x + width / 2} y={y + height / 2 + 10} textAnchor="middle" fill="rgba(255,255,255,0.6)" fontSize={10}>{value}</text>
+         )}
+       </g>
+     );
+   };
+   // Usage: <Treemap data={data} dataKey="size" content={<TreemapCell />} />
 
 ## Interactivity (use useState + useMemo):
 - Tab switching: const [tab, setTab] = useState(0) → show different chart groups per tab

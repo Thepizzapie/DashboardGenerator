@@ -33,75 +33,73 @@ const DeleteIcon = () => (
   </svg>
 );
 
+// icon + friendly label + code name + what it's for
 const HTML_COMPONENTS = [
-  { name: ".stats-grid + .stat-card", desc: "KPI grid — .stat-label / .stat-value / .stat-delta (.positive/.negative)" },
-  { name: ".card", desc: "Bordered glass container" },
-  { name: ".progress-bar + .progress-fill", desc: "Gradient track — set width% inline" },
-  { name: ".badge", desc: "Pill — .badge-green / -red / -amber / -blue" },
-  { name: "table / thead / tbody", desc: "Styled data table with hover rows" },
-  { name: ".alert", desc: ".alert-info / -success / -warning / -error banners" },
-  { name: ".tabs-bar + .tab-btn + .tab-panel", desc: "JS-driven tabs — toggle .active" },
-  { name: ".timeline + .timeline-item", desc: "Vertical timeline — .timeline-dot (.green/.amber/.red)" },
-  { name: ".kanban + .kanban-col + .kanban-card", desc: "Kanban board columns" },
-  { name: ".activity-feed + .activity-item", desc: "Feed — .activity-avatar / .activity-body" },
-  { name: ".donut-wrap + .donut", desc: "CSS conic-gradient ring chart + .donut-legend" },
-  { name: ".heat-grid + .heat-cell", desc: "Heatmap — intensity .heat-0 to .heat-4" },
-  { name: ".sparkline", desc: "Inline SVG polyline mini-chart container" },
-  { name: ".kv-grid + .kv-key + .kv-value", desc: "Two-column key/value pairs" },
-  { name: ".list-item + .muted", desc: "Flex row space-between / secondary text" },
-  { name: ".section-title", desc: "Uppercase section label" },
+  { icon: "📊", label: "Stat Card Grid",    name: ".stats-grid",      desc: "Big numbers, labels & trend arrows in a responsive grid" },
+  { icon: "🗃",  label: "Card Container",   name: ".card",            desc: "Bordered glass surface for grouping any content" },
+  { icon: "📈", label: "Progress Bar",      name: ".progress-bar",    desc: "Gradient fill track — set width% per row" },
+  { icon: "🏷",  label: "Status Badge",     name: ".badge",           desc: "Color-coded pill: green / red / amber / blue" },
+  { icon: "📋", label: "Data Table",        name: "table",            desc: "Sortable rows with hover highlights & styled headers" },
+  { icon: "🚨", label: "Alert Banner",      name: ".alert",           desc: "Info / success / warning / error notification strip" },
+  { icon: "📑", label: "Tabs",             name: ".tabs-bar",        desc: "JS-driven tab switching with active state" },
+  { icon: "🕐", label: "Timeline",         name: ".timeline",        desc: "Vertical event list with color-coded dot markers" },
+  { icon: "🗂",  label: "Kanban Board",     name: ".kanban",          desc: "Drag-ready columns for status-based workflows" },
+  { icon: "💬", label: "Activity Feed",    name: ".activity-feed",   desc: "Avatar + text + timestamp event stream" },
+  { icon: "🍩", label: "Donut Chart",      name: ".donut",           desc: "CSS conic-gradient ring with percentage fill" },
+  { icon: "🔥", label: "Heatmap Grid",     name: ".heat-grid",       desc: "Color-intensity cells — 5 levels (heat-0 to heat-4)" },
+  { icon: "📉", label: "Sparkline",        name: ".sparkline",       desc: "Inline SVG mini-chart for compact trend indicators" },
+  { icon: "🗒",  label: "Key / Value Grid", name: ".kv-grid",         desc: "Two-column label/value pairs for metadata" },
+  { icon: "📝", label: "List Row",         name: ".list-item",       desc: "Flex row with left label and right value" },
 ];
 
 const MUI_COMPONENTS = [
-  { name: "useState / useMemo", desc: "React hooks for interactivity" },
-  { name: "Box / Stack / Grid / Paper", desc: "Layout primitives with sx prop" },
-  { name: "Card + CardContent + CardHeader", desc: "Surface card with optional header" },
-  { name: "Typography", desc: "h4–h6, subtitle1/2, body1/2, caption, overline" },
-  { name: "Table*", desc: "Container Head Body Row Cell" },
-  { name: "Chip", desc: "color: success / error / warning / info / primary" },
-  { name: "LinearProgress / CircularProgress", desc: 'variant="determinate" value={0–100}' },
-  { name: "Avatar + AvatarGroup", desc: "Initials circle or stacked group" },
-  { name: "Badge", desc: "Dot/count overlay on any element" },
-  { name: "List + ListItem + ListItemAvatar", desc: "Structured list rows" },
-  { name: "Tabs + Tab", desc: "useState tab switching → {tab===0 && ...}" },
-  { name: "ToggleButton + ToggleButtonGroup", desc: "Exclusive selection (time range, chart type)" },
-  { name: "Accordion + Summary + Details", desc: "Collapsible sections" },
-  { name: "Button / ButtonGroup / IconButton", desc: "Actions — variant: contained/outlined/text" },
-  { name: "Switch + FormControlLabel", desc: "Toggle boolean state" },
-  { name: "Alert + AlertTitle", desc: "severity: success/info/warning/error" },
-  { name: "Tooltip", desc: "Hover hint on any element" },
-  { name: "Rating", desc: "Star rating (readOnly)" },
-  { name: "Stepper + Step + StepLabel", desc: "Progress steps — activeStep={n}" },
-  { name: "Skeleton", desc: "Loading placeholder — variant: text/rectangular/circular" },
+  { icon: "⚡", label: "State & Memo",      name: "useState / useMemo",        desc: "React hooks — tabs, filters, sorting, search" },
+  { icon: "📐", label: "Layout Primitives", name: "Box / Stack / Grid / Paper", desc: "Flex, grid and surface containers via sx prop" },
+  { icon: "🗃",  label: "Card",              name: "Card + CardContent",         desc: "Elevated content surface with optional header" },
+  { icon: "🔤", label: "Typography",        name: "Typography",                 desc: "h4–h6, body1/2, caption, overline variants" },
+  { icon: "📋", label: "Data Table",        name: "Table + TableRow + TableCell",desc: "Sortable, filterable data table" },
+  { icon: "🏷",  label: "Chip / Badge",      name: "Chip / Badge",               desc: "Status pills and notification count overlays" },
+  { icon: "📊", label: "Progress",          name: "LinearProgress / CircularProgress", desc: "Determinate fill bars and ring gauges" },
+  { icon: "👤", label: "Avatar",            name: "Avatar + AvatarGroup",       desc: "Initials circles or stacked group" },
+  { icon: "📑", label: "Tabs",             name: "Tabs + Tab",                 desc: "Tab switching with useState — show/hide sections" },
+  { icon: "🔀", label: "Toggle Group",     name: "ToggleButtonGroup",          desc: "Exclusive selection — time range, chart type" },
+  { icon: "🗂",  label: "Accordion",        name: "Accordion",                  desc: "Collapsible sections with expand/collapse" },
+  { icon: "🔘", label: "Buttons",          name: "Button / ButtonGroup",       desc: "Actions — contained, outlined, text variants" },
+  { icon: "🔦", label: "Switch",           name: "Switch + FormControlLabel",  desc: "Boolean toggle with label" },
+  { icon: "⚠️", label: "Alert",            name: "Alert + AlertTitle",         desc: "Severity banners: success / info / warning / error" },
+  { icon: "💬", label: "Tooltip",          name: "Tooltip",                    desc: "Hover hint on any element" },
+  { icon: "⭐", label: "Rating",           name: "Rating",                     desc: "Read-only star rating display" },
+  { icon: "✅", label: "Stepper",          name: "Stepper + Step + StepLabel", desc: "Multi-step progress indicator" },
+  { icon: "💀", label: "Skeleton",         name: "Skeleton",                   desc: "Loading placeholder for any shape" },
 ];
 
 const CHARTS_COMPONENTS = [
-  { name: "useState / useMemo", desc: "Hooks for filters, tabs, time-range toggles" },
-  { name: "BarChart / LineChart / AreaChart", desc: "Standard time-series and category charts" },
-  { name: "ComposedChart", desc: "Mix Bar + Line + Area on same axes" },
-  { name: "PieChart + Pie + Cell", desc: "Proportional slices — COLORS array" },
-  { name: "RadarChart + Radar + PolarGrid", desc: "Spider chart for multi-metric comparison" },
-  { name: "RadialBarChart + RadialBar", desc: "Circular progress bars / gauge" },
-  { name: "ScatterChart + Scatter + ZAxis", desc: "Bubble chart — data: [{x,y,z}]" },
-  { name: "Treemap", desc: "Proportional rectangles — data: [{name,size}]" },
-  { name: "FunnelChart + Funnel + LabelList", desc: "Conversion funnel — data: [{name,value}]" },
-  { name: "ResponsiveContainer", desc: "Always wraps charts — width=100% height={280}" },
-  { name: "XAxis / YAxis / CartesianGrid", desc: "Axes + gridlines styling" },
-  { name: "Tooltip + Legend", desc: "Interactive overlays with custom contentStyle" },
-  { name: "ReferenceLine", desc: "Target/threshold — strokeDasharray for dashed" },
-  { name: "Brush", desc: "Scroll/zoom handle for long datasets" },
-  { name: "Tabs / ToggleButtonGroup", desc: "Switch chart types or time ranges" },
+  { icon: "⚡", label: "Interactivity",     name: "useState / useMemo",          desc: "Filter, sort, tab-switch, time-range slice" },
+  { icon: "📊", label: "Bar Chart",         name: "BarChart",                    desc: "Vertical or horizontal bars (layout='vertical')" },
+  { icon: "📈", label: "Line Chart",        name: "LineChart",                   desc: "Trend lines — multi-series with multiple <Line>" },
+  { icon: "🌊", label: "Area Chart",        name: "AreaChart",                   desc: "Filled area under line — stacked with fillOpacity" },
+  { icon: "🔀", label: "Composed Chart",    name: "ComposedChart",               desc: "Mix Bar + Line + Area on the same axes" },
+  { icon: "🍩", label: "Pie Chart",         name: "PieChart + Pie + Cell",       desc: "Proportional slices with COLORS array" },
+  { icon: "🕸",  label: "Radar Chart",      name: "RadarChart + Radar",          desc: "Spider chart for multi-metric comparison" },
+  { icon: "🎯", label: "Radial Bar",        name: "RadialBarChart + RadialBar",  desc: "Circular progress gauge — semicircle or full" },
+  { icon: "💭", label: "Scatter / Bubble",  name: "ScatterChart + Scatter",      desc: "x/y/z bubble plot — data: [{x,y,z}]" },
+  { icon: "🟦", label: "Treemap",           name: "Treemap",                     desc: "Proportional rectangles — data: [{name,size}]" },
+  { icon: "🔽", label: "Funnel Chart",      name: "FunnelChart + Funnel",        desc: "Conversion funnel — sorted [{name,value}]" },
+  { icon: "📏", label: "Axes & Grid",       name: "XAxis / YAxis / CartesianGrid", desc: "Axis labels, ticks and background gridlines" },
+  { icon: "💡", label: "Tooltip & Legend",  name: "Tooltip + Legend",            desc: "Interactive overlays with custom styling" },
+  { icon: "🎯", label: "Reference Line",    name: "ReferenceLine",               desc: "Target or threshold — dashed strokeDasharray" },
+  { icon: "🔭", label: "Brush / Zoom",      name: "Brush",                       desc: "Scroll and zoom handle for long datasets" },
 ];
 
 const MOCK_SOURCES = [
-  { id: "employees",      desc: "name, dept, role, status, hire_date, salary" },
-  { id: "projects",       desc: "name, owner, status, pct_complete, budget, spent, due_date" },
-  { id: "kpi_metrics",    desc: "label, value, delta, target, current_val" },
-  { id: "inventory",      desc: "item, sku, qty, capacity, unit, status, reorder_point" },
-  { id: "sales_pipeline", desc: "deal, stage, value, probability, close_date, rep" },
-  { id: "support",        desc: "id, subject, priority, status, created_at, assignee, hours_open" },
-  { id: "budget",         desc: "department, allocated, spent, remaining (derive % used)" },
-  { id: "sprint",         desc: "story, points, status, assignee, sprint (derive velocity)" },
+  { id: "employees",      icon: "👥", label: "Employees",      desc: "10 staff · name, dept, role, salary, status" },
+  { id: "projects",       icon: "📁", label: "Projects",       desc: "7 projects · status, budget, progress %" },
+  { id: "kpi_metrics",    icon: "📊", label: "KPI Metrics",    desc: "8 KPIs · value, delta, target" },
+  { id: "inventory",      icon: "📦", label: "Inventory",      desc: "8 items · qty, capacity, reorder alerts" },
+  { id: "sales_pipeline", icon: "💼", label: "Sales Pipeline", desc: "7 deals · stage, value, probability" },
+  { id: "support",        icon: "🎫", label: "Support Tickets",desc: "7 tickets · priority, status, hours open" },
+  { id: "budget",         icon: "💰", label: "Budget",         desc: "7 depts · allocated, spent, remaining" },
+  { id: "sprint",         icon: "🏃", label: "Sprint",         desc: "8 stories · points, status, velocity" },
 ];
 
 function sourceStatus(s) {
@@ -114,20 +112,14 @@ function StatusDot({ color }) {
   return <Box sx={{ width: 7, height: 7, borderRadius: "50%", bgcolor: color, flexShrink: 0 }} />;
 }
 
-function Section({ title, label, labelColor, items, nameKey = "name", descKey = "desc", defaultExpanded = false }) {
+function Section({ title, label, labelColor, items, defaultExpanded = false }) {
   const [open, setOpen] = useState(defaultExpanded);
   return (
     <Accordion
       expanded={open}
       onChange={(_, val) => setOpen(val)}
-      disableGutters
-      elevation={0}
-      sx={{
-        background: "transparent",
-        "&:before": { display: "none" },
-        borderBottom: "1px solid",
-        borderColor: "divider",
-      }}
+      disableGutters elevation={0}
+      sx={{ background: "transparent", "&:before": { display: "none" }, borderBottom: "1px solid", borderColor: "divider" }}
     >
       <AccordionSummary
         expandIcon={<ExpandIcon />}
@@ -140,18 +132,32 @@ function Section({ title, label, labelColor, items, nameKey = "name", descKey = 
           <Chip label={label} size="small" color={labelColor} sx={{ height: 16, fontSize: 10, fontWeight: 700 }} />
         </Box>
       </AccordionSummary>
-      <AccordionDetails sx={{ px: 1.5, pt: 0, pb: 1.5 }}>
+      <AccordionDetails sx={{ px: 1.5, pt: 0.5, pb: 1.5, display: "flex", flexDirection: "column", gap: 0.5 }}>
         {items.map((item) => (
-          <Box key={item[nameKey]} sx={{ py: 0.5 }}>
-            <Typography
-              component="code"
-              sx={{ fontSize: 11, color: "primary.light", fontFamily: '"JetBrains Mono","Fira Code","Consolas",monospace', display: "block" }}
-            >
-              {item[nameKey]}
-            </Typography>
-            <Typography variant="caption" sx={{ color: "text.secondary" }}>
-              {item[descKey]}
-            </Typography>
+          <Box
+            key={item.label}
+            sx={{
+              display: "flex", alignItems: "flex-start", gap: 1,
+              py: 0.6, px: 0.75,
+              borderRadius: 1.5,
+              "&:hover": { bgcolor: "action.hover" },
+              transition: "background 0.12s",
+            }}
+          >
+            <Typography sx={{ fontSize: 14, lineHeight: 1, mt: 0.15, flexShrink: 0 }}>{item.icon}</Typography>
+            <Box sx={{ minWidth: 0 }}>
+              <Typography sx={{ fontSize: 12, fontWeight: 700, color: "text.primary", lineHeight: 1.3 }}>
+                {item.label}
+              </Typography>
+              <Typography sx={{ fontSize: 10, color: "text.disabled", lineHeight: 1.4, mt: 0.2 }}>
+                {item.desc}
+              </Typography>
+              {item.name && (
+                <Typography sx={{ fontSize: 9.5, fontFamily: '"JetBrains Mono","Fira Code",monospace', color: "primary.light", opacity: 0.7, mt: 0.3, lineHeight: 1 }}>
+                  {item.name}
+                </Typography>
+              )}
+            </Box>
           </Box>
         ))}
       </AccordionDetails>
@@ -189,19 +195,19 @@ function DataSourcesSection({ userSources, onAddSource, onDeleteSource, onFetchS
           </Box>
         </AccordionSummary>
 
-        <AccordionDetails sx={{ px: 1.5, pt: 0, pb: 1.5 }}>
-          {/* Mock sources */}
+        <AccordionDetails sx={{ px: 1.5, pt: 0.5, pb: 1.5, display: "flex", flexDirection: "column", gap: 0.25 }}>
+          {/* Mock sources — friendly cards */}
           {MOCK_SOURCES.map((s) => (
-            <Box key={s.id} sx={{ py: 0.5 }}>
-              <Stack direction="row" alignItems="center" spacing={0.75}>
-                <StatusDot color="#22c55e" />
-                <Typography component="code" sx={{ fontSize: 11, color: "primary.light", fontFamily: '"JetBrains Mono","Fira Code","Consolas",monospace' }}>
-                  {s.id}
-                </Typography>
-              </Stack>
-              <Typography variant="caption" sx={{ color: "text.secondary", pl: 1.75, display: "block" }}>
-                {s.desc}
-              </Typography>
+            <Box key={s.id} sx={{ display: "flex", alignItems: "flex-start", gap: 1, py: 0.6, px: 0.75, borderRadius: 1.5, "&:hover": { bgcolor: "action.hover" }, transition: "background 0.12s" }}>
+              <Typography sx={{ fontSize: 15, lineHeight: 1, mt: 0.1, flexShrink: 0 }}>{s.icon}</Typography>
+              <Box sx={{ minWidth: 0, flex: 1 }}>
+                <Stack direction="row" alignItems="center" spacing={0.75}>
+                  <Typography sx={{ fontSize: 12, fontWeight: 700, color: "text.primary" }}>{s.label}</Typography>
+                  <StatusDot color="#22c55e" />
+                </Stack>
+                <Typography sx={{ fontSize: 10, color: "text.disabled", lineHeight: 1.4 }}>{s.desc}</Typography>
+                <Typography sx={{ fontSize: 9, fontFamily: '"JetBrains Mono",monospace', color: "primary.light", opacity: 0.6, mt: 0.25 }}>{s.id}</Typography>
+              </Box>
             </Box>
           ))}
 
