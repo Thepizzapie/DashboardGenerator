@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import Box from "@mui/material/Box";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
@@ -25,6 +25,8 @@ export default function App() {
   const [htmlOutput, setHtmlOutput] = useState("");
   const [muiOutput, setMuiOutput] = useState("");
   const [chartsOutput, setChartsOutput] = useState("");
+  const [infographicOutput, setInfographicOutput] = useState("");
+  const [diagramOutput, setDiagramOutput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
   const [error, setError] = useState(null);
@@ -32,10 +34,29 @@ export default function App() {
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [viewport, setViewport] = useState("desktop");
   const [toast, setToast] = useState({ open: false, message: "", severity: "success" });
+  const [pipelineMode, setPipelineMode] = useState(false);
+  const [pipelineStep, setPipelineStep] = useState(null);
+  const [pipelineOutput, setPipelineOutput] = useState(null);
+  const stepTickerRef = useRef(null);
 
   const showToast = useCallback((message, severity = "success") => {
     setToast({ open: true, message, severity });
   }, []);
+
+  function startStepTicker() {
+    const steps = ['planning','styling','generating','critiquing','refining'];
+    let i = 0;
+    setPipelineStep(steps[0]);
+    stepTickerRef.current = setInterval(() => {
+      i++;
+      if (i < steps.length) setPipelineStep(steps[i]);
+      else clearInterval(stepTickerRef.current);
+    }, 4500);
+  }
+
+  function stopStepTicker() {
+    if (stepTickerRef.current) { clearInterval(stepTickerRef.current); stepTickerRef.current = null; }
+  }
 
   useEffect(() => { loadSources(); }, []);
 
@@ -76,31 +97,62 @@ export default function App() {
   async function handleGenerate(prompt) {
     setIsLoading(true);
     setError(null);
-    const endpoint = mode === "mui" ? "/generate-mui" : mode === "charts" ? "/generate-charts" : "/generate";
+    setPipelineOutput(null);
 
-    try {
-      const res = await fetch(`${API}${endpoint}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || `Server error ${res.status}`);
+    if (pipelineMode) {
+      startStepTicker();
+      try {
+        const res = await fetch(`${API}/generate-pipeline`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt, mode }),
+        });
+        if (!res.ok) { const e = await res.json(); throw new Error(e.error || `Server error ${res.status}`); }
+        const { html, planSpec, styleGuide, criticFeedback, refinements } = await res.json();
+        if (mode === "mui") setMuiOutput(html);
+        else if (mode === "charts") setChartsOutput(html);
+        else if (mode === "infographic") setInfographicOutput(html);
+        else if (mode === "diagram") setDiagramOutput(html);
+        else setHtmlOutput(html);
+        setPipelineOutput({ planSpec, styleGuide, criticFeedback, refinements });
+        setPipelineStep('done');
+        showToast("Pipeline complete", "success");
+      } catch (err) {
+        setError(err.message);
+        setPipelineStep(null);
+      } finally {
+        stopStepTicker();
+        setIsLoading(false);
       }
-      const { html } = await res.json();
-      if (mode === "mui") setMuiOutput(html);
-      else if (mode === "charts") setChartsOutput(html);
-      else setHtmlOutput(html);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setIsLoading(false);
+    } else {
+      setPipelineStep(null);
+      const endpoint = mode === "mui" ? "/generate-mui" : mode === "charts" ? "/generate-charts" : mode === "infographic" ? "/generate-infographic" : mode === "diagram" ? "/generate-diagram" : "/generate";
+      try {
+        const res = await fetch(`${API}${endpoint}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt }),
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error || `Server error ${res.status}`);
+        }
+        const { html } = await res.json();
+        if (mode === "mui") setMuiOutput(html);
+        else if (mode === "charts") setChartsOutput(html);
+        else if (mode === "infographic") setInfographicOutput(html);
+        else if (mode === "diagram") setDiagramOutput(html);
+        else setHtmlOutput(html);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
     }
   }
 
   async function handleApplyEdit(instruction) {
-    const currentOutput = mode === "mui" ? muiOutput : mode === "charts" ? chartsOutput : htmlOutput;
+    const currentOutput = mode === "mui" ? muiOutput : mode === "charts" ? chartsOutput : mode === "infographic" ? infographicOutput : mode === "diagram" ? diagramOutput : htmlOutput;
     if (!currentOutput) return;
     setIsApplying(true);
     try {
@@ -116,13 +168,15 @@ export default function App() {
       const { html } = await res.json();
       if (mode === "mui") setMuiOutput(html);
       else if (mode === "charts") setChartsOutput(html);
+      else if (mode === "infographic") setInfographicOutput(html);
+      else if (mode === "diagram") setDiagramOutput(html);
       else setHtmlOutput(html);
     } finally {
       setIsApplying(false);
     }
   }
 
-  const output = mode === "mui" ? muiOutput : mode === "charts" ? chartsOutput : htmlOutput;
+  const output = mode === "mui" ? muiOutput : mode === "charts" ? chartsOutput : mode === "infographic" ? infographicOutput : mode === "diagram" ? diagramOutput : htmlOutput;
 
   return (
     <ThemeProvider theme={theme}>
@@ -206,6 +260,10 @@ export default function App() {
           viewport={viewport}
           onViewportChange={setViewport}
           showToast={showToast}
+          pipelineMode={pipelineMode}
+          onPipelineModeChange={setPipelineMode}
+          pipelineStep={pipelineStep}
+          pipelineOutput={pipelineOutput}
         />
       </Box>
     </Box>

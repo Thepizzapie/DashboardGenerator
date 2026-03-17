@@ -9,6 +9,14 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
 import Stack from "@mui/material/Stack";
 import Tooltip from "@mui/material/Tooltip";
+import Switch from "@mui/material/Switch";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Stepper from "@mui/material/Stepper";
+import Step from "@mui/material/Step";
+import StepLabel from "@mui/material/StepLabel";
+import Accordion from "@mui/material/Accordion";
+import AccordionSummary from "@mui/material/AccordionSummary";
+import AccordionDetails from "@mui/material/AccordionDetails";
 import { useTheme, alpha } from "@mui/material/styles";
 import MuiCanvas from "./MuiCanvas";
 import EditPanel from "./EditPanel";
@@ -83,13 +91,97 @@ const EXAMPLE_PROMPTS = {
     "Full analytics dashboard: composed chart + pie + radar + treemap",
     "Department performance: stacked bar + line trend + donut breakdown",
   ],
+  infographic: [
+    "The state of our sales pipeline — deals, value, and where we're losing",
+    "A year in sprints — velocity, scope creep, and what actually shipped",
+    "Where the budget went — spending breakdown and efficiency by team",
+    "Our hiring story — headcount growth, attrition, and open roles",
+    "The support backlog in numbers — volume, priority, and resolution time",
+    "Q1 revenue story — growth trend, top products, and gap to target",
+    "Team performance snapshot — KPIs, highlights, and what's at risk",
+    "Inventory health report — stock levels, reorder urgency, and turnover",
+    "The deal pipeline — stages, conversion rates, and projected close value",
+    "Engineering in numbers — tickets, velocity, and technical debt ratio",
+  ],
+  diagram: [
+    "Multi-panel statistical figure: bar chart + scatter plot + line trend + distribution",
+    "System architecture: microservices with API gateway, auth service, and database layer",
+    "Data pipeline flowchart from ingestion through processing to visualization",
+    "Neural network architecture diagram with input, hidden, and output layers",
+    "Sprint workflow: backlog → in progress → review → done with WIP counts",
+    "Sales funnel diagram with conversion rates at each stage",
+    "Comparative grouped bar chart: department performance across 4 quarters",
+    "Network dependency graph of team projects and blockers",
+    "Organizational hierarchy with department groupings and headcount",
+    "KPI trend analysis: 4-panel figure with line, bar, scatter, and area charts",
+  ],
 };
 
 const MODE_HINT = {
-  html:   "Raw HTML + CSS component library",
-  mui:    "React + Material UI · sandboxed iframe",
-  charts: "React + MUI + Recharts · sandboxed iframe",
+  html:        "Raw HTML + CSS component library",
+  mui:         "React + Material UI · sandboxed iframe",
+  charts:      "React + MUI + Recharts · sandboxed iframe",
+  infographic: "Editorial SVG infographic · NYT / Bloomberg style",
+  diagram:     "D3.js figures · Academic / research paper style",
 };
+
+const PIPELINE_STEPS = [
+  { key: 'planning',   label: 'Planning'   },
+  { key: 'styling',    label: 'Styling'    },
+  { key: 'generating', label: 'Generating' },
+  { key: 'critiquing', label: 'Critiquing' },
+  { key: 'refining',   label: 'Refining'   },
+  { key: 'done',       label: 'Done'       },
+];
+
+// ── Sarcastic loading messages ────────────────────────────────────────────────
+
+const SINGLE_MESSAGES = [
+  "Asking Claude nicely…",
+  "Converting vague English into pixels…",
+  "Somewhere a GPU is getting very warm…",
+  "Still faster than a junior dev on a Friday…",
+  "Hallucinating responsibly…",
+  "Teaching the model what a dashboard is, again…",
+  "Negotiating with the API…",
+  "It's thinking. Probably.",
+  "Pretending this isn't just string manipulation…",
+  "Cooking. Please do not open the oven.",
+];
+
+const PIPELINE_SARCASM = {
+  planning:   ["Holding a meeting about the meeting…", "Drawing boxes on a whiteboard…", "Asking what success looks like…"],
+  styling:    ["Debating whether the accent is too blue…", "Picking fonts nobody asked for…", "Making it pop™…"],
+  generating: ["Actually doing the work now…", "This is the long part. Go get coffee.", "The model is in flow state, do not disturb…"],
+  critiquing: ["Finding problems with its own work…", "Having an existential crisis about the layout…", "Grading its own homework…"],
+  refining:   ["Fixing the things it just broke…", "Second-guessing everything…", "One more pass, it said. One more pass."],
+  done:       ["Done. Finally."],
+};
+
+function SarcasticLoader({ pipelineStep }) {
+  const [idx, setIdx] = useState(0);
+  const pool = pipelineStep ? (PIPELINE_SARCASM[pipelineStep] ?? SINGLE_MESSAGES) : SINGLE_MESSAGES;
+
+  useEffect(() => {
+    setIdx(0);
+    const t = setInterval(() => setIdx(i => (i + 1) % pool.length), 3200);
+    return () => clearInterval(t);
+  }, [pipelineStep, pool.length]);
+
+  return (
+    <Typography
+      key={pool[idx]}
+      variant="body2"
+      sx={{
+        color: "text.secondary", fontStyle: "italic", fontSize: 13,
+        animation: "fadeQuip 0.4s ease",
+        "@keyframes fadeQuip": { from: { opacity: 0, transform: "translateY(4px)" }, to: { opacity: 1, transform: "translateY(0)" } },
+      }}
+    >
+      {pool[idx]}
+    </Typography>
+  );
+}
 
 // ── Animated empty state ───────────────────────────────────────────────────────
 
@@ -222,9 +314,28 @@ function EmptyState() {
   );
 }
 
+// ── Pipeline progress stepper ──────────────────────────────────────────────────
+
+function PipelineProgress({ pipelineStep }) {
+  const activeIndex = PIPELINE_STEPS.findIndex(s => s.key === pipelineStep);
+  return (
+    <Box sx={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:3, px:4 }}>
+      <Stepper activeStep={activeIndex} alternativeLabel sx={{ width:"100%", maxWidth:540 }}>
+        {PIPELINE_STEPS.slice(0,-1).map((s) => (
+          <Step key={s.key}><StepLabel>{s.label}</StepLabel></Step>
+        ))}
+      </Stepper>
+      {pipelineStep === 'done'
+        ? <Typography variant="body2" sx={{ color:"text.secondary" }}>Complete</Typography>
+        : <SarcasticLoader pipelineStep={pipelineStep} />
+      }
+    </Box>
+  );
+}
+
 // ── Main component ─────────────────────────────────────────────────────────────
 
-export default function GenerationArea({ mode, onModeChange, onGenerate, onApplyEdit, output, isLoading, isApplying, error, viewport, onViewportChange, showToast }) {
+export default function GenerationArea({ mode, onModeChange, onGenerate, onApplyEdit, output, isLoading, isApplying, error, viewport, onViewportChange, showToast, pipelineMode, onPipelineModeChange, pipelineStep, pipelineOutput }) {
   const [prompt, setPrompt] = useState("");
   const textareaRef = useRef(null);
   const theme = useTheme();
@@ -232,7 +343,7 @@ export default function GenerationArea({ mode, onModeChange, onGenerate, onApply
 
   const prevLoadingRef = useRef(false);
   useEffect(() => {
-    if (prevLoadingRef.current && !isLoading && output && !error) {
+    if (prevLoadingRef.current && !isLoading && output && !error && !pipelineStep) {
       showToast?.("Dashboard generated", "success");
     }
     prevLoadingRef.current = isLoading;
@@ -242,10 +353,10 @@ export default function GenerationArea({ mode, onModeChange, onGenerate, onApply
   function handleSubmit(e) { e.preventDefault(); if (!prompt.trim() || isLoading) return; onGenerate(prompt.trim()); }
 
   const examples = EXAMPLE_PROMPTS[mode] ?? EXAMPLE_PROMPTS.html;
-  const showViewport = (mode === "mui" || mode === "charts") && output;
+  const showViewport = (mode === "mui" || mode === "charts" || mode === "infographic" || mode === "diagram") && output;
 
-  const panelBg    = isDark ? "rgba(7,8,16,0.85)"  : "rgba(244,246,255,0.9)";
-  const toolbarBg  = isDark ? "rgba(5,6,12,0.95)"  : "rgba(240,243,255,0.95)";
+  const panelBg    = isDark ? "rgba(26,29,35,0.95)"  : "rgba(244,246,255,0.9)";
+  const toolbarBg  = isDark ? "rgba(26,29,35,0.98)"  : "rgba(240,243,255,0.95)";
   const chipActive = isDark ? "rgba(37,99,235,0.14)" : "rgba(37,99,235,0.10)";
   const chipBorder = isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.09)";
   const chipText   = isDark ? "rgba(255,255,255,0.38)" : alpha(theme.palette.text.primary, 0.55);
@@ -305,6 +416,32 @@ export default function GenerationArea({ mode, onModeChange, onGenerate, onApply
               </Box>
             </Stack>
           } />
+          <Tab value="infographic" label={
+            <Stack direction="row" alignItems="center" spacing={0.75}>
+              <span>Infographic</span>
+              <Box sx={{
+                px: 0.75, py: 0.1, borderRadius: 3,
+                background: "linear-gradient(135deg, #ec4899, #f59e0b)",
+                fontSize: 9, fontWeight: 800, color: "#fff",
+                letterSpacing: "0.05em", lineHeight: "16px",
+              }}>
+                NEW
+              </Box>
+            </Stack>
+          } />
+          <Tab value="diagram" label={
+            <Stack direction="row" alignItems="center" spacing={0.75}>
+              <span>Diagram</span>
+              <Box sx={{
+                px: 0.75, py: 0.1, borderRadius: 3,
+                background: "linear-gradient(135deg, #059669, #0891b2)",
+                fontSize: 9, fontWeight: 800, color: "#fff",
+                letterSpacing: "0.05em", lineHeight: "16px",
+              }}>
+                NEW
+              </Box>
+            </Stack>
+          } />
         </Tabs>
         <Typography variant="caption" sx={{
           ml: "auto", color: "text.disabled",
@@ -313,6 +450,24 @@ export default function GenerationArea({ mode, onModeChange, onGenerate, onApply
         }}>
           {MODE_HINT[mode]}
         </Typography>
+        <Box sx={{ display:"flex", alignItems:"center", gap:0.5, ml:1 }} onClick={e => e.stopPropagation()}>
+          <FormControlLabel
+            control={<Switch size="small" checked={pipelineMode} onChange={e => onPipelineModeChange(e.target.checked)} disabled={isLoading} />}
+            label={
+              <Box sx={{ display:"flex", alignItems:"center", gap:0.75 }}>
+                <Typography variant="caption" sx={{ fontWeight:700, fontSize:11, color: pipelineMode ? "primary.light" : "text.disabled" }}>
+                  Pipeline
+                </Typography>
+                {pipelineMode && (
+                  <Box sx={{ px:0.75, py:0.1, borderRadius:3, background:"linear-gradient(135deg,#2563eb,#ec4899)", fontSize:9, fontWeight:800, color:"#fff", letterSpacing:"0.05em", lineHeight:"16px" }}>
+                    5-AGENT
+                  </Box>
+                )}
+              </Box>
+            }
+            labelPlacement="end" sx={{ m:0 }}
+          />
+        </Box>
       </Box>
 
       {/* ── Prompt panel ───────────────────────────────────────────────────── */}
@@ -407,16 +562,27 @@ export default function GenerationArea({ mode, onModeChange, onGenerate, onApply
 
       {/* ── Canvas ─────────────────────────────────────────────────────────── */}
       <Box sx={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column", minHeight: 0 }}>
-        {(mode === "mui" || mode === "charts") ? (
-          <MuiCanvas html={output} isLoading={isLoading} error={error} viewport={viewport} />
+        {(mode === "mui" || mode === "charts" || mode === "infographic" || mode === "diagram") ? (
+          <>
+            {isLoading && pipelineStep && (
+              <Box sx={{ p:2, borderBottom:"1px solid", borderColor:"divider" }}>
+                <PipelineProgress pipelineStep={pipelineStep} />
+              </Box>
+            )}
+            <MuiCanvas html={output} isLoading={isLoading} error={error} viewport={viewport} />
+          </>
         ) : (
           <Box sx={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column" }}>
             {!output && !isLoading && !error && <EmptyState />}
             {isLoading && (
-              <Box sx={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2 }}>
-                <CircularProgress size={36} sx={{ color: "#2563eb" }} thickness={3.5} />
-                <Typography variant="body2" sx={{ color: "text.secondary" }}>Generating your dashboard…</Typography>
-              </Box>
+              pipelineStep ? (
+                <PipelineProgress pipelineStep={pipelineStep} />
+              ) : (
+                <Box sx={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:2 }}>
+                  <CircularProgress size={36} sx={{ color:"#2563eb" }} thickness={3.5} />
+                  <SarcasticLoader pipelineStep={null} />
+                </Box>
+              )
             )}
             {error && !isLoading && <Box sx={{ p: 3 }}><Alert severity="error">{error}</Alert></Box>}
             {output && !isLoading && (
@@ -425,7 +591,7 @@ export default function GenerationArea({ mode, onModeChange, onGenerate, onApply
                   flex: 1, overflow: "auto", display: "flex",
                   alignItems: "flex-start", justifyContent: "center",
                   pt: 4, pb: 4,
-                  bgcolor: isDark ? "#05060a" : "#e8ecf4",
+                  bgcolor: isDark ? "#0a0e16" : "#e8ecf4",
                 }}>
                   <Box sx={{
                     width: viewport === "mobile" ? 390 : 768,
@@ -433,12 +599,12 @@ export default function GenerationArea({ mode, onModeChange, onGenerate, onApply
                     borderRadius: viewport === "mobile" ? 5 : 3,
                     overflow: "hidden",
                     boxShadow: isDark
-                      ? "0 0 0 8px #12131f, 0 0 0 10px #1e2030, 0 32px 80px rgba(0,0,0,0.7)"
+                      ? "0 0 0 8px #1a1f2e, 0 0 0 10px #242a3a, 0 32px 80px rgba(0,0,0,0.6)"
                       : "0 0 0 8px #c8d0e8, 0 0 0 10px #b0bbd6, 0 32px 80px rgba(0,0,0,0.25)",
                   }}>
                     {viewport === "mobile" && (
-                      <Box sx={{ bgcolor: isDark ? "#0a0b12" : "#d8dff0", height: 30, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <Box sx={{ width: 72, height: 6, bgcolor: isDark ? "#1e2030" : "#b8c2dc", borderRadius: 3 }} />
+                      <Box sx={{ bgcolor: isDark ? "#141920" : "#d8dff0", height: 30, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <Box sx={{ width: 72, height: 6, bgcolor: isDark ? "#2a3245" : "#b8c2dc", borderRadius: 3 }} />
                       </Box>
                     )}
                     <iframe
@@ -448,8 +614,8 @@ export default function GenerationArea({ mode, onModeChange, onGenerate, onApply
                       style={{ display: "block", border: "none", width: viewport === "mobile" ? 390 : 768, height: viewport === "mobile" ? 720 : 900 }}
                     />
                     {viewport === "mobile" && (
-                      <Box sx={{ bgcolor: isDark ? "#0a0b12" : "#d8dff0", height: 22, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <Box sx={{ width: 36, height: 4, bgcolor: isDark ? "#1e2030" : "#b8c2dc", borderRadius: 2 }} />
+                      <Box sx={{ bgcolor: isDark ? "#141920" : "#d8dff0", height: 22, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <Box sx={{ width: 36, height: 4, bgcolor: isDark ? "#2a3245" : "#b8c2dc", borderRadius: 2 }} />
                       </Box>
                     )}
                   </Box>
@@ -463,6 +629,48 @@ export default function GenerationArea({ mode, onModeChange, onGenerate, onApply
           </Box>
         )}
       </Box>
+
+      {/* ── Critic feedback accordion ──────────────────────────────────────── */}
+      {pipelineOutput?.criticFeedback && !isLoading && (
+        <Accordion disableGutters elevation={0}
+          sx={{ borderTop:"1px solid", borderColor:"divider", bgcolor:"transparent", "&:before":{display:"none"} }}>
+          <AccordionSummary sx={{ px:2, py:0, minHeight:36, "& .MuiAccordionSummary-content":{my:0} }}>
+            <Box sx={{ display:"flex", alignItems:"center", gap:1 }}>
+              <Typography variant="caption" sx={{ fontWeight:800, textTransform:"uppercase", letterSpacing:"0.08em", fontSize:10, color:"text.secondary" }}>
+                Critic Feedback
+              </Typography>
+              <Box sx={{
+                px:0.75, py:0.15, borderRadius:3, fontSize:10, fontWeight:800, lineHeight:"16px",
+                background: pipelineOutput.criticFeedback.score >= 8 ? "rgba(16,185,129,0.15)" : pipelineOutput.criticFeedback.score >= 6 ? "rgba(245,158,11,0.15)" : "rgba(239,68,68,0.15)",
+                color: pipelineOutput.criticFeedback.score >= 8 ? "#10b981" : pipelineOutput.criticFeedback.score >= 6 ? "#f59e0b" : "#ef4444",
+              }}>
+                {pipelineOutput.criticFeedback.score}/10
+              </Box>
+              <Typography variant="caption" sx={{ color:"text.disabled", fontSize:10 }}>
+                {pipelineOutput.refinements > 0 ? `${pipelineOutput.refinements} refinement${pipelineOutput.refinements > 1 ? "s" : ""} applied` : "No refinements needed"}
+              </Typography>
+            </Box>
+          </AccordionSummary>
+          <AccordionDetails sx={{ px:2, pt:0.5, pb:1.5 }}>
+            {pipelineOutput.criticFeedback.issues?.length > 0 && (
+              <Box sx={{ mb:1 }}>
+                <Typography variant="caption" sx={{ fontWeight:700, textTransform:"uppercase", fontSize:9, color:"text.disabled", display:"block", mb:0.5 }}>Issues Found</Typography>
+                {pipelineOutput.criticFeedback.issues.map((issue, i) => (
+                  <Typography key={i} variant="caption" sx={{ display:"block", color:"text.secondary", fontSize:11, lineHeight:1.6, pl:1, borderLeft:"2px solid", borderColor:"warning.main", mb:0.4 }}>{issue}</Typography>
+                ))}
+              </Box>
+            )}
+            {pipelineOutput.criticFeedback.suggestions?.length > 0 && (
+              <Box>
+                <Typography variant="caption" sx={{ fontWeight:700, textTransform:"uppercase", fontSize:9, color:"text.disabled", display:"block", mb:0.5 }}>Improvements Applied</Typography>
+                {pipelineOutput.criticFeedback.suggestions.map((s, i) => (
+                  <Typography key={i} variant="caption" sx={{ display:"block", color:"text.secondary", fontSize:11, lineHeight:1.6, pl:1, borderLeft:"2px solid", borderColor:"success.main", mb:0.4 }}>{s}</Typography>
+                ))}
+              </Box>
+            )}
+          </AccordionDetails>
+        </Accordion>
+      )}
 
       {/* ── Edit panel ─────────────────────────────────────────────────────── */}
       <EditPanel output={output} mode={mode} onApplyEdit={onApplyEdit} isApplying={isApplying} onToast={showToast} />

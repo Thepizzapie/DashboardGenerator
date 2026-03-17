@@ -229,6 +229,26 @@ const HEADER_COMMENT = {
   ╚═══════════════════════════════════════════════════════════╝
 -->`,
 
+  infographic: () => `<!--
+  ╔═══════════════════════════════════════════════════════════╗
+  ║  Exported from Dashy — https://github.com/Thepizzapie/DashboardGenerator
+  ║  Generated: ${EXPORT_DATE()}
+  ╠═══════════════════════════════════════════════════════════╣
+  ║  STACK — Infographic mode
+  ║
+  ║  Self-contained editorial infographic — no dependencies.
+  ║
+  ║  • Pure HTML + CSS + inline SVG
+  ║  • Google Fonts loaded via <link> in <head>
+  ║  • All data embedded as JS const arrays
+  ║
+  ║  DEV NOTES:
+  ║  • Open directly in any browser — no build step needed.
+  ║  • All data is hard-coded. Replace with your real data source.
+  ║  • SVG charts are hand-crafted — edit viewBox coordinates to adjust sizing.
+  ╚═══════════════════════════════════════════════════════════╝
+-->`,
+
   charts: () => `<!--
   ╔═══════════════════════════════════════════════════════════╗
   ║  Exported from Dashy — https://github.com/Thepizzapie/DashboardGenerator
@@ -268,12 +288,34 @@ const HEADER_COMMENT = {
   ║  • Treemap requires a custom content renderer — see TreemapCell in the script.
   ╚═══════════════════════════════════════════════════════════╝
 -->`,
+
+  diagram: () => `<!--
+  ╔═══════════════════════════════════════════════════════════╗
+  ║  Exported from Dashy — https://github.com/Thepizzapie/DashboardGenerator
+  ║  Generated: ${EXPORT_DATE()}
+  ╠═══════════════════════════════════════════════════════════╣
+  ║  STACK — Diagram mode
+  ║
+  ║  Self-contained academic figure — one dependency via CDN.
+  ║
+  ║  • D3.js v7   https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js
+  ║  • Google Fonts: Crimson Text + Inter (loaded via <link> in <head>)
+  ║  • All data embedded as JS const arrays
+  ║
+  ║  DEV NOTES:
+  ║  • Open directly in any browser — no build step needed.
+  ║  • Print or Save as PDF using Ctrl/Cmd+P for publication use.
+  ║  • All data is hard-coded. Replace with your real data source.
+  ║  • D3 selections use standard margin convention — adjust margin
+  ║    object to resize charts.
+  ╚═══════════════════════════════════════════════════════════╝
+-->`,
 };
 
 function buildExportHtml(html, mode) {
   const comment = HEADER_COMMENT[mode]?.() ?? HEADER_COMMENT.html();
 
-  if (mode === "mui" || mode === "charts") {
+  if (mode === "mui" || mode === "charts" || mode === "infographic" || mode === "diagram") {
     // Full standalone doc — inject comment right after <!DOCTYPE html>
     return html.replace(/^(<!DOCTYPE html>)/i, `$1\n${comment}`);
   }
@@ -302,9 +344,23 @@ function downloadHtml(html, mode) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "dashy-dashboard.html";
+  a.download = mode === "infographic" ? "dashy-infographic.html" : mode === "diagram" ? "dashy-diagram.html" : "dashy-dashboard.html";
   a.click();
   URL.revokeObjectURL(url);
+}
+
+function printAsPdf(html, mode) {
+  const full = buildExportHtml(html, mode);
+  const blob = new Blob([full], { type: "text/html" });
+  const url = URL.createObjectURL(blob);
+  const win = window.open(url, "_blank");
+  if (!win) return;
+  win.addEventListener("load", () => {
+    setTimeout(() => {
+      win.print();
+      URL.revokeObjectURL(url);
+    }, 500);
+  });
 }
 
 // ── EditPanel component ────────────────────────────────────────────────────────
@@ -412,6 +468,21 @@ export default function EditPanel({ output, mode, onApplyEdit, isApplying, onToa
               <span style={{ fontSize: 12 }}>↓</span> Export HTML
             </Box>
           </Tooltip>
+            {(mode === "infographic" || mode === "diagram") && (
+              <Box onClick={() => output && printAsPdf(output, mode)} sx={{
+                display: "flex", alignItems: "center", gap: 0.75,
+                px: 1.5, py: 0.75, borderRadius: 1.5, cursor: output ? "pointer" : "default",
+                border: "1px solid", borderColor: "divider",
+                opacity: output ? 1 : 0.4,
+                "&:hover": output ? { borderColor: "rgba(168,85,247,0.5)", bgcolor: "rgba(168,85,247,0.06)" } : {},
+                transition: "all 0.15s",
+              }}>
+                <span style={{ fontSize: 12 }}>⬇</span>
+                <Typography variant="caption" sx={{ fontWeight: 700, fontSize: 11, color: "text.secondary" }}>
+                  Export PDF
+                </Typography>
+              </Box>
+            )}
         </Stack>
       </Box>
 

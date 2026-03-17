@@ -15,11 +15,11 @@ export function createAppTheme(mode = "dark") {
       error:   { main: "#ef4444" },
       info:    { main: "#38bdf8" },
       background: isDark
-        ? { default: "#070810", paper: "#0c0f1d" }
+        ? { default: "#1a1d23", paper: "#21262d" }
         : { default: "#f4f6ff", paper: "#ffffff" },
-      divider: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.07)",
+      divider: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.07)",
       text: isDark
-        ? { primary: "#eef2ff", secondary: "#6b7280", disabled: "#2d3748" }
+        ? { primary: "#f0f4ff", secondary: "#8b98b4", disabled: "#4a5568" }
         : { primary: "#0f172a", secondary: "#64748b", disabled: "#cbd5e1" },
     },
     shape: { borderRadius: 12 },
@@ -39,7 +39,7 @@ export function createAppTheme(mode = "dark") {
         styleOverrides: {
           root: {
             background: isDark
-              ? "rgba(7,8,16,0.8)"
+              ? "rgba(26,29,35,0.92)"
               : "rgba(244,246,255,0.85)",
             backdropFilter: "blur(24px)",
             boxShadow: "none",
@@ -49,9 +49,9 @@ export function createAppTheme(mode = "dark") {
       MuiDrawer: {
         styleOverrides: {
           paper: {
-            background: isDark ? "#080912" : "#f8faff",
+            background: isDark ? "#1a1d23" : "#f8faff",
             borderRight: isDark
-              ? "1px solid rgba(255,255,255,0.05)"
+              ? "1px solid rgba(255,255,255,0.08)"
               : "1px solid rgba(0,0,0,0.07)",
           },
         },
@@ -94,9 +94,9 @@ export function createAppTheme(mode = "dark") {
             "& .MuiOutlinedInput-root": {
               fontFamily: FONT,
               fontSize: 14,
-              background: isDark ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.7)",
+              background: isDark ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.7)",
               "& fieldset": {
-                borderColor: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.1)",
+                borderColor: isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.1)",
               },
               "&:hover fieldset": {
                 borderColor: "rgba(37,99,235,0.4)",
@@ -120,7 +120,7 @@ export function createAppTheme(mode = "dark") {
       MuiDialog: {
         styleOverrides: {
           paper: {
-            background: isDark ? "#0c0f1d" : "#ffffff",
+            background: isDark ? "#21262d" : "#ffffff",
             backdropFilter: "blur(24px)",
             border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(0,0,0,0.08)",
           },

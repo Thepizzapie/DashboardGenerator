@@ -563,6 +563,371 @@ Hard-code all computed arrays. Do not fetch data at runtime.
 ${dataContext}`;
 }
 
+function buildInfographicSystemPrompt(dataContext) {
+  return `You are a data journalist and visual designer. Your work appears in The Pudding, Reuters Graphics, FT Visual Journalism, and Bloomberg Businessweek. You create editorial data stories — not dashboards, not product UIs, not reports.
+
+Output a COMPLETE, self-contained HTML document (<!DOCTYPE html> through </html>). No markdown. No prose. No code fences.
+
+## WHAT THIS IS NOT
+This is NOT a dashboard. Kill every dashboard instinct:
+- No cards. No rounded boxes with box-shadow. No chip/badge elements.
+- No symmetrical grid of equal-sized panels.
+- No MUI, Bootstrap, Tailwind, or any component library.
+- No buttons, tabs, toggles, or any interactive elements.
+- No "KPI card" layout (icon + number + label in a box).
+- No generic titles: "Dashboard", "Overview", "Summary", "Report".
+
+## WHAT THIS IS
+A magazine data spread. A scrollable editorial page. A visual essay built from data.
+
+Internalize these aesthetics:
+- **The Pudding**: full-bleed colored sections, prose woven around visuals, data as narrative
+- **Reuters Graphics**: clean annotated SVG, callout lines pointing to specific data points, sparse but precise
+- **Bloomberg Businessweek**: bold typographic hierarchy, unexpected color choices, the NUMBER is the hero
+- **NYT The Upshot**: explanatory annotations directly on the chart — no separate legend needed
+
+## DESIGN RULES
+
+**Typography as layout:**
+- The main insight number must be 100–160px, in a display/serif font, taking up space deliberately
+- Section headers are 28–40px, weighted, with intentional letter-spacing
+- Body copy is 15–17px, line-height 1.7, max 65 characters per line — real prose, not bullet labels
+- Use ONE display font (Playfair Display, Fraunces, or DM Serif Display) + ONE sans (Inter or DM Sans) via a single Google Fonts <link>
+
+**Color as structure:**
+- Use full-bleed background color sections to divide the page — NOT borders or card containers
+- Choose a bold accent (e.g. #e63946, #f4a261, #2a9d8f, #e76f51, #457b9d) used sparingly but decisively
+- Background: dark (#111, #0f0f0f, #1a1a2e) OR warm off-white (#faf9f7, #f2ede4) — not plain white
+- Accent color highlights ONE thing per section: the most important bar, the key number, the critical line
+
+**Layout — be asymmetric:**
+- Hero section: 100% width, full-bleed color, no max-width constraint, enormous number
+- Body sections: max-width 900px centered, but ASYMMETRIC internally — try 38/62 or 30/70 text/chart splits
+- Pull quotes: 32–42px, italic, accent-colored, breaking out of the column grid
+- Alternate rhythm: wide text + narrow chart, then narrow text + wide chart
+
+**SVG — hand-craft everything:**
+- Draw every <rect>, <path>, <line>, <text> with explicit coordinates in a defined viewBox
+- Bars: accent color for the highest/most-important value, muted #555 or #aaa for the rest
+- Lines: stroke-width 3–4, gradient fill area beneath, <circle> dots only at annotated points
+- Callout lines: draw a <line> from a specific data point to a nearby <text> annotation ("43% spike — biggest month of the year")
+- No chart borders. No full grid lines. Only a baseline or 2-3 horizontal guides max.
+- Annotations live ON the chart, never in a separate legend box
+
+**Forbidden patterns in SVG:**
+- No <foreignObject>. No HTML inside SVG.
+- No chart.js-style legend boxes in the corner.
+- No axis tick marks on every value — annotate the notable ones only.
+
+## NARRATIVE STRUCTURE (adapt to the data)
+1. Full-bleed hero: 6–8 word bold label, enormous primary metric (100–160px), 1-sentence lede
+2. Context prose: 2–3 sentences explaining what this means, asymmetric layout with a small accent chart
+3. Main visualization: the central chart, large, heavily annotated, with an adjacent pull quote
+4. Supporting insights: 2–3 additional data points, each as a short prose paragraph + small inline SVG
+5. Closing: ONE bold sentence in 48–64px display type, full-bleed colored section — the takeaway
+
+## TECHNICAL
+- All data as computed JS const arrays — no placeholder values, no "TBD", no "XXX"
+- CSS custom properties: --accent, --accent2, --bg, --bg2, --text, --muted
+- CSS @keyframes fadeInUp: translateY(24px)→0 + opacity 0→1, staggered via animation-delay on sections
+- SVG bars: animate height from 0 using a CSS @keyframes on rect elements
+- No external scripts. Vanilla HTML + CSS + inline SVG only.
+
+## DATA CONTEXT:
+${dataContext}`;
+}
+
+function buildDiagramSystemPrompt(dataContext) {
+  return `You are an academic data visualization specialist. Generate publication-quality figures in the style of research papers and technical documentation, using D3.js v7 for data-driven charts and inline SVG for diagrams.
+
+Output a COMPLETE, self-contained HTML document (<!DOCTYPE html> through </html>). No markdown. No code fences.
+
+## AVAILABLE LIBRARIES
+Load via CDN — include these script tags in <head>:
+- D3 v7: <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+
+## FIGURE TYPES (choose based on the request)
+1. **STATISTICAL PLOTS** — bar, grouped bar, line, scatter, area: use D3 scales + axes + data binding
+2. **FLOW / PIPELINE DIAGRAMS** — process steps, system architecture: hand-crafted SVG with arrow markers and colored group regions
+3. **NETWORK DIAGRAMS** — relationships, dependencies: D3 force simulation
+4. **HIERARCHY** — org charts, trees, treemaps: d3.hierarchy + d3.tree or d3.treemap
+5. **MULTI-PANEL FIGURES** — 2–4 related charts in a grid labeled (a)(b)(c)(d)
+
+## ACADEMIC AESTHETIC (non-negotiable)
+- Background: #ffffff or #f8fafc — NEVER dark backgrounds
+- Figure title: serif font (Crimson Text or Lora, Google Fonts), 18–22px, center-aligned above the SVG
+- Axis/label font: Inter or Source Sans 3, 11–13px
+- No box-shadows. No card borders. No rounded containers.
+- Color palette for group regions: rgba(219,234,254,0.4) blue, rgba(220,252,231,0.4) green, rgba(254,249,195,0.4) yellow, rgba(252,231,243,0.4) pink, rgba(243,232,255,0.4) purple — with a 1.5px solid border in the same hue
+- Data mark colors: #2563eb, #059669, #d97706, #dc2626, #7c3aed, #0891b2
+- Axis lines: #94a3b8, stroke-width 1px
+- Grid lines: #e2e8f0, stroke-width 0.5px, opacity 0.6
+- Text: #1e293b primary, #64748b secondary/axis labels
+
+## D3 CHART PATTERNS (use the standard margin convention)
+\`\`\`js
+const margin = {top: 40, right: 30, bottom: 50, left: 60};
+const width = 560 - margin.left - margin.right;
+const height = 340 - margin.top - margin.bottom;
+
+const svg = d3.select("#chart1")
+  .append("svg")
+  .attr("width", width + margin.left + margin.right)
+  .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+  .attr("transform", \`translate(\${margin.left},\${margin.top})\`);
+
+// Scales
+const x = d3.scaleBand().domain(data.map(d => d.label)).range([0, width]).padding(0.3);
+const y = d3.scaleLinear().domain([0, d3.max(data, d => d.value) * 1.1]).range([height, 0]);
+
+// Axes
+svg.append("g").attr("transform", \`translate(0,\${height})\`).call(d3.axisBottom(x).tickSize(0)).select(".domain").attr("stroke", "#94a3b8");
+svg.append("g").call(d3.axisLeft(y).ticks(5).tickSize(-width)).call(g => g.select(".domain").remove()).call(g => g.selectAll(".tick line").attr("stroke", "#e2e8f0").attr("stroke-dasharray", "2,2"));
+
+// Bars with transition
+svg.selectAll("rect").data(data).enter().append("rect")
+  .attr("x", d => x(d.label)).attr("width", x.bandwidth())
+  .attr("y", height).attr("height", 0).attr("fill", "#2563eb").attr("rx", 2)
+  .transition().duration(600).attr("y", d => y(d.value)).attr("height", d => height - y(d.value));
+
+// Value labels
+svg.selectAll(".label").data(data).enter().append("text")
+  .attr("x", d => x(d.label) + x.bandwidth()/2).attr("y", d => y(d.value) - 6)
+  .attr("text-anchor", "middle").attr("font-size", 11).attr("fill", "#1e293b").text(d => d.value);
+\`\`\`
+
+## SVG FLOWCHART RULES (for process/architecture diagrams)
+- Always define arrowhead marker:
+  <defs><marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#64748b"/></marker></defs>
+- Nodes: <rect rx="6" fill="white" stroke="#94a3b8" stroke-width="1.5"/> + centered <text>. For multi-line node labels use multiple <tspan> elements — do NOT use bullet characters, dashes as list markers, or any non-ASCII characters inside <text> nodes.
+- Group regions: <rect rx="8" fill="rgba(219,234,254,0.35)" stroke="#93c5fd" stroke-width="1.5"/> drawn BEFORE nodes
+- Connections: <path d="M x1,y1 C cx1,cy1 cx2,cy2 x2,y2" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+- Plan your x,y coordinates on a grid before writing SVG. Typical node: 120×40px. Gap between nodes: 60–80px.
+- Use text-only labels inside nodes — NO emoji, NO unicode symbols, NO bullet characters (•, →, ←, etc.). Use plain ASCII only: hyphens (-), arrows drawn as SVG paths, plain letters and numbers. Emoji and special unicode characters render as garbled text in PDF export.
+
+## DOCUMENT STRUCTURE
+\`\`\`html
+<!DOCTYPE html>
+<html>
+<head>
+  <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #ffffff; margin: 0; padding: 40px; color: #1e293b; }
+    .figure-wrap { max-width: 900px; margin: 0 auto; }
+    .figure-title { font-family: 'Crimson Text', serif; font-size: 20px; font-weight: 600; text-align: center; margin-bottom: 8px; color: #0f172a; }
+    .figure-caption { font-family: 'Crimson Text', serif; font-style: italic; font-size: 13px; color: #64748b; text-align: center; margin-top: 12px; }
+    .panel-grid { display: grid; gap: 32px; }
+    .panel-label { font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 4px; }
+    @media print { body { padding: 20px; } .figure-wrap { max-width: 100%; } }
+  </style>
+</head>
+<body>
+  <div class="figure-wrap">
+    <div class="figure-title">Figure Title Here</div>
+    <div id="chart1"></div>
+    <div class="figure-caption">Figure 1: Description of what is shown.</div>
+  </div>
+  <script>
+    const data = [ /* hard-coded from DATA CONTEXT */ ];
+    /* D3 code here */
+  </script>
+</body>
+</html>
+\`\`\`
+
+## MULTI-PANEL: use CSS grid
+\`\`\`html
+<div class="panel-grid" style="grid-template-columns: repeat(2, 1fr);">
+  <div><div class="panel-label">(a) Title</div><div id="chartA"></div></div>
+  <div><div class="panel-label">(b) Title</div><div id="chartB"></div></div>
+</div>
+\`\`\`
+
+## RULES
+1. Output ONLY the complete HTML document. No markdown. No prose.
+2. All data embedded as JS const arrays — no runtime fetching, no placeholder values.
+3. Use D3 for all data-driven charts. Use hand-crafted SVG only for flowcharts/architecture.
+4. Every chart must have: axis labels with units, a title, and direct data labels or a legend.
+5. @media print styles must be included so the page prints/exports to PDF correctly.
+6. NEVER use dark backgrounds. NEVER add interactive buttons or tabs.
+
+## DATA CONTEXT:
+${dataContext}`;
+}
+
+// ── Pipeline agent prompts ─────────────────────────────────────────────────────
+
+function buildPlannerPrompt() {
+  return `You are a dashboard planning agent. Given a user request and available data, output a JSON specification for the dashboard.
+
+Output ONLY valid JSON — no markdown, no prose, no code fences.
+
+Schema:
+{
+  "title": string,
+  "summary": string,
+  "layout": "single-col" | "two-col" | "grid",
+  "components": [
+    { "type": string, "purpose": string, "dataKeys": [string], "priority": number }
+  ],
+  "kpiCount": number,
+  "chartCount": number,
+  "tableCount": number,
+  "dataSourcesUsed": [string],
+  "highlights": [string]
+}
+
+Rules:
+- 3–8 components total. Priority 1 = most important.
+- Choose component types from: kpi-card, bar-chart, line-chart, pie-chart, table, stat-card, progress-bar, radar-chart, treemap.
+- dataSourcesUsed should list the mock data arrays that are relevant.
+- highlights = 3–5 key insights the dashboard should surface.
+- Output ONLY the JSON object.`;
+}
+
+function buildStylistPrompt() {
+  return `You are a dashboard styling agent. Given a plan spec, output a JSON style guide.
+
+Output ONLY valid JSON — no markdown, no prose, no code fences.
+
+Schema:
+{
+  "colorScheme": "dark" | "light",
+  "primaryAccent": string (hex),
+  "secondaryAccent": string (hex),
+  "successColor": string (hex),
+  "warningColor": string (hex),
+  "errorColor": string (hex),
+  "cardStyle": "glass" | "flat" | "elevated" | "outlined",
+  "density": "compact" | "normal" | "spacious",
+  "typography": {
+    "scale": "small" | "medium" | "large",
+    "headingWeight": number,
+    "monoAccents": boolean
+  },
+  "chartPalette": [6 hex color strings],
+  "rationale": string
+}
+
+Rules:
+- Choose colors that work well together and suit the dashboard's purpose.
+- chartPalette must have exactly 6 distinct, visually harmonious hex colors.
+- Output ONLY the JSON object.`;
+}
+
+function buildCriticPrompt() {
+  return `You are a dashboard quality critic. Review the generated dashboard HTML against the original user request and output a JSON critique.
+
+Output ONLY valid JSON — no markdown, no prose, no code fences.
+
+Schema:
+{
+  "score": number (1-10),
+  "issues": [string],
+  "suggestions": [string],
+  "missingKPIs": [string],
+  "dataAccuracy": "accurate" | "minor-issues" | "major-issues",
+  "layoutAssessment": "good" | "cluttered" | "sparse"
+}
+
+Check for:
+1. Does the dashboard address everything in the user's prompt?
+2. Are real data values used (not placeholder text like "XXX" or "TBD")?
+3. Are computed/aggregate values correct (totals, percentages, averages)?
+4. Are KPI cards present when the prompt implies metrics?
+5. Is the layout balanced — not too cluttered or sparse?
+6. Are all values non-placeholder and meaningful?
+
+Scoring: 9-10 = excellent, 7-8 = good, 5-6 = needs improvement, 1-4 = poor.
+Output ONLY the JSON object.`;
+}
+
+// ── Multi-agent pipeline ───────────────────────────────────────────────────────
+
+async function runPipeline(prompt, mode, dataContext, apiKey) {
+  const MAX_REFINE_LOOPS = 2;
+
+  // Step 1: Planner
+  const planRaw = await callClaude(
+    buildPlannerPrompt(),
+    `User request: ${prompt}\n\nDATA CONTEXT:\n${dataContext}`,
+    apiKey, 2000
+  );
+  let planSpec;
+  try { planSpec = JSON.parse(planRaw); }
+  catch { planSpec = { title: "Dashboard", components: [], layout: "grid", dataSourcesUsed: [], highlights: [] }; }
+
+  // Step 2: Stylist
+  const styleRaw = await callClaude(
+    buildStylistPrompt(),
+    `PLAN SPEC:\n${JSON.stringify(planSpec, null, 2)}`,
+    apiKey, 1000
+  );
+  let styleGuide;
+  try { styleGuide = JSON.parse(styleRaw); }
+  catch {
+    styleGuide = {
+      colorScheme: "dark", primaryAccent: "#2563eb", cardStyle: "flat",
+      density: "normal", chartPalette: ["#2563eb","#10b981","#f59e0b","#ec4899","#8b5cf6","#38bdf8"],
+    };
+  }
+
+  // Step 3: Visualizer
+  const sysPrompt = mode === "mui" ? buildMuiSystemPrompt(dataContext)
+    : mode === "charts" ? buildChartsSystemPrompt(dataContext)
+    : mode === "infographic" ? buildInfographicSystemPrompt(dataContext)
+    : mode === "diagram" ? buildDiagramSystemPrompt(dataContext)
+    : buildHtmlSystemPrompt(dataContext);
+
+  const pipelineContext = `[PIPELINE CONTEXT — follow this specification closely]
+Title: ${planSpec.title}
+Layout: ${planSpec.layout}
+Components: ${(planSpec.components || []).map(c => `${c.type} (${c.purpose})`).join(", ")}
+Data sources: ${(planSpec.dataSourcesUsed || []).join(", ")}
+Key insights: ${(planSpec.highlights || []).join("; ")}
+Style: ${styleGuide.colorScheme} scheme, accent ${styleGuide.primaryAccent}, ${styleGuide.cardStyle} cards, ${styleGuide.density} density
+Chart palette: ${(styleGuide.chartPalette || []).join(", ")}
+[END PIPELINE CONTEXT]\n\nUSER REQUEST:\n${prompt}`;
+
+  let html = await callClaude(sysPrompt, pipelineContext, apiKey, 16000);
+
+  // Step 4: Critic
+  const criticRaw = await callClaude(
+    buildCriticPrompt(),
+    `ORIGINAL USER REQUEST:\n${prompt}\n\nGENERATED DASHBOARD HTML:\n${html}`,
+    apiKey, 2000
+  );
+  let criticFeedback;
+  try { criticFeedback = JSON.parse(criticRaw); }
+  catch { criticFeedback = { score: 7, issues: [], suggestions: [] }; }
+
+  // Step 5: Refiner loop
+  let refinements = 0;
+  while (
+    refinements < MAX_REFINE_LOOPS &&
+    (criticFeedback.score < 7 || (criticFeedback.issues && criticFeedback.issues.length > 0))
+  ) {
+    const refinePrompt = `You previously generated this dashboard. Fix these issues:\n\nCRITIC SCORE: ${criticFeedback.score}/10\nISSUES:\n${(criticFeedback.issues || []).map((v, i) => `${i+1}. ${v}`).join("\n")}\nSUGGESTIONS:\n${(criticFeedback.suggestions || []).map((v, i) => `${i+1}. ${v}`).join("\n")}\n\nApply all fixes. Return complete improved HTML. No other changes.\n\nCURRENT HTML:\n${html}`;
+    html = await callClaude(sysPrompt, refinePrompt, apiKey, 16000);
+    refinements++;
+
+    if (refinements < MAX_REFINE_LOOPS) {
+      const recriticRaw = await callClaude(
+        buildCriticPrompt(),
+        `ORIGINAL USER REQUEST:\n${prompt}\n\nGENERATED DASHBOARD HTML:\n${html}`,
+        apiKey, 2000
+      );
+      try { criticFeedback = JSON.parse(recriticRaw); }
+      catch { break; }
+      if (criticFeedback.score >= 7 && (!criticFeedback.issues || criticFeedback.issues.length === 0)) break;
+    }
+  }
+
+  return { html, planSpec, styleGuide, criticFeedback, refinements };
+}
+
 // ── Shared Claude call ────────────────────────────────────────────────────────
 
 async function callClaude(systemPrompt, userPrompt, apiKey, maxTokens = 16000) {
@@ -639,6 +1004,53 @@ app.post("/generate-charts", async (req, res) => {
     res.json({ html });
   } catch (err) {
     console.error("/generate-charts error:", err.message);
+    res.status(502).json({ error: err.message });
+  }
+});
+
+app.post("/generate-infographic", async (req, res) => {
+  const { prompt } = req.body;
+  if (!prompt) return res.status(400).json({ error: "prompt is required" });
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return res.status(500).json({ error: "ANTHROPIC_API_KEY not set" });
+  try {
+    const dataContext = buildDataContext();
+    const html = await callClaude(buildInfographicSystemPrompt(dataContext), prompt, apiKey);
+    res.json({ html });
+  } catch (err) {
+    console.error("/generate-infographic error:", err.message);
+    res.status(502).json({ error: err.message });
+  }
+});
+
+app.post("/generate-diagram", async (req, res) => {
+  const { prompt } = req.body;
+  if (!prompt) return res.status(400).json({ error: "prompt is required" });
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return res.status(500).json({ error: "ANTHROPIC_API_KEY not set" });
+  try {
+    const dataContext = buildDataContext();
+    const html = await callClaude(buildDiagramSystemPrompt(dataContext), prompt, apiKey);
+    res.json({ html });
+  } catch (err) {
+    console.error("/generate-diagram error:", err.message);
+    res.status(502).json({ error: err.message });
+  }
+});
+
+// ── POST /generate-pipeline ────────────────────────────────────────────────────
+
+app.post("/generate-pipeline", async (req, res) => {
+  const { prompt, mode = "html" } = req.body;
+  if (!prompt) return res.status(400).json({ error: "prompt is required" });
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return res.status(500).json({ error: "ANTHROPIC_API_KEY not set" });
+  try {
+    const dataContext = buildDataContext();
+    const result = await runPipeline(prompt, mode, dataContext, apiKey);
+    res.json(result);
+  } catch (err) {
+    console.error("/generate-pipeline error:", err.message);
     res.status(502).json({ error: err.message });
   }
 });
