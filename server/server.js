@@ -907,7 +907,43 @@ Rules:
 - Output ONLY the JSON object.`;
 }
 
-function buildCriticPrompt() {
+function buildCriticPrompt(mode = "html") {
+  const isEditorial = mode === "infographic" || mode === "diagram";
+
+  if (isEditorial) {
+    const typeName = mode === "infographic" ? "infographic" : "diagram";
+    return `You are a visual design critic reviewing a generated ${typeName}. Evaluate it against the original user request and output a JSON critique.
+
+Output ONLY valid JSON — no markdown, no prose, no code fences.
+
+Schema:
+{
+  "score": number (1-10),
+  "issues": [string],
+  "suggestions": [string],
+  "missingKPIs": [],
+  "dataAccuracy": "accurate" | "minor-issues" | "major-issues",
+  "layoutAssessment": "good" | "cluttered" | "sparse"
+}
+
+Check for:
+1. Does the ${typeName} directly address the user's topic/request?
+2. Are all data values concrete and specific — no "N/A", "TBD", "XX%", or placeholder text?
+3. Are computed values (totals, percentages, averages) arithmetically correct?
+4. Is the visual hierarchy clear — main story obvious at a glance?
+5. Does it use the correct output format — ${mode === "infographic" ? "full editorial HTML with prose sections, not dashboard cards" : "SVG/D3 figure with proper node labels and connectors, not HTML cards"}?
+6. Are there any visual encoding issues (wrong chart type, missing labels, unreadable contrast)?
+
+Penalty rules (lower score significantly for these):
+- Any MUI/HTML card components in output: -3 points
+- Placeholder/fake data values: -2 points per instance
+- Wrong format (dashboard instead of ${typeName}): -4 points
+- Missing key visual elements the prompt asked for: -2 points each
+
+Scoring: 9-10 = excellent, 7-8 = good, 5-6 = needs improvement, 1-4 = poor.
+Output ONLY the JSON object.`;
+  }
+
   return `You are a dashboard quality critic. Review the generated dashboard HTML against the original user request and output a JSON critique.
 
 Output ONLY valid JSON — no markdown, no prose, no code fences.
@@ -925,43 +961,93 @@ Schema:
 Check for:
 1. Does the dashboard address everything in the user's prompt?
 2. Are real data values used (not placeholder text like "XXX" or "TBD")?
-3. Are computed/aggregate values correct (totals, percentages, averages)?
+3. Are computed/aggregate values correct — verify totals, percentages, averages against the raw data?
 4. Are KPI cards present when the prompt implies metrics?
 5. Is the layout balanced — not too cluttered or sparse?
 6. Are all values non-placeholder and meaningful?
 
+Data accuracy rules (lower score for any violations):
+- Wrong computed total/percentage vs source data: -2 per error
+- Fabricated values not derivable from available data: -2 per instance
+- Any "N/A", "TBD", "XX", "??", or empty value cells: -1 each
+
 Scoring: 9-10 = excellent, 7-8 = good, 5-6 = needs improvement, 1-4 = poor.
 Output ONLY the JSON object.`;
+}
+
+function buildEditorialPlannerPrompt(mode) {
+  const typeName = mode === "infographic" ? "data-driven editorial infographic" : "technical diagram / academic figure";
+  const styleDesc = mode === "infographic"
+    ? "The Pudding / Reuters Graphics / Bloomberg BW editorial style — full-bleed sections, narrative prose, inline SVG charts, NO cards or dashboards"
+    : "D3.js academic figure style — SVG flowcharts, node-link diagrams, methodology figures, white background, serif typography, NO cards or HTML components";
+
+  return `You are an editorial content strategist. Given a user request, output a JSON specification for a ${typeName}.
+
+Output ONLY valid JSON — no markdown, no prose, no code fences.
+
+Schema:
+{
+  "title": string,
+  "subtitle": string,
+  "narrative": string (the story arc, 1-2 sentences),
+  "sections": [
+    { "heading": string, "purpose": string, "visualType": string, "keyFacts": [string] }
+  ],
+  "dataSourcesUsed": [string],
+  "visualMetaphors": [string],
+  "typography": "serif" | "sans",
+  "colorMood": string
+}
+
+Rules:
+- 2–5 sections. Each section has a clear editorial purpose.
+- visualType must be one of: annotated-chart, timeline, flow-diagram, comparison-table, stat-callout, network-graph, bar-chart, scatter-plot, treemap
+- keyFacts: 2–4 specific data points or insights to highlight in that section
+- This will be rendered as: ${styleDesc}
+- Do NOT suggest dashboard cards, KPI tiles, or component grids
+- Output ONLY the JSON object.`;
 }
 
 // ── Multi-agent pipeline ───────────────────────────────────────────────────────
 
 async function runPipeline(prompt, mode, dataContext, apiKey) {
   const MAX_REFINE_LOOPS = 2;
+  const isEditorial = mode === "infographic" || mode === "diagram";
 
-  // Step 1: Planner
-  const planRaw = await callClaude(
-    buildPlannerPrompt(),
-    `User request: ${prompt}\n\nDATA CONTEXT:\n${dataContext}`,
-    apiKey, 2000
-  );
-  let planSpec;
-  try { planSpec = JSON.parse(planRaw); }
-  catch { planSpec = { title: "Dashboard", components: [], layout: "grid", dataSourcesUsed: [], highlights: [] }; }
+  let planSpec, styleGuide;
 
-  // Step 2: Stylist
-  const styleRaw = await callClaude(
-    buildStylistPrompt(),
-    `PLAN SPEC:\n${JSON.stringify(planSpec, null, 2)}`,
-    apiKey, 1000
-  );
-  let styleGuide;
-  try { styleGuide = JSON.parse(styleRaw); }
-  catch {
-    styleGuide = {
-      colorScheme: "dark", primaryAccent: "#2563eb", cardStyle: "flat",
-      density: "normal", chartPalette: ["#2563eb","#10b981","#f59e0b","#ec4899","#8b5cf6","#38bdf8"],
-    };
+  if (isEditorial) {
+    // Editorial modes: use a narrative planner instead of dashboard planner; skip Stylist
+    const planRaw = await callClaude(
+      buildEditorialPlannerPrompt(mode),
+      `User request: ${prompt}\n\nDATA CONTEXT:\n${dataContext}`,
+      apiKey, 2000
+    );
+    try { planSpec = JSON.parse(planRaw); }
+    catch { planSpec = { title: prompt, sections: [], dataSourcesUsed: [], visualMetaphors: [] }; }
+    styleGuide = null; // not used for editorial modes
+  } else {
+    // Dashboard modes: Planner + Stylist
+    const planRaw = await callClaude(
+      buildPlannerPrompt(),
+      `User request: ${prompt}\n\nDATA CONTEXT:\n${dataContext}`,
+      apiKey, 2000
+    );
+    try { planSpec = JSON.parse(planRaw); }
+    catch { planSpec = { title: "Dashboard", components: [], layout: "grid", dataSourcesUsed: [], highlights: [] }; }
+
+    const styleRaw = await callClaude(
+      buildStylistPrompt(),
+      `PLAN SPEC:\n${JSON.stringify(planSpec, null, 2)}`,
+      apiKey, 1000
+    );
+    try { styleGuide = JSON.parse(styleRaw); }
+    catch {
+      styleGuide = {
+        colorScheme: "dark", primaryAccent: "#2563eb", cardStyle: "flat",
+        density: "normal", chartPalette: ["#2563eb","#10b981","#f59e0b","#ec4899","#8b5cf6","#38bdf8"],
+      };
+    }
   }
 
   // Step 3: Visualizer
@@ -971,7 +1057,25 @@ async function runPipeline(prompt, mode, dataContext, apiKey) {
     : mode === "diagram" ? buildDiagramSystemPrompt(dataContext)
     : buildHtmlSystemPrompt(dataContext);
 
-  const pipelineContext = `[PIPELINE CONTEXT — follow this specification closely]
+  let visualizerPrompt;
+  if (isEditorial) {
+    // For editorial modes: inject narrative direction, NOT dashboard component specs
+    const s = planSpec;
+    visualizerPrompt = `[EDITORIAL BRIEF — follow this narrative direction closely]
+Title: ${s.title}${s.subtitle ? `\nSubtitle: ${s.subtitle}` : ""}
+Narrative: ${s.narrative || ""}
+Sections: ${(s.sections || []).map(sec => `${sec.heading} (${sec.purpose}, visual: ${sec.visualType}, facts: ${(sec.keyFacts || []).join("; ")})`).join(" | ")}
+Data sources to draw from: ${(s.dataSourcesUsed || []).join(", ")}
+Visual metaphors: ${(s.visualMetaphors || []).join(", ")}
+Typography: ${s.typography || "serif"}, mood: ${s.colorMood || "editorial"}
+[END EDITORIAL BRIEF]
+
+IMPORTANT: Output a ${mode === "infographic" ? "full editorial infographic — NOT a dashboard" : "technical diagram/academic figure — NOT a dashboard"}. No MUI components. No card grids. Follow the section structure above.
+
+USER REQUEST:\n${prompt}`;
+  } else {
+    // Dashboard modes: inject component/style spec
+    visualizerPrompt = `[PIPELINE CONTEXT — follow this specification closely]
 Title: ${planSpec.title}
 Layout: ${planSpec.layout}
 Components: ${(planSpec.components || []).map(c => `${c.type} (${c.purpose})`).join(", ")}
@@ -979,14 +1083,17 @@ Data sources: ${(planSpec.dataSourcesUsed || []).join(", ")}
 Key insights: ${(planSpec.highlights || []).join("; ")}
 Style: ${styleGuide.colorScheme} scheme, accent ${styleGuide.primaryAccent}, ${styleGuide.cardStyle} cards, ${styleGuide.density} density
 Chart palette: ${(styleGuide.chartPalette || []).join(", ")}
-[END PIPELINE CONTEXT]\n\nUSER REQUEST:\n${prompt}`;
+[END PIPELINE CONTEXT]
 
-  let html = await callClaude(sysPrompt, pipelineContext, apiKey, 16000);
+USER REQUEST:\n${prompt}`;
+  }
+
+  let html = await callClaude(sysPrompt, visualizerPrompt, apiKey, 16000);
 
   // Step 4: Critic
   const criticRaw = await callClaude(
-    buildCriticPrompt(),
-    `ORIGINAL USER REQUEST:\n${prompt}\n\nGENERATED DASHBOARD HTML:\n${html}`,
+    buildCriticPrompt(mode),
+    `ORIGINAL USER REQUEST:\n${prompt}\n\nGENERATED HTML:\n${html}`,
     apiKey, 2000
   );
   let criticFeedback;
@@ -995,18 +1102,19 @@ Chart palette: ${(styleGuide.chartPalette || []).join(", ")}
 
   // Step 5: Refiner loop
   let refinements = 0;
+  const outputTypeName = isEditorial ? (mode === "infographic" ? "infographic" : "diagram") : "dashboard";
   while (
     refinements < MAX_REFINE_LOOPS &&
     (criticFeedback.score < 7 || (criticFeedback.issues && criticFeedback.issues.length > 0))
   ) {
-    const refinePrompt = `You previously generated this dashboard. Fix these issues:\n\nCRITIC SCORE: ${criticFeedback.score}/10\nISSUES:\n${(criticFeedback.issues || []).map((v, i) => `${i+1}. ${v}`).join("\n")}\nSUGGESTIONS:\n${(criticFeedback.suggestions || []).map((v, i) => `${i+1}. ${v}`).join("\n")}\n\nApply all fixes. Return complete improved HTML. No other changes.\n\nCURRENT HTML:\n${html}`;
+    const refinePrompt = `You previously generated this ${outputTypeName}. Fix these issues:\n\nCRITIC SCORE: ${criticFeedback.score}/10\nISSUES:\n${(criticFeedback.issues || []).map((v, i) => `${i+1}. ${v}`).join("\n")}\nSUGGESTIONS:\n${(criticFeedback.suggestions || []).map((v, i) => `${i+1}. ${v}`).join("\n")}\n\nApply all fixes. Return complete improved HTML. No other changes.\n\nCURRENT HTML:\n${html}`;
     html = await callClaude(sysPrompt, refinePrompt, apiKey, 16000);
     refinements++;
 
     if (refinements < MAX_REFINE_LOOPS) {
       const recriticRaw = await callClaude(
-        buildCriticPrompt(),
-        `ORIGINAL USER REQUEST:\n${prompt}\n\nGENERATED DASHBOARD HTML:\n${html}`,
+        buildCriticPrompt(mode),
+        `ORIGINAL USER REQUEST:\n${prompt}\n\nGENERATED HTML:\n${html}`,
         apiKey, 2000
       );
       try { criticFeedback = JSON.parse(recriticRaw); }
