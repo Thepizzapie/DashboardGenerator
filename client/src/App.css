@@ -1,0 +1,170 @@
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/* GENERATED HTML COMPONENT STYLES                                             */
+/* These classes are described in the server-side system prompt so Claude can  */
+/* reference them by name. MUI handles all app-shell styling.                  */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+
+.canvas-output { width: 100%; }
+
+.rendered {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Typography */
+.rendered h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #e2e8f0;
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+}
+
+.rendered h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e2e8f0;
+  margin-bottom: 8px;
+}
+
+.rendered .section-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #64748b;
+  margin-bottom: 12px;
+}
+
+.rendered .muted {
+  color: #64748b;
+  font-size: 12px;
+}
+
+/* Card */
+.rendered .card {
+  background: #161b27;
+  border: 1px solid #2a3147;
+  border-radius: 8px;
+  padding: 16px 20px;
+}
+
+/* Stats grid */
+.rendered .stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.rendered .stat-card {
+  background: #161b27;
+  border: 1px solid #2a3147;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rendered .stat-label {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #64748b;
+}
+
+.rendered .stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #e2e8f0;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.rendered .stat-delta {
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.rendered .stat-delta.positive { color: #22c55e; }
+.rendered .stat-delta.negative { color: #ef4444; }
+
+/* Badges */
+.rendered .badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  background: #1e2535;
+  color: #94a3b8;
+  border: 1px solid #2a3147;
+}
+
+.rendered .badge-green { background: rgba(34,197,94,0.15);  color: #22c55e; border-color: rgba(34,197,94,0.3);  }
+.rendered .badge-red   { background: rgba(239,68,68,0.15);   color: #ef4444; border-color: rgba(239,68,68,0.3);  }
+.rendered .badge-amber { background: rgba(245,158,11,0.15);  color: #f59e0b; border-color: rgba(245,158,11,0.3); }
+.rendered .badge-blue  { background: rgba(59,130,246,0.15);  color: #3b82f6; border-color: rgba(59,130,246,0.3); }
+
+/* Progress bars */
+.rendered .progress-bar {
+  height: 6px;
+  background: #1e2535;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.rendered .progress-fill {
+  height: 100%;
+  background: #6366f1;
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+
+/* Tables */
+.rendered table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.rendered thead {
+  border-bottom: 1px solid #2a3147;
+}
+
+.rendered th {
+  text-align: left;
+  padding: 8px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #64748b;
+}
+
+.rendered td {
+  padding: 10px 12px;
+  color: #e2e8f0;
+  border-bottom: 1px solid #1e2535;
+}
+
+.rendered tbody tr:last-child td { border-bottom: none; }
+.rendered tbody tr:hover td { background: #161b27; }
+
+/* List items */
+.rendered .list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #1e2535;
+  font-size: 13px;
+}
+
+.rendered .list-item:last-child { border-bottom: none; }
