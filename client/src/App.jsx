@@ -1,9 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Box from "@mui/material/Box";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import Chip from "@mui/material/Chip";
+import Tooltip from "@mui/material/Tooltip";
+import { ThemeProvider } from "@mui/material/styles";
+import CssBaseline from "@mui/material/CssBaseline";
+import { createAppTheme } from "./theme";
 import Sidebar from "./components/Sidebar";
 import GenerationArea from "./components/GenerationArea";
 
@@ -11,14 +15,20 @@ const DRAWER_WIDTH = 280;
 const API = import.meta.env.VITE_API_URL || "http://localhost:3001";
 
 export default function App() {
+  const [colorMode, setColorMode] = useState("dark");
+  const theme = useMemo(() => createAppTheme(colorMode), [colorMode]);
+  const isDark = colorMode === "dark";
+
   const [mode, setMode] = useState("html");
   const [htmlOutput, setHtmlOutput] = useState("");
   const [muiOutput, setMuiOutput] = useState("");
   const [chartsOutput, setChartsOutput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isApplying, setIsApplying] = useState(false);
   const [error, setError] = useState(null);
   const [userSources, setUserSources] = useState([]);
   const [bannerDismissed, setBannerDismissed] = useState(false);
+  const [viewport, setViewport] = useState("desktop");
 
   useEffect(() => { loadSources(); }, []);
 
@@ -59,7 +69,6 @@ export default function App() {
   async function handleGenerate(prompt) {
     setIsLoading(true);
     setError(null);
-
     const endpoint = mode === "mui" ? "/generate-mui" : mode === "charts" ? "/generate-charts" : "/generate";
 
     try {
@@ -68,12 +77,10 @@ export default function App() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt }),
       });
-
       if (!res.ok) {
         const err = await res.json();
         throw new Error(err.error || `Server error ${res.status}`);
       }
-
       const { html } = await res.json();
       if (mode === "mui") setMuiOutput(html);
       else if (mode === "charts") setChartsOutput(html);
@@ -85,29 +92,50 @@ export default function App() {
     }
   }
 
+  async function handleApplyEdit(instruction) {
+    const currentOutput = mode === "mui" ? muiOutput : mode === "charts" ? chartsOutput : htmlOutput;
+    if (!currentOutput) return;
+    setIsApplying(true);
+    try {
+      const res = await fetch(`${API}/edit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ html: currentOutput, instruction }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || `Server error ${res.status}`);
+      }
+      const { html } = await res.json();
+      if (mode === "mui") setMuiOutput(html);
+      else if (mode === "charts") setChartsOutput(html);
+      else setHtmlOutput(html);
+    } finally {
+      setIsApplying(false);
+    }
+  }
+
   const output = mode === "mui" ? muiOutput : mode === "charts" ? chartsOutput : htmlOutput;
 
   return (
+    <ThemeProvider theme={theme}>
+    <CssBaseline />
     <Box sx={{ display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden" }}>
 
       {/* ── Announcement banner ───────────────────────────────────────────── */}
       {!bannerDismissed && (
         <Box sx={{
-          bgcolor: "rgba(99,102,241,0.12)",
-          borderBottom: "1px solid rgba(99,102,241,0.25)",
-          px: 2, py: 0.6,
-          display: "flex", alignItems: "center", justifyContent: "center", gap: 1.5,
-          flexShrink: 0,
+          background: "linear-gradient(90deg, rgba(37,99,235,0.2) 0%, rgba(37,99,235,0.15) 50%, rgba(236,72,153,0.15) 100%)",
+          borderBottom: "1px solid rgba(37,99,235,0.25)",
+          boxShadow: "0 1px 20px rgba(37,99,235,0.1)",
+          px: 2, py: 0.7,
+          display: "flex", alignItems: "center", justifyContent: "center", gap: 1.5, flexShrink: 0,
         }}>
-          <Chip label="NEW" size="small" color="primary" sx={{ height: 17, fontSize: 9, fontWeight: 800, letterSpacing: "0.04em" }} />
-          <Typography variant="caption" sx={{ color: "text.secondary" }}>
+          <Chip label="NEW" size="small" sx={{ height: 17, fontSize: 9, fontWeight: 800, letterSpacing: "0.06em", background: "linear-gradient(135deg,#2563eb,#0ea5e9)", color: "#fff" }} />
+          <Typography variant="caption" sx={{ color: "text.secondary", letterSpacing: "0.01em" }}>
             Charts Canvas — generate Recharts dashboards from plain English. Connect your own data.
           </Typography>
-          <Box
-            component="span"
-            onClick={() => setBannerDismissed(true)}
-            sx={{ ml: "auto", cursor: "pointer", color: "text.disabled", fontSize: 14, lineHeight: 1, userSelect: "none", "&:hover": { color: "text.secondary" } }}
-          >
+          <Box component="span" onClick={() => setBannerDismissed(true)} sx={{ ml: "auto", cursor: "pointer", color: "text.disabled", fontSize: 14, lineHeight: 1, userSelect: "none", "&:hover": { color: "text.secondary" } }}>
             ✕
           </Box>
         </Box>
@@ -117,33 +145,33 @@ export default function App() {
       <AppBar position="static" elevation={0} sx={{ borderBottom: "1px solid", borderColor: "divider", flexShrink: 0 }}>
         <Toolbar variant="dense" sx={{ minHeight: 52, gap: 1.5 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-            <img
-              src="/logo.png"
-              alt="Dashy"
-              style={{ height: 60, borderRadius: 6, display: "block" }}
-            />
+            <img src="/logo.png" alt="Dashy" style={{ height: 60, borderRadius: 6, display: "block" }} />
             <Box sx={{ width: "1px", height: 20, bgcolor: "divider" }} />
             <Typography variant="caption" sx={{ color: "text.disabled", letterSpacing: "0.01em" }}>
               Dashboard generator
             </Typography>
           </Box>
           <Box sx={{ ml: "auto", display: "flex", alignItems: "center", gap: 2 }}>
-            <Typography
-              component="a"
-              href="https://github.com/your-org/dashy"
-              target="_blank"
-              rel="noopener noreferrer"
-              variant="caption"
-              sx={{ color: "text.secondary", textDecoration: "none", "&:hover": { color: "text.primary" } }}
-            >
+            <Typography component="a" href="https://github.com/Thepizzapie/DashboardGenerator" target="_blank" rel="noopener noreferrer" variant="caption" sx={{ color: "text.secondary", textDecoration: "none", "&:hover": { color: "text.primary" } }}>
               GitHub
             </Typography>
-            <Chip
-              label="MIT · Free & open source"
-              size="small"
-              variant="outlined"
-              sx={{ height: 22, fontSize: 10, color: "text.secondary", borderColor: "divider" }}
-            />
+            <Chip label="MIT · Free & open source" size="small" variant="outlined" sx={{ height: 22, fontSize: 10, color: "text.secondary", borderColor: "divider" }} />
+            <Tooltip title={isDark ? "Switch to light mode" : "Switch to dark mode"} arrow>
+              <Box
+                onClick={() => setColorMode(isDark ? "light" : "dark")}
+                sx={{
+                  width: 32, height: 32, borderRadius: 2,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 16, cursor: "pointer",
+                  border: "1px solid", borderColor: "divider",
+                  bgcolor: "transparent",
+                  "&:hover": { bgcolor: "action.hover" },
+                  transition: "all 0.15s",
+                }}
+              >
+                {isDark ? "☀️" : "🌙"}
+              </Box>
+            </Tooltip>
           </Box>
         </Toolbar>
       </AppBar>
@@ -163,11 +191,16 @@ export default function App() {
           mode={mode}
           onModeChange={setMode}
           onGenerate={handleGenerate}
+          onApplyEdit={handleApplyEdit}
           output={output}
           isLoading={isLoading}
+          isApplying={isApplying}
           error={error}
+          viewport={viewport}
+          onViewportChange={setViewport}
         />
       </Box>
     </Box>
+    </ThemeProvider>
   );
 }

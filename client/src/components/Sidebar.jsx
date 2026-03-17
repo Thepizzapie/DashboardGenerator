@@ -10,6 +10,7 @@ import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
+import { useTheme } from "@mui/material/styles";
 import AddSourceDialog from "./AddSourceDialog";
 
 const ExpandIcon = () => (
@@ -125,7 +126,7 @@ function Section({ title, label, labelColor, items, nameKey = "name", descKey = 
           <Box key={item[nameKey]} sx={{ py: 0.5 }}>
             <Typography
               component="code"
-              sx={{ fontSize: 11, color: "primary.light", fontFamily: '"SF Mono","Fira Code","Consolas",monospace', display: "block" }}
+              sx={{ fontSize: 11, color: "primary.light", fontFamily: '"JetBrains Mono","Fira Code","Consolas",monospace', display: "block" }}
             >
               {item[nameKey]}
             </Typography>
@@ -175,7 +176,7 @@ function DataSourcesSection({ userSources, onAddSource, onDeleteSource, onFetchS
             <Box key={s.id} sx={{ py: 0.5 }}>
               <Stack direction="row" alignItems="center" spacing={0.75}>
                 <StatusDot color="#22c55e" />
-                <Typography component="code" sx={{ fontSize: 11, color: "primary.light", fontFamily: '"SF Mono","Fira Code","Consolas",monospace' }}>
+                <Typography component="code" sx={{ fontSize: 11, color: "primary.light", fontFamily: '"JetBrains Mono","Fira Code","Consolas",monospace' }}>
                   {s.id}
                 </Typography>
               </Stack>
@@ -193,20 +194,34 @@ function DataSourcesSection({ userSources, onAddSource, onDeleteSource, onFetchS
                 Your Sources
               </Typography>
               {userSources.map((s) => (
-                <Stack key={s.id} direction="row" alignItems="center" spacing={0.5} sx={{ py: 0.25 }}>
-                  <StatusDot color={sourceStatus(s)} />
-                  <Typography component="code" sx={{ fontSize: 11, color: "primary.light", fontFamily: '"SF Mono","Fira Code","Consolas",monospace', flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    {s.name}
-                  </Typography>
-                  {s.type === "url" && (
-                    <IconButton size="small" onClick={() => onFetchSource(s.id)} sx={{ p: 0.25 }} title="Refresh">
-                      <RefreshIcon />
+                <Box key={s.id} sx={{ py: 0.25 }}>
+                  <Stack direction="row" alignItems="center" spacing={0.5}>
+                    <StatusDot color={sourceStatus(s)} />
+                    <Typography component="code" sx={{ fontSize: 11, color: "primary.light", fontFamily: '"JetBrains Mono","Fira Code","Consolas",monospace', flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {s.name}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: "text.disabled", fontSize: 9, flexShrink: 0 }}>{s.type}</Typography>
+                    {["url","sheets","notion","airtable","db"].includes(s.type) && (
+                      <IconButton size="small" onClick={() => onFetchSource(s.id)} sx={{ p: 0.25 }} title="Refresh">
+                        <RefreshIcon />
+                      </IconButton>
+                    )}
+                    <IconButton size="small" onClick={() => onDeleteSource(s.id)} sx={{ p: 0.25 }} title="Delete">
+                      <DeleteIcon />
                     </IconButton>
+                  </Stack>
+                  {s.type === "webhook" && s.webhookUrl && (
+                    <Box
+                      onClick={() => navigator.clipboard.writeText(`http://localhost:3001${s.webhookUrl}`)}
+                      sx={{ mt: 0.5, ml: 1.5, px: 1, py: 0.5, bgcolor: "background.default", borderRadius: 1, border: "1px solid", borderColor: "divider", cursor: "pointer", "&:hover": { borderColor: "primary.main" }, transition: "border-color 0.15s" }}
+                      title="Click to copy webhook URL"
+                    >
+                      <Typography sx={{ fontSize: 9, fontFamily: '"JetBrains Mono", monospace', color: "text.disabled", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        POST {s.webhookUrl}
+                      </Typography>
+                    </Box>
                   )}
-                  <IconButton size="small" onClick={() => onDeleteSource(s.id)} sx={{ p: 0.25 }} title="Delete">
-                    <DeleteIcon />
-                  </IconButton>
-                </Stack>
+                </Box>
               ))}
             </>
           )}
@@ -234,6 +249,9 @@ function DataSourcesSection({ userSources, onAddSource, onDeleteSource, onFetchS
 }
 
 export default function Sidebar({ mode, drawerWidth, userSources, onAddSource, onDeleteSource, onFetchSource, onUploadCsv }) {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === "dark";
+
   return (
     <Drawer
       variant="permanent"
@@ -249,10 +267,16 @@ export default function Sidebar({ mode, drawerWidth, userSources, onAddSource, o
         },
       }}
     >
-      {/* Logo header */}
-      <Box sx={{ px: 2, py: 1.5, display: "flex", alignItems: "center", gap: 1.5, borderBottom: "1px solid", borderColor: "divider" }}>
-        <img src="/logo.png" alt="Dashy" style={{ height: 52, borderRadius: 4 }} />
-        <Typography variant="caption" sx={{ color: "text.disabled", fontSize: 10, letterSpacing: "0.04em", textTransform: "uppercase" }}>
+      {/* Section header */}
+      <Box sx={{
+        px: 2, py: 1.25,
+        borderBottom: "1px solid",
+        borderColor: "divider",
+        background: isDark
+          ? "linear-gradient(135deg, rgba(37,99,235,0.08) 0%, rgba(14,165,233,0.04) 100%)"
+          : "linear-gradient(135deg, rgba(37,99,235,0.05) 0%, rgba(14,165,233,0.03) 100%)",
+      }}>
+        <Typography variant="caption" sx={{ color: "text.disabled", fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 700, display: "block" }}>
           Component Registry
         </Typography>
       </Box>

@@ -483,5 +483,35 @@ app.post("/generate-charts", async (req, res) => {
   }
 });
 
+// ── POST /edit ────────────────────────────────────────────────────────────────
+
+app.post("/edit", async (req, res) => {
+  const { html, instruction } = req.body;
+  if (!html || !instruction) return res.status(400).json({ error: "html and instruction are required" });
+
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return res.status(500).json({ error: "ANTHROPIC_API_KEY not set" });
+
+  const systemPrompt = `You are a UI editor. You will receive an existing dashboard HTML and an instruction describing a change the user wants. Apply the change and return the COMPLETE updated HTML document.
+
+Rules:
+1. Return ONLY the complete updated HTML. No markdown fences. No prose. No explanation.
+2. Keep all data, structure, and functionality intact unless the instruction says otherwise.
+3. Apply the change precisely — do not restructure things that weren't mentioned.
+4. If it's a color change, update all relevant color values throughout (backgrounds, text, borders, chart colors).
+5. If it's a layout change, reorder or restructure only what was asked.
+
+CURRENT HTML:
+${html}`;
+
+  try {
+    const updated = await callClaude(systemPrompt, instruction, apiKey);
+    res.json({ html: updated });
+  } catch (err) {
+    console.error("/edit error:", err.message);
+    res.status(502).json({ error: err.message });
+  }
+});
+
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => console.log(`Proxy listening on http://localhost:${PORT}`));
