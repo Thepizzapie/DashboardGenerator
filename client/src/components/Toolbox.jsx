@@ -178,7 +178,7 @@ function StatusDot({ color }) {
 
 // ── Component section ─────────────────────────────────────────────────────────
 
-function ComponentSection({ title, label, labelColor, items }) {
+function ComponentSection({ title, label, labelColor, items, onPanelClose }) {
   const [open, setOpen] = useState(true);
   const colors = { primary: "#2563eb", info: "#0ea5e9", warning: "#f59e0b" };
   const accent = colors[labelColor] || "#2563eb";
@@ -242,7 +242,7 @@ function ComponentSection({ title, label, labelColor, items }) {
 
 // ── Data sources panel ────────────────────────────────────────────────────────
 
-function DataSourcesPanel({ userSources, onAddSource, onDeleteSource, onFetchSource, onUploadCsv, selectedSources }) {
+function DataSourcesPanel({ userSources, onAddSource, onDeleteSource, onFetchSource, onUploadCsv, selectedSources, onPanelClose }) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
@@ -399,9 +399,9 @@ function Panel({ open, onClose, title, children }) {
 export function ComponentsToolbox({ open, onClose, mode }) {
   return (
     <Panel open={open} onClose={onClose} title="Component Registry">
-      {mode === "html"   && <ComponentSection title="HTML Components" label="CSS"    labelColor="primary" items={HTML_COMPONENTS}   />}
-      {mode === "mui"    && <ComponentSection title="MUI Components"  label="MUI"    labelColor="info"    items={MUI_COMPONENTS}    />}
-      {mode === "charts" && <ComponentSection title="Recharts Charts" label="CHARTS" labelColor="warning" items={CHARTS_COMPONENTS} />}
+      {mode === "html"   && <ComponentSection title="HTML Components" label="CSS"    labelColor="primary" items={HTML_COMPONENTS}   onPanelClose={onClose} />}
+      {mode === "mui"    && <ComponentSection title="MUI Components"  label="MUI"    labelColor="info"    items={MUI_COMPONENTS}    onPanelClose={onClose} />}
+      {mode === "charts" && <ComponentSection title="Recharts Charts" label="CHARTS" labelColor="warning" items={CHARTS_COMPONENTS} onPanelClose={onClose} />}
       {(mode === "infographic" || mode === "diagram") && (
         <Box sx={{ p: 2 }}>
           <Typography variant="body2" sx={{ color: "text.disabled", fontSize: 15, lineHeight: 1.7 }}>
@@ -424,6 +424,7 @@ export function DataToolbox({ open, onClose, userSources, onAddSource, onDeleteS
         onDeleteSource={onDeleteSource}
         onFetchSource={onFetchSource}
         onUploadCsv={onUploadCsv}
+        onPanelClose={onClose}
         selectedSources={selectedSources}
       />
     </Panel>

@@ -505,6 +505,7 @@ export default function GenerationArea({
   viewport, showToast,
   pipelineStep, pipelineOutput,
   selectedSources = [], onSourceDrop, onSourceRemove,
+  selectedComponents = [], onComponentDrop, onComponentRemove,
 }) {
   const [prompt, setPrompt] = useState("");
   const [examplesAnchor, setExamplesAnchor] = useState(null);
@@ -555,15 +556,12 @@ export default function GenerationArea({
       } catch (_) {}
       return;
     }
-    // Component → append to prompt text
+    // Component → add as context chip
     const compRaw = e.dataTransfer.getData("application/dashy-component");
     if (compRaw) {
       try {
         const data = JSON.parse(compRaw);
-        if (data?.label) {
-          setPrompt(p => p ? `${p}, ${data.label}` : data.label);
-          textareaRef.current?.focus();
-        }
+        if (data?.label) onComponentDrop?.(data.label);
       } catch (_) {}
     }
   }
@@ -686,15 +684,15 @@ export default function GenerationArea({
           </Button>
         </Box>
 
-        {/* Selected source chips */}
-        {selectedSources.length > 0 && (
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, pb: 0.5, pl: "42px" }}>
+        {/* Context chips — sources (blue) + components (purple) */}
+        {(selectedSources.length > 0 || selectedComponents.length > 0) && (
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, pb: 0.5, pl: "42px", alignItems: "center" }}>
             {selectedSources.map(id => {
               const source = MOCK_SOURCES.find(s => s.id === id);
               if (!source) return null;
               return (
                 <Chip
-                  key={id}
+                  key={`src-${id}`}
                   label={source.label}
                   size="small"
                   onDelete={() => onSourceRemove?.(id)}
@@ -710,8 +708,23 @@ export default function GenerationArea({
                 />
               );
             })}
-            <Typography variant="caption" sx={{ color: "text.disabled", fontSize: 12.5, alignSelf: "center", ml: 0.5 }}>
-              context
+            {selectedComponents.map(label => (
+              <Chip
+                key={`comp-${label}`}
+                label={label}
+                size="small"
+                onDelete={() => onComponentRemove?.(label)}
+                sx={{
+                  height: 26, fontSize: 14, fontWeight: 600,
+                  bgcolor: isDark ? "rgba(124,58,237,0.15)" : "rgba(124,58,237,0.08)",
+                  color: isDark ? "rgba(196,181,253,0.9)" : "rgba(109,40,217,0.85)",
+                  border: "1px solid rgba(124,58,237,0.25)",
+                  "& .MuiChip-deleteIcon": { fontSize: 16, color: "inherit", opacity: 0.55, "&:hover": { opacity: 1 } },
+                }}
+              />
+            ))}
+            <Typography variant="caption" sx={{ color: "text.disabled", fontSize: 12.5, ml: 0.25 }}>
+              will be sent as context
             </Typography>
           </Box>
         )}

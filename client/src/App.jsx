@@ -379,6 +379,7 @@ export default function App() {
   const [pipelineOutput, setPipelineOutput] = useState(null);
   const [toolboxType, setToolboxType] = useState(null); // null | "components" | "data"
   const [selectedSources, setSelectedSources] = useState([]);
+  const [selectedComponents, setSelectedComponents] = useState([]);
   const stepTickerRef = useRef(null);
 
   const showToast = useCallback((message, severity = "success") => {
@@ -434,9 +435,14 @@ export default function App() {
   function handleSourceDrop(sourceId) {
     setSelectedSources(prev => prev.includes(sourceId) ? prev : [...prev, sourceId]);
   }
-
   function handleSourceRemove(sourceId) {
     setSelectedSources(prev => prev.filter(id => id !== sourceId));
+  }
+  function handleComponentDrop(label) {
+    setSelectedComponents(prev => prev.includes(label) ? prev : [...prev, label]);
+  }
+  function handleComponentRemove(label) {
+    setSelectedComponents(prev => prev.filter(l => l !== label));
   }
 
   async function handleGenerate(prompt) {
@@ -444,11 +450,11 @@ export default function App() {
     setError(null);
     setPipelineOutput(null);
 
-    // Append selected source context to prompt
-    const sourceContext = selectedSources.length > 0
-      ? `\n\nFocus generation on these data sources: ${selectedSources.join(", ")}`
-      : "";
-    const fullPrompt = prompt + sourceContext;
+    // Build context from selected sources + components
+    const parts = [];
+    if (selectedSources.length > 0) parts.push(`Focus on these data sources: ${selectedSources.join(", ")}`);
+    if (selectedComponents.length > 0) parts.push(`Include these UI components: ${selectedComponents.join(", ")}`);
+    const fullPrompt = parts.length > 0 ? `${prompt}\n\n${parts.join("\n")}` : prompt;
 
     const forcePipeline = mode === "infographic" || mode === "diagram";
     if (pipelineMode || forcePipeline) {
@@ -570,7 +576,14 @@ export default function App() {
             selectedSources={selectedSources}
           />
 
-          {/* Generation area */}
+          {/* Generation area — shifts right when toolbox open */}
+          <Box sx={{
+            position: "absolute", inset: 0,
+            ml: toolboxType ? "272px" : 0,
+            transition: "margin-left 0.22s cubic-bezier(0.4,0,0.2,1)",
+            overflow: "hidden", display: "flex", flexDirection: "column",
+            zIndex: 45,
+          }}>
           <GenerationArea
             mode={mode}
             onGenerate={handleGenerate}
@@ -586,7 +599,11 @@ export default function App() {
             selectedSources={selectedSources}
             onSourceDrop={handleSourceDrop}
             onSourceRemove={handleSourceRemove}
+            selectedComponents={selectedComponents}
+            onComponentDrop={handleComponentDrop}
+            onComponentRemove={handleComponentRemove}
           />
+          </Box>
         </Box>
 
         {/* ── Global toast ───────────────────────────────────────────────── */}
