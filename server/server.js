@@ -626,6 +626,12 @@ Internalize these aesthetics:
 4. Supporting insights: 2–3 additional data points, each as a short prose paragraph + small inline SVG
 5. Closing: ONE bold sentence in 48–64px display type, full-bleed colored section — the takeaway
 
+## DATA FIDELITY (non-negotiable)
+- All names, values, and dates must come VERBATIM from the DATA CONTEXT below — never invent entities
+- Compute derived values (averages, totals, percentages) from the raw DATA CONTEXT numbers
+- No placeholder text: no "TBD", "N/A", "XXX", "Employee A", "Department X"
+- Non-ASCII characters in SVG text will render garbled — use plain ASCII only (no →, ∝, •, –, °, etc.)
+
 ## TECHNICAL
 - All data as computed JS const arrays — no placeholder values, no "TBD", no "XXX"
 - CSS custom properties: --accent, --accent2, --bg, --bg2, --text, --muted
@@ -704,7 +710,7 @@ svg.selectAll(".label").data(data).enter().append("text")
 - Group regions: <rect rx="8" fill="rgba(219,234,254,0.35)" stroke="#93c5fd" stroke-width="1.5"/> drawn BEFORE nodes.
 - Connections: <path d="M x1,y1 C cx1,cy1 cx2,cy2 x2,y2" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
 - Plan your x,y coordinates on a grid before writing SVG. Typical node: 140x44px. Gap between nodes: 60-80px.
-- NO emoji, NO unicode symbols, NO bullet characters inside <text>. Plain ASCII only. Emoji renders as garbled characters in PDF.
+- NO emoji, NO unicode symbols, NO bullet characters inside <text> or legend labels. Plain ASCII only. This includes: arrows (use "->"), proportional (use "prop."), ellipsis (use "..."), en/em dash (use "-"), degree symbol (use "deg"), any character outside standard ASCII 32-126. These render as garbled characters in PDF and some browsers.
 
 ## SVG ICON LIBRARY
 Copy this ENTIRE <defs> block verbatim into every SVG diagram you create (merge with your arrow marker defs):
@@ -805,11 +811,13 @@ The color attribute sets currentColor — use your accent color or #64748b for n
   <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
   <style>
     body { font-family: 'Inter', sans-serif; background: #ffffff; margin: 0; padding: 40px; color: #1e293b; }
-    .figure-wrap { max-width: 900px; margin: 0 auto; }
+    .figure-wrap { max-width: 900px; margin: 0 auto; height: auto; }
     .figure-title { font-family: 'Crimson Text', serif; font-size: 20px; font-weight: 600; text-align: center; margin-bottom: 8px; color: #0f172a; }
     .figure-caption { font-family: 'Crimson Text', serif; font-style: italic; font-size: 13px; color: #64748b; text-align: center; margin-top: 12px; }
     .panel-grid { display: grid; gap: 32px; }
     .panel-label { font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 4px; }
+    /* CRITICAL: Never set fixed heights on chart containers — let SVG height drive layout */
+    #chart1, #chartA, #chartB, #chartC, #chartD, [id^="chart"] { height: auto; min-height: unset; }
     @media print { body { padding: 20px; } .figure-wrap { max-width: 100%; } }
   </style>
 </head>
@@ -859,11 +867,15 @@ simulation.on("end", () => {
 Always run ALL node/link/label drawing code INSIDE the simulation "end" callback, not before it.
 Constrain force simulation to the visible area using:
 \`\`\`js
-.force("x", d3.forceX(400).strength(0.08))
-.force("y", d3.forceY(300).strength(0.08))
-.force("collide", d3.forceCollide(50))
+.force("x", d3.forceX(centerX).strength(0.12))
+.force("y", d3.forceY(centerY).strength(0.12))
+.force("collide", d3.forceCollide(70).strength(1).iterations(3))
+.force("charge", d3.forceManyBody().strength(-300))
 \`\`\`
-This prevents nodes from drifting far apart and leaving empty space.
+- forceCollide radius 70 + strength 1 + 3 iterations = hard separation, no overlapping labels
+- forceManyBody strength -300 = strong repulsion keeps nodes readable
+- Center gravity 0.12 = tight enough cluster, no runaway nodes
+This prevents nodes from drifting far apart and overlapping within clusters.
 
 ## RULES
 1. Output ONLY the complete HTML document. No markdown. No prose.
@@ -1006,13 +1018,13 @@ Scoring: 9-10 = excellent, 7-8 = good, 5-6 = needs improvement, 1-4 = poor.
 Output ONLY the JSON object.`;
 }
 
-function buildEditorialPlannerPrompt(mode) {
+function buildEditorialPlannerPrompt(mode, dataContext) {
   const typeName = mode === "infographic" ? "data-driven editorial infographic" : "technical diagram / academic figure";
   const styleDesc = mode === "infographic"
     ? "The Pudding / Reuters Graphics / Bloomberg BW editorial style — full-bleed sections, narrative prose, inline SVG charts, NO cards or dashboards"
     : "D3.js academic figure style — SVG flowcharts, node-link diagrams, methodology figures, white background, serif typography, NO cards or HTML components";
 
-  return `You are an editorial content strategist. Given a user request, output a JSON specification for a ${typeName}.
+  return `You are an editorial content strategist. Given a user request and available data, output a JSON specification for a ${typeName}.
 
 Output ONLY valid JSON — no markdown, no prose, no code fences.
 
@@ -1033,10 +1045,14 @@ Schema:
 Rules:
 - 2–5 sections. Each section has a clear editorial purpose.
 - visualType must be one of: annotated-chart, timeline, flow-diagram, comparison-table, stat-callout, network-graph, bar-chart, scatter-plot, treemap
-- keyFacts: 2–4 specific data points or insights to highlight in that section
+- keyFacts: 2–4 specific facts pulled VERBATIM from the DATA CONTEXT below — use exact names, numbers, and dates. Do NOT invent any names, values, or entities not present in the data.
+- dataSourcesUsed: list the exact array names from DATA CONTEXT that are relevant (e.g. "employees", "projects", "kpi_metrics")
 - This will be rendered as: ${styleDesc}
 - Do NOT suggest dashboard cards, KPI tiles, or component grids
-- Output ONLY the JSON object.`;
+- Output ONLY the JSON object.
+
+## DATA CONTEXT (use exact names and values from this):
+${dataContext}`;
 }
 
 function buildLayoutInspectorPrompt(mode) {
@@ -1076,6 +1092,8 @@ SIZING — wrong dimensions:
 - Recharts \`<ResponsiveContainer>\` with \`height="100%"\` inside a flex parent with no fixed height
 - Absolute-positioned elements with no containing block
 - Elements wider than their container causing horizontal scroll inside the canvas
+- Container div with a fixed \`height\` or \`min-height\` larger than its SVG content — causes whitespace gap below charts
+- D3 SVG whose \`height\` attribute is set before simulation ends (should be set inside the "end" callback after computing node bounding box)
 
 For each issue found, write a concrete, specific fix in the "fixes" array (e.g. "Add overflow='visible' to the funnel SVG on line ~N" or "Change the KPI row container from overflow:hidden to overflow:visible").
 
@@ -1097,8 +1115,8 @@ async function runPipeline(prompt, mode, dataContext, apiKey) {
   if (isEditorial) {
     // Editorial modes: use a narrative planner instead of dashboard planner; skip Stylist
     const planRaw = await callClaude(
-      buildEditorialPlannerPrompt(mode),
-      `User request: ${prompt}\n\nDATA CONTEXT:\n${dataContext}`,
+      buildEditorialPlannerPrompt(mode, dataContext),
+      `User request: ${prompt}`,
       apiKey, 2000
     );
     try { planSpec = JSON.parse(planRaw); }

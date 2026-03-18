@@ -29,9 +29,9 @@ export function createAppTheme(mode = "dark") {
       h5: { fontWeight: 800, letterSpacing: "-0.04em" },
       h6: { fontWeight: 700, letterSpacing: "-0.03em" },
       subtitle1: { fontWeight: 700 },
-      body1: { fontSize: 14 },
-      body2: { fontSize: 13 },
-      caption: { fontSize: 11, fontFamily: FONT },
+      body1: { fontSize: 17.5 },
+      body2: { fontSize: 16 },
+      caption: { fontSize: 14, fontFamily: FONT },
       button: { fontWeight: 700, textTransform: "none", fontFamily: FONT },
     },
     components: {
@@ -63,7 +63,7 @@ export function createAppTheme(mode = "dark") {
       },
       MuiChip: {
         styleOverrides: {
-          root: { fontSize: 11, fontWeight: 700, fontFamily: FONT },
+          root: { fontSize: 14, fontWeight: 700, fontFamily: FONT },
         },
       },
       MuiButton: {
@@ -93,7 +93,7 @@ export function createAppTheme(mode = "dark") {
           root: {
             "& .MuiOutlinedInput-root": {
               fontFamily: FONT,
-              fontSize: 14,
+              fontSize: 17.5,
               background: isDark ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.7)",
               "& fieldset": {
                 borderColor: isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.1)",
@@ -131,7 +131,7 @@ export function createAppTheme(mode = "dark") {
           tooltip: {
             background: isDark ? "#1e2235" : "#1e293b",
             fontFamily: FONT,
-            fontSize: 11,
+            fontSize: 14,
             fontWeight: 500,
             borderRadius: 6,
             padding: "5px 10px",
@@ -146,7 +146,7 @@ export function createAppTheme(mode = "dark") {
       },
       MuiMenuItem: {
         styleOverrides: {
-          root: { fontFamily: FONT, fontSize: 13 },
+          root: { fontFamily: FONT, fontSize: 16 },
         },
       },
     },

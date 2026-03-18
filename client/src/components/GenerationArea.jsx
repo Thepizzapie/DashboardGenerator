@@ -1,16 +1,14 @@
 import { useState, useRef, useEffect } from "react";
 import Box from "@mui/material/Box";
-import Tabs from "@mui/material/Tabs";
-import Tab from "@mui/material/Tab";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
-import Stack from "@mui/material/Stack";
 import Tooltip from "@mui/material/Tooltip";
-import Switch from "@mui/material/Switch";
-import FormControlLabel from "@mui/material/FormControlLabel";
+import Popover from "@mui/material/Popover";
+import IconButton from "@mui/material/IconButton";
+import Chip from "@mui/material/Chip";
 import Stepper from "@mui/material/Stepper";
 import Step from "@mui/material/Step";
 import StepLabel from "@mui/material/StepLabel";
@@ -20,39 +18,22 @@ import AccordionDetails from "@mui/material/AccordionDetails";
 import { useTheme, alpha } from "@mui/material/styles";
 import MuiCanvas from "./MuiCanvas";
 import EditPanel from "./EditPanel";
+import { MOCK_SOURCES } from "./Toolbox";
 
-// ── Viewport toggle ────────────────────────────────────────────────────────────
+// ── SVG Icons ──────────────────────────────────────────────────────────────────
 
-const VIEWPORTS = [
-  { key: "desktop", label: "🖥", title: "Desktop" },
-  { key: "tablet",  label: "⬜", title: "Tablet (768px)" },
-  { key: "mobile",  label: "📱", title: "Mobile (390px)" },
-];
+const ExamplesIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="0.5" fill="currentColor" strokeWidth="0"/>
+  </svg>
+);
+const PipelineIcon = ({ size = 14 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" stroke="none">
+    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+  </svg>
+);
 
-function ViewportToggle({ viewport, onChange }) {
-  return (
-    <Stack direction="row" spacing={0.5}>
-      {VIEWPORTS.map((v) => (
-        <Tooltip key={v.key} title={v.title} arrow>
-          <Box onClick={() => onChange(v.key)} sx={{
-            width: 28, height: 28, borderRadius: 1,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 14, cursor: "pointer", border: "1px solid",
-            borderColor: viewport === v.key ? "rgba(37,99,235,0.6)" : "divider",
-            bgcolor: viewport === v.key ? "rgba(37,99,235,0.12)" : "transparent",
-            boxShadow: viewport === v.key ? "0 0 10px rgba(37,99,235,0.2)" : "none",
-            "&:hover": { borderColor: "rgba(37,99,235,0.4)" },
-            transition: "all 0.15s",
-          }}>
-            {v.label}
-          </Box>
-        </Tooltip>
-      ))}
-    </Stack>
-  );
-}
-
-// ── Example prompts ────────────────────────────────────────────────────────────
+// ── Constants ──────────────────────────────────────────────────────────────────
 
 const EXAMPLE_PROMPTS = {
   html: [
@@ -100,14 +81,14 @@ const EXAMPLE_PROMPTS = {
     "Q1 revenue story — growth trend, top products, and gap to target",
     "Team performance snapshot — KPIs, highlights, and what's at risk",
     "Inventory health report — stock levels, reorder urgency, and turnover",
-    "The deal pipeline — stages, conversion rates, and projected close value",
+    "Salary and compensation deep-dive across all departments",
     "Engineering in numbers — tickets, velocity, and technical debt ratio",
   ],
   diagram: [
     "Multi-panel statistical figure: bar chart + scatter plot + line trend + distribution",
     "System architecture: microservices with API gateway, auth service, and database layer",
     "Data pipeline flowchart from ingestion through processing to visualization",
-    "Neural network architecture diagram with input, hidden, and output layers",
+    "Project portfolio resource network — employees, departments, projects, budget burn",
     "Sprint workflow: backlog → in progress → review → done with WIP counts",
     "Sales funnel diagram with conversion rates at each stage",
     "Comparative grouped bar chart: department performance across 4 quarters",
@@ -117,22 +98,22 @@ const EXAMPLE_PROMPTS = {
   ],
 };
 
-const MODE_HINT = {
-  html:        "Raw HTML + CSS component library",
-  mui:         "React + Material UI · sandboxed iframe",
-  charts:      "React + MUI + Recharts · sandboxed iframe",
-  infographic: "Editorial SVG infographic · NYT / Bloomberg style",
-  diagram:     "D3.js figures · Academic / research paper style",
+const MODE_LABEL = {
+  html:        "HTML",
+  mui:         "MUI",
+  charts:      "Charts",
+  infographic: "Infographic",
+  diagram:     "Diagram",
 };
 
 const PIPELINE_STEPS = [
-  { key: 'planning',   label: 'Planning'   },
-  { key: 'styling',    label: 'Styling'    },
-  { key: 'generating', label: 'Generating' },
-  { key: 'inspecting', label: 'Inspecting' },
-  { key: 'critiquing', label: 'Critiquing' },
-  { key: 'refining',   label: 'Refining'   },
-  { key: 'done',       label: 'Done'       },
+  { key: "planning",   label: "Planning"   },
+  { key: "styling",    label: "Styling"    },
+  { key: "generating", label: "Generating" },
+  { key: "inspecting", label: "Inspecting" },
+  { key: "critiquing", label: "Critiquing" },
+  { key: "refining",   label: "Refining"   },
+  { key: "done",       label: "Done"       },
 ];
 
 // ── Sarcastic loading messages ────────────────────────────────────────────────
@@ -152,7 +133,7 @@ const SINGLE_MESSAGES = [
 
 const PIPELINE_SARCASM = {
   planning:   ["Holding a meeting about the meeting…", "Drawing boxes on a whiteboard…", "Asking what success looks like…"],
-  styling:    ["Debating whether the accent is too blue…", "Picking fonts nobody asked for…", "Making it pop™…"],
+  styling:    ["Debating whether the accent is too blue…", "Picking fonts nobody asked for…", "Making it pop…"],
   generating: ["Actually doing the work now…", "This is the long part. Go get coffee.", "The model is in flow state, do not disturb…"],
   inspecting: ["Checking if anything is clipping…", "Squinting at the SVG viewBox…", "Finding all the things that fall off screen…", "Pixel-peeping so you don't have to…"],
   critiquing: ["Finding problems with its own work…", "Having an existential crisis about the layout…", "Grading its own homework…"],
@@ -160,185 +141,374 @@ const PIPELINE_SARCASM = {
   done:       ["Done. Finally."],
 };
 
+// ── Mode-specific empty state content ─────────────────────────────────────────
+
+const MODE_EMPTY = {
+  html: {
+    headline: "Build dashboards at the speed of thought.",
+    desc: "Describe what you want in plain English. Dashy generates a fully rendered HTML dashboard backed by real data — in seconds.",
+    steps: [
+      "Open the Data panel and drag sources into the prompt",
+      "Describe your dashboard in plain English",
+      "Press Generate (or Ctrl+Enter)",
+      "Refine with the Edit panel below",
+    ],
+    Illustration: () => (
+      <svg width="220" height="150" viewBox="0 0 220 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+        {/* Browser chrome */}
+        <rect x="1" y="1" width="218" height="148" rx="10" stroke="currentColor" strokeOpacity="0.15" strokeWidth="1.5"/>
+        <rect x="1" y="1" width="218" height="26" rx="10" fill="currentColor" fillOpacity="0.06"/>
+        <circle cx="18" cy="14" r="4" fill="currentColor" fillOpacity="0.18"/>
+        <circle cx="32" cy="14" r="4" fill="currentColor" fillOpacity="0.18"/>
+        <circle cx="46" cy="14" r="4" fill="currentColor" fillOpacity="0.18"/>
+        <rect x="64" y="8" width="100" height="12" rx="6" fill="currentColor" fillOpacity="0.07"/>
+        {/* 3 stat cards */}
+        {[0,1,2].map(i => (
+          <g key={i}>
+            <rect x={12 + i * 70} y="36" width="62" height="38" rx="5" fill="currentColor" fillOpacity="0.06" stroke="currentColor" strokeOpacity="0.12" strokeWidth="1"/>
+            <rect x={20 + i * 70} y="44" width="28" height="7" rx="2" fill="currentColor" fillOpacity="0.22"/>
+            <rect x={20 + i * 70} y="56" width="18" height="4" rx="1.5" fill="currentColor" fillOpacity="0.1"/>
+            <rect x={20 + i * 70} y="63" width="36" height="3" rx="1" fill="currentColor" fillOpacity="0.06"/>
+          </g>
+        ))}
+        {/* Table header */}
+        <rect x="12" y="84" width="196" height="12" rx="3" fill="currentColor" fillOpacity="0.08"/>
+        {/* Table rows */}
+        {[0,1,2,3].map(i => (
+          <g key={i}>
+            <rect x="12" y={102 + i * 13} width="196" height="10" rx="2" fill="currentColor" fillOpacity={i % 2 === 0 ? 0.04 : 0}/>
+            <rect x="18" y={104 + i * 13} width="44" height="5" rx="1.5" fill="currentColor" fillOpacity="0.1"/>
+            <rect x="80" y={104 + i * 13} width="30" height="5" rx="1.5" fill="currentColor" fillOpacity="0.07"/>
+            <rect x="140" y={104 + i * 13} width="22" height="5" rx="1.5" fill="currentColor" fillOpacity="0.07"/>
+            <rect x="178" y={103 + i * 13} width="20" height="7" rx="3" fill="currentColor" fillOpacity="0.12"/>
+          </g>
+        ))}
+      </svg>
+    ),
+  },
+  mui: {
+    headline: "Material UI dashboards, generated instantly.",
+    desc: "Describe what you need. Dashy generates a fully interactive React + MUI component tree with real data, tabs, and controls.",
+    steps: [
+      "Select data sources from the Data panel",
+      "Describe your MUI dashboard or view",
+      "Press Generate (or Ctrl+Enter)",
+      "Use Edit panel to adjust layout or theme",
+    ],
+    Illustration: () => (
+      <svg width="220" height="150" viewBox="0 0 220 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+        {/* Tab bar */}
+        {["Overview","Team","Budget"].map((_, i) => (
+          <rect key={i} x={12 + i * 52} y="8" width="46" height="18" rx="5"
+            fill="currentColor" fillOpacity={i === 0 ? 0.18 : 0.05}
+            stroke="currentColor" strokeOpacity={i === 0 ? 0.25 : 0.08} strokeWidth="1"/>
+        ))}
+        <rect x="12" y="34" width="1" height="110" rx="1" fill="currentColor" fillOpacity="0"/>
+        {/* Left card */}
+        <rect x="12" y="34" width="98" height="108" rx="7" fill="currentColor" fillOpacity="0.05" stroke="currentColor" strokeOpacity="0.12" strokeWidth="1"/>
+        <circle cx="38" cy="56" r="14" fill="currentColor" fillOpacity="0.1" stroke="currentColor" strokeOpacity="0.15" strokeWidth="1"/>
+        <rect x="58" y="50" width="40" height="7" rx="2" fill="currentColor" fillOpacity="0.18"/>
+        <rect x="58" y="62" width="26" height="4" rx="1.5" fill="currentColor" fillOpacity="0.1"/>
+        <rect x="20" y="82" width="82" height="3" rx="1" fill="currentColor" fillOpacity="0.08"/>
+        <rect x="20" y="90" width="60" height="3" rx="1" fill="currentColor" fillOpacity="0.06"/>
+        {/* Progress bars */}
+        {[0,1,2].map(i => (
+          <g key={i}>
+            <rect x="20" y={104 + i * 14} width="82" height="5" rx="2.5" fill="currentColor" fillOpacity="0.06"/>
+            <rect x="20" y={104 + i * 14} width={[55,38,70][i]} height="5" rx="2.5" fill="currentColor" fillOpacity="0.22"/>
+          </g>
+        ))}
+        {/* Right top card */}
+        <rect x="118" y="34" width="90" height="52" rx="7" fill="currentColor" fillOpacity="0.05" stroke="currentColor" strokeOpacity="0.12" strokeWidth="1"/>
+        <rect x="128" y="44" width="36" height="8" rx="2" fill="currentColor" fillOpacity="0.2"/>
+        <rect x="128" y="57" width="24" height="4" rx="1.5" fill="currentColor" fillOpacity="0.1"/>
+        <rect x="128" y="65" width="64" height="4" rx="1.5" fill="currentColor" fillOpacity="0.07"/>
+        {/* Right bottom card */}
+        <rect x="118" y="94" width="90" height="48" rx="7" fill="currentColor" fillOpacity="0.05" stroke="currentColor" strokeOpacity="0.12" strokeWidth="1"/>
+        {[0,1,2].map(i => (
+          <rect key={i} x="128" y={104 + i * 12} width={[64,50,56][i]} height="5" rx="1.5" fill="currentColor" fillOpacity="0.09"/>
+        ))}
+        <rect x="170" y="128" width="28" height="8" rx="4" fill="currentColor" fillOpacity="0.18"/>
+      </svg>
+    ),
+  },
+  charts: {
+    headline: "Interactive Recharts dashboards, on demand.",
+    desc: "Describe what you want to measure. Dashy generates a fully interactive chart dashboard with filters, tooltips, and real data.",
+    steps: [
+      "Drag data sources from the Data panel",
+      "Describe the charts and metrics you need",
+      "Press Generate (or Ctrl+Enter)",
+      "Switch chart types via the Edit panel",
+    ],
+    Illustration: () => (
+      <svg width="220" height="150" viewBox="0 0 220 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+        {/* Y axis */}
+        <line x1="28" y1="10" x2="28" y2="120" stroke="currentColor" strokeOpacity="0.15" strokeWidth="1.5"/>
+        {/* X axis */}
+        <line x1="28" y1="120" x2="210" y2="120" stroke="currentColor" strokeOpacity="0.15" strokeWidth="1.5"/>
+        {/* Gridlines */}
+        {[30,60,90].map(y => (
+          <line key={y} x1="28" y1={y} x2="210" y2={y} stroke="currentColor" strokeOpacity="0.06" strokeWidth="1" strokeDasharray="4 3"/>
+        ))}
+        {/* Bars */}
+        {[
+          { x: 36,  h: 64, o: 0.13 },
+          { x: 62,  h: 42, o: 0.10 },
+          { x: 88,  h: 80, o: 0.14 },
+          { x: 114, h: 30, o: 0.09 },
+          { x: 140, h: 95, o: 0.16 },
+          { x: 166, h: 55, o: 0.12 },
+          { x: 192, h: 70, o: 0.13 },
+        ].map((b, i) => (
+          <rect key={i} x={b.x} y={120 - b.h} width="18" height={b.h} rx="3"
+            fill="currentColor" fillOpacity={b.o} stroke="currentColor" strokeOpacity="0.18" strokeWidth="1"/>
+        ))}
+        {/* Line overlay */}
+        <polyline
+          points="45,76 71,92 97,54 123,102 149,34 175,74 201,58"
+          fill="none" stroke="currentColor" strokeOpacity="0.4" strokeWidth="2" strokeLinejoin="round"
+        />
+        {[45,71,97,123,149,175,201].map((x, i) => {
+          const ys = [76,92,54,102,34,74,58];
+          return (
+            <circle key={i} cx={x} cy={ys[i]} r="3.5"
+              fill="currentColor" fillOpacity="0.5"
+              stroke="currentColor" strokeOpacity="0.3" strokeWidth="1"/>
+          );
+        })}
+        {/* Legend */}
+        <rect x="36" y="134" width="10" height="6" rx="1.5" fill="currentColor" fillOpacity="0.15"/>
+        <rect x="50" y="136" width="30" height="3" rx="1" fill="currentColor" fillOpacity="0.1"/>
+        <circle cx="96" cy="137" r="3" fill="currentColor" fillOpacity="0.35"/>
+        <rect x="102" y="136" width="28" height="3" rx="1" fill="currentColor" fillOpacity="0.1"/>
+      </svg>
+    ),
+  },
+  infographic: {
+    headline: "Tell a story with your data.",
+    desc: "Describe what you want to visualize. Dashy generates an editorial-quality infographic in the style of NYT, Bloomberg, or Reuters.",
+    steps: [
+      "Add data sources from the Data panel for accuracy",
+      "Write a story prompt — what should the reader learn?",
+      "Press Generate — the 6-agent pipeline runs automatically",
+      "Export as HTML or screenshot",
+    ],
+    Illustration: () => (
+      <svg width="220" height="150" viewBox="0 0 220 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+        {/* Outer frame */}
+        <rect x="1" y="1" width="218" height="148" rx="8" stroke="currentColor" strokeOpacity="0.1" strokeWidth="1"/>
+        {/* Top rule */}
+        <rect x="12" y="12" width="196" height="2" rx="1" fill="currentColor" fillOpacity="0.2"/>
+        {/* Big headline */}
+        <rect x="12" y="20" width="140" height="10" rx="2" fill="currentColor" fillOpacity="0.22"/>
+        <rect x="12" y="34" width="100" height="6" rx="2" fill="currentColor" fillOpacity="0.12"/>
+        {/* Deck / subhead */}
+        <rect x="12" y="46" width="120" height="4" rx="1.5" fill="currentColor" fillOpacity="0.07"/>
+        <rect x="12" y="54" width="108" height="4" rx="1.5" fill="currentColor" fillOpacity="0.07"/>
+        {/* Divider rule */}
+        <line x1="12" y1="64" x2="208" y2="64" stroke="currentColor" strokeOpacity="0.1" strokeWidth="1"/>
+        {/* Left column — bar chart */}
+        <rect x="12" y="72" width="96" height="68" rx="4" fill="currentColor" fillOpacity="0.04" stroke="currentColor" strokeOpacity="0.08" strokeWidth="1"/>
+        {[0,1,2,3,4].map(i => (
+          <g key={i}>
+            <rect x="18" y={78 + i * 12} width={[68,52,80,44,72][i]} height="7" rx="2" fill="currentColor" fillOpacity="0.12"/>
+          </g>
+        ))}
+        {/* Pull quote box */}
+        <rect x="116" y="72" width="92" height="34" rx="4" fill="currentColor" fillOpacity="0.07" stroke="currentColor" strokeOpacity="0.1" strokeWidth="1"/>
+        <rect x="124" y="80" width="2" height="18" rx="1" fill="currentColor" fillOpacity="0.3"/>
+        <rect x="130" y="80" width="68" height="4" rx="1" fill="currentColor" fillOpacity="0.12"/>
+        <rect x="130" y="88" width="56" height="4" rx="1" fill="currentColor" fillOpacity="0.1"/>
+        <rect x="130" y="96" width="62" height="4" rx="1" fill="currentColor" fillOpacity="0.08"/>
+        {/* Right column — text */}
+        {[0,1,2].map(i => (
+          <rect key={i} x="116" y={114 + i * 10} width={[90,72,82][i]} height="4" rx="1" fill="currentColor" fillOpacity="0.07"/>
+        ))}
+        {/* Bottom rule */}
+        <rect x="12" y="144" width="196" height="1" rx="0.5" fill="currentColor" fillOpacity="0.12"/>
+      </svg>
+    ),
+  },
+  diagram: {
+    headline: "Turn complexity into clarity.",
+    desc: "Describe the system or dataset. Dashy generates a publication-quality D3.js figure with real data from your sources.",
+    steps: [
+      "Select data sources from the Data panel",
+      "Describe the network, flow, or figure you want",
+      "Press Generate — the 6-agent pipeline runs automatically",
+      "Export as HTML for embedding",
+    ],
+    Illustration: () => (
+      <svg width="220" height="150" viewBox="0 0 220 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+        {/* Edges */}
+        <line x1="55" y1="75" x2="100" y2="40" stroke="currentColor" strokeOpacity="0.18" strokeWidth="1.5"/>
+        <line x1="55" y1="75" x2="100" y2="110" stroke="currentColor" strokeOpacity="0.18" strokeWidth="1.5"/>
+        <line x1="100" y1="40" x2="155" y2="30" stroke="currentColor" strokeOpacity="0.15" strokeWidth="1.5"/>
+        <line x1="100" y1="40" x2="155" y2="75" stroke="currentColor" strokeOpacity="0.15" strokeWidth="1.5"/>
+        <line x1="100" y1="110" x2="155" y2="75" stroke="currentColor" strokeOpacity="0.15" strokeWidth="1.5"/>
+        <line x1="100" y1="110" x2="155" y2="120" stroke="currentColor" strokeOpacity="0.15" strokeWidth="1.5"/>
+        <line x1="155" y1="30" x2="155" y2="75" stroke="currentColor" strokeOpacity="0.1" strokeWidth="1" strokeDasharray="4 3"/>
+        <line x1="155" y1="75" x2="155" y2="120" stroke="currentColor" strokeOpacity="0.1" strokeWidth="1" strokeDasharray="4 3"/>
+        {/* Nodes */}
+        <circle cx="55" cy="75" r="20" fill="currentColor" fillOpacity="0.09" stroke="currentColor" strokeOpacity="0.25" strokeWidth="1.5"/>
+        <circle cx="55" cy="75" r="8" fill="currentColor" fillOpacity="0.2"/>
+        <circle cx="100" cy="40" r="14" fill="currentColor" fillOpacity="0.07" stroke="currentColor" strokeOpacity="0.2" strokeWidth="1.5"/>
+        <circle cx="100" cy="110" r="14" fill="currentColor" fillOpacity="0.07" stroke="currentColor" strokeOpacity="0.2" strokeWidth="1.5"/>
+        <circle cx="155" cy="30" r="11" fill="currentColor" fillOpacity="0.07" stroke="currentColor" strokeOpacity="0.18" strokeWidth="1.5"/>
+        <circle cx="155" cy="75" r="13" fill="currentColor" fillOpacity="0.09" stroke="currentColor" strokeOpacity="0.22" strokeWidth="1.5"/>
+        <circle cx="155" cy="120" r="11" fill="currentColor" fillOpacity="0.07" stroke="currentColor" strokeOpacity="0.18" strokeWidth="1.5"/>
+        {/* Node labels */}
+        <rect x="40" y="72" width="30" height="5" rx="1.5" fill="currentColor" fillOpacity="0.18"/>
+        <rect x="86" y="37" width="28" height="5" rx="1.5" fill="currentColor" fillOpacity="0.14"/>
+        <rect x="86" y="107" width="28" height="5" rx="1.5" fill="currentColor" fillOpacity="0.14"/>
+      </svg>
+    ),
+  },
+};
+
+// ── Sub-components ─────────────────────────────────────────────────────────────
+
 function SarcasticLoader({ pipelineStep }) {
   const [idx, setIdx] = useState(0);
   const pool = pipelineStep ? (PIPELINE_SARCASM[pipelineStep] ?? SINGLE_MESSAGES) : SINGLE_MESSAGES;
-
   useEffect(() => {
     setIdx(0);
     const t = setInterval(() => setIdx(i => (i + 1) % pool.length), 3200);
     return () => clearInterval(t);
   }, [pipelineStep, pool.length]);
-
   return (
-    <Typography
-      key={pool[idx]}
-      variant="body2"
-      sx={{
-        color: "text.secondary", fontStyle: "italic", fontSize: 13,
-        animation: "fadeQuip 0.4s ease",
-        "@keyframes fadeQuip": { from: { opacity: 0, transform: "translateY(4px)" }, to: { opacity: 1, transform: "translateY(0)" } },
-      }}
-    >
+    <Typography key={pool[idx]} variant="body2" sx={{
+      color: "text.secondary", fontStyle: "italic", fontSize: 16,
+      animation: "fadeQuip 0.4s ease",
+      "@keyframes fadeQuip": { from: { opacity: 0, transform: "translateY(4px)" }, to: { opacity: 1, transform: "none" } },
+    }}>
       {pool[idx]}
     </Typography>
   );
 }
 
-// ── Animated empty state ───────────────────────────────────────────────────────
-
-function EmptyState() {
-  const theme = useTheme();
-  const isDark = theme.palette.mode === "dark";
-
-  const headlineGradient = isDark
-    ? "linear-gradient(135deg, #e2e8f0 20%, #60a5fa 65%, #93c5fd 100%)"
-    : "linear-gradient(135deg, #1e40af 20%, #2563eb 60%, #0ea5e9 100%)";
-
-  const cardBg    = isDark ? "rgba(255,255,255,0.03)" : "rgba(37,99,235,0.04)";
-  const cardBorder= isDark ? "rgba(255,255,255,0.07)" : "rgba(37,99,235,0.12)";
-  const cardHover = isDark ? "rgba(37,99,235,0.25)"   : "rgba(37,99,235,0.25)";
-  const subtext   = isDark ? alpha("#fff", 0.38)       : alpha(theme.palette.text.primary, 0.55);
-  const hint      = isDark ? alpha("#fff", 0.18)       : alpha(theme.palette.text.primary, 0.35);
-
-  return (
-    <Box sx={{
-      flex: 1, display: "flex", flexDirection: "column",
-      alignItems: "center", justifyContent: "center",
-      px: 4, py: 6, gap: 5,
-      position: "relative", overflow: "hidden",
-    }}>
-
-      {/* Floating blobs */}
-      <Box sx={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden" }}>
-        <Box sx={{
-          position: "absolute", top: "10%", left: "15%",
-          width: 320, height: 320, borderRadius: "50%",
-          background: isDark
-            ? "radial-gradient(circle, rgba(37,99,235,0.12) 0%, transparent 70%)"
-            : "radial-gradient(circle, rgba(37,99,235,0.08) 0%, transparent 70%)",
-          animation: "blob-float-1 9s ease-in-out infinite",
-        }} />
-        <Box sx={{
-          position: "absolute", top: "30%", right: "10%",
-          width: 260, height: 260, borderRadius: "50%",
-          background: isDark
-            ? "radial-gradient(circle, rgba(14,165,233,0.10) 0%, transparent 70%)"
-            : "radial-gradient(circle, rgba(14,165,233,0.07) 0%, transparent 70%)",
-          animation: "blob-float-2 11s ease-in-out infinite",
-        }} />
-        <Box sx={{
-          position: "absolute", bottom: "10%", left: "40%",
-          width: 200, height: 200, borderRadius: "50%",
-          background: isDark
-            ? "radial-gradient(circle, rgba(236,72,153,0.07) 0%, transparent 70%)"
-            : "radial-gradient(circle, rgba(37,99,235,0.05) 0%, transparent 70%)",
-          animation: "blob-float-3 13s ease-in-out infinite",
-        }} />
-      </Box>
-
-      {/* Headline */}
-      <Box sx={{ textAlign: "center", maxWidth: 580, position: "relative" }}>
-        <Typography
-          variant="h5"
-          sx={{
-            fontSize: { xs: 26, md: 34 },
-            fontWeight: 900,
-            letterSpacing: "-0.04em",
-            lineHeight: 1.15,
-            mb: 2,
-            background: headlineGradient,
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
-          }}
-        >
-          Build dashboards at the<br />speed of thought.
-        </Typography>
-        <Typography
-          variant="body2"
-          sx={{ color: subtext, lineHeight: 1.85, maxWidth: 400, mx: "auto", fontSize: 14 }}
-        >
-          Describe what you want in plain English. Dashy generates a
-          fully rendered UI backed by real data — in seconds.
-        </Typography>
-      </Box>
-
-      {/* Stat cards */}
-      <Stack direction="row" spacing={1.5} sx={{ width: "100%", maxWidth: 620, position: "relative" }}>
-        {[
-          { icon: "⚡", value: "3",  label: "Canvas modes",      detail: "HTML · MUI · Recharts" },
-          { icon: "🗄️", value: "8",  label: "Built-in datasets", detail: "Ready to use, zero setup" },
-          { icon: "🔌", value: "∞",  label: "Your own data",     detail: "API · CSV · JSON · DB · Webhook" },
-        ].map((s) => (
-          <Box key={s.label} sx={{
-            flex: 1,
-            background: cardBg,
-            backdropFilter: "blur(12px)",
-            border: "1px solid",
-            borderColor: cardBorder,
-            borderRadius: 3,
-            p: 2.5,
-            display: "flex", flexDirection: "column", gap: 0.5,
-            transition: "border-color 0.2s, box-shadow 0.2s",
-            "&:hover": {
-              borderColor: cardHover,
-              boxShadow: isDark
-                ? "0 0 28px rgba(37,99,235,0.12)"
-                : "0 4px 28px rgba(37,99,235,0.1)",
-            },
-          }}>
-            <Typography sx={{ fontSize: 20, lineHeight: 1, mb: 0.5 }}>{s.icon}</Typography>
-            <Typography sx={{
-              fontSize: 30, fontWeight: 900, letterSpacing: "-0.05em", lineHeight: 1,
-              background: "linear-gradient(135deg, #2563eb, #0ea5e9)",
-              WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
-            }}>
-              {s.value}
-            </Typography>
-            <Typography variant="caption" sx={{
-              fontWeight: 800, color: "text.primary", textTransform: "uppercase",
-              letterSpacing: "0.06em", fontSize: 10,
-            }}>
-              {s.label}
-            </Typography>
-            <Typography variant="caption" sx={{ color: "text.secondary", lineHeight: 1.4, mt: 0.25, fontSize: 11 }}>
-              {s.detail}
-            </Typography>
-          </Box>
-        ))}
-      </Stack>
-
-      <Typography variant="caption" sx={{ color: hint, position: "relative", fontSize: 12 }}>
-        Pick an example prompt below or type your own
-      </Typography>
-    </Box>
-  );
-}
-
-// ── Pipeline progress stepper ──────────────────────────────────────────────────
-
 function PipelineProgress({ pipelineStep }) {
   const activeIndex = PIPELINE_STEPS.findIndex(s => s.key === pipelineStep);
   return (
-    <Box sx={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:3, px:4 }}>
-      <Stepper activeStep={activeIndex} alternativeLabel sx={{ width:"100%", maxWidth:540 }}>
-        {PIPELINE_STEPS.slice(0,-1).map((s) => (
+    <Box sx={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3, px: 4 }}>
+      <Stepper activeStep={activeIndex} alternativeLabel sx={{ width: "100%", maxWidth: 560 }}>
+        {PIPELINE_STEPS.slice(0, -1).map((s) => (
           <Step key={s.key}><StepLabel>{s.label}</StepLabel></Step>
         ))}
       </Stepper>
-      {pipelineStep === 'done'
-        ? <Typography variant="body2" sx={{ color:"text.secondary" }}>Complete</Typography>
+      {pipelineStep === "done"
+        ? <Typography variant="body2" sx={{ color: "text.secondary" }}>Complete</Typography>
         : <SarcasticLoader pipelineStep={pipelineStep} />
       }
     </Box>
   );
 }
 
+function EmptyState({ mode }) {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === "dark";
+  const content = MODE_EMPTY[mode] ?? MODE_EMPTY.html;
+  const { Illustration } = content;
+
+  return (
+    <Box sx={{
+      flex: 1, display: "flex", flexDirection: "column",
+      alignItems: "center", justifyContent: "center",
+      px: 4, gap: 0, position: "relative", overflow: "hidden",
+    }}>
+      {/* Background blobs */}
+      <Box sx={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden" }}>
+        {[
+          { top: "8%",   left: "15%",  w: 280, color: "rgba(37,99,235,0.08)",  anim: "8s"  },
+          { top: "40%",  right: "10%", w: 220, color: "rgba(14,165,233,0.06)", anim: "11s" },
+          { bottom: "10%", left: "45%", w: 180, color: "rgba(236,72,153,0.04)", anim: "14s" },
+        ].map((b, i) => (
+          <Box key={i} sx={{
+            position: "absolute", ...b,
+            width: b.w, height: b.w, borderRadius: "50%",
+            background: `radial-gradient(circle, ${b.color} 0%, transparent 70%)`,
+            animation: `emptyBlob${i} ${b.anim} ease-in-out infinite`,
+            [`@keyframes emptyBlob${i}`]: {
+              "0%,100%": { transform: "translate(0,0) scale(1)" },
+              "50%": { transform: `translate(${i%2===0?12:-8}px,${i===1?-10:8}px) scale(1.04)` },
+            },
+          }} />
+        ))}
+      </Box>
+
+      {/* Illustration */}
+      <Box sx={{
+        color: isDark ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.25)",
+        mb: 3, position: "relative",
+        filter: "drop-shadow(0 4px 24px rgba(37,99,235,0.15))",
+      }}>
+        <Illustration />
+      </Box>
+
+      {/* Headline + description */}
+      <Box sx={{ textAlign: "center", maxWidth: 480, position: "relative", mb: 3.5 }}>
+        <Typography sx={{
+          fontSize: { xs: 27, md: 34 }, fontWeight: 900,
+          letterSpacing: "-0.04em", lineHeight: 1.2, mb: 1.25,
+          background: isDark
+            ? "linear-gradient(135deg, #e2e8f0 20%, #60a5fa 65%, #93c5fd 100%)"
+            : "linear-gradient(135deg, #1e40af 20%, #2563eb 60%, #0ea5e9 100%)",
+          WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
+        }}>
+          {content.headline}
+        </Typography>
+        <Typography sx={{
+          color: isDark ? alpha("#fff", 0.38) : alpha(theme.palette.text.primary, 0.52),
+          lineHeight: 1.75, fontSize: 17,
+        }}>
+          {content.desc}
+        </Typography>
+      </Box>
+
+      {/* How-to steps */}
+      <Box sx={{
+        display: "flex", flexDirection: "column", gap: 0.75,
+        maxWidth: 340, width: "100%", position: "relative",
+      }}>
+        {content.steps.map((step, i) => (
+          <Box key={i} sx={{ display: "flex", alignItems: "flex-start", gap: 1.25 }}>
+            <Box sx={{
+              width: 20, height: 20, borderRadius: "50%", flexShrink: 0,
+              border: "1.5px solid",
+              borderColor: isDark ? "rgba(37,99,235,0.35)" : "rgba(37,99,235,0.3)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              mt: "1px",
+            }}>
+              <Typography sx={{ fontSize: 12.5, fontWeight: 800, color: isDark ? "rgba(96,165,250,0.8)" : "rgba(37,99,235,0.7)", lineHeight: 1 }}>
+                {i + 1}
+              </Typography>
+            </Box>
+            <Typography sx={{
+              fontSize: 15.5, lineHeight: 1.55,
+              color: isDark ? alpha("#fff", 0.32) : alpha(theme.palette.text.primary, 0.45),
+            }}>
+              {step}
+            </Typography>
+          </Box>
+        ))}
+      </Box>
+    </Box>
+  );
+}
+
 // ── Main component ─────────────────────────────────────────────────────────────
 
-export default function GenerationArea({ mode, onModeChange, onGenerate, onApplyEdit, output, isLoading, isApplying, error, viewport, onViewportChange, showToast, pipelineMode, onPipelineModeChange, pipelineStep, pipelineOutput }) {
+export default function GenerationArea({
+  mode, onGenerate, onApplyEdit,
+  output, isLoading, isApplying, error,
+  viewport, showToast,
+  pipelineStep, pipelineOutput,
+  selectedSources = [], onSourceDrop, onSourceRemove,
+}) {
   const [prompt, setPrompt] = useState("");
+  const [examplesAnchor, setExamplesAnchor] = useState(null);
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
   const textareaRef = useRef(null);
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
@@ -351,213 +521,198 @@ export default function GenerationArea({ mode, onModeChange, onGenerate, onApply
     prevLoadingRef.current = isLoading;
   });
 
-  function handleChipClick(chip) { setPrompt(chip); textareaRef.current?.focus(); }
-  function handleSubmit(e) { e.preventDefault(); if (!prompt.trim() || isLoading) return; onGenerate(prompt.trim()); }
+  function handleSubmit(e) {
+    e.preventDefault();
+    if (!prompt.trim() || isLoading) return;
+    onGenerate(prompt.trim());
+  }
+
+  function handleDragOver(e) {
+    const hasSource = e.dataTransfer.types.includes("application/dashy-source");
+    const hasComp   = e.dataTransfer.types.includes("application/dashy-component");
+    if (hasSource || hasComp) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "copy";
+      setIsDraggingOver(true);
+    }
+  }
+
+  function handleDragLeave(e) {
+    if (!e.currentTarget.contains(e.relatedTarget)) {
+      setIsDraggingOver(false);
+    }
+  }
+
+  function handleDrop(e) {
+    e.preventDefault();
+    setIsDraggingOver(false);
+    // Data source → add as context chip
+    const sourceRaw = e.dataTransfer.getData("application/dashy-source");
+    if (sourceRaw) {
+      try {
+        const data = JSON.parse(sourceRaw);
+        if (data?.id) onSourceDrop?.(data.id);
+      } catch (_) {}
+      return;
+    }
+    // Component → append to prompt text
+    const compRaw = e.dataTransfer.getData("application/dashy-component");
+    if (compRaw) {
+      try {
+        const data = JSON.parse(compRaw);
+        if (data?.label) {
+          setPrompt(p => p ? `${p}, ${data.label}` : data.label);
+          textareaRef.current?.focus();
+        }
+      } catch (_) {}
+    }
+  }
 
   const examples = EXAMPLE_PROMPTS[mode] ?? EXAMPLE_PROMPTS.html;
-  const showViewport = (mode === "mui" || mode === "charts" || mode === "infographic" || mode === "diagram") && output;
-
-  const panelBg    = isDark ? "rgba(26,29,35,0.95)"  : "rgba(244,246,255,0.9)";
-  const toolbarBg  = isDark ? "rgba(26,29,35,0.98)"  : "rgba(240,243,255,0.95)";
-  const chipActive = isDark ? "rgba(37,99,235,0.14)" : "rgba(37,99,235,0.10)";
-  const chipBorder = isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.09)";
-  const chipText   = isDark ? "rgba(255,255,255,0.38)" : alpha(theme.palette.text.primary, 0.55);
+  const promptBg  = isDark ? "rgba(21,24,30,0.98)"  : "rgba(248,250,255,0.98)";
+  const chipBorder = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)";
+  const chipText   = isDark ? "rgba(255,255,255,0.45)" : alpha(theme.palette.text.primary, 0.6);
 
   return (
     <Box sx={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", minWidth: 0 }}>
 
-      {/* ── Mode tabs ──────────────────────────────────────────────────────── */}
-      <Box sx={{
-        borderBottom: "1px solid",
-        borderColor: "divider",
-        bgcolor: panelBg,
-        backdropFilter: "blur(16px)",
-        px: 2,
-        display: "flex", alignItems: "center", gap: 2,
-      }}>
-        <Tabs
-          value={mode}
-          onChange={(_, v) => onModeChange(v)}
-          sx={{
-            minHeight: 50,
-            "& .MuiTabs-indicator": { display: "none" },
-            "& .MuiTab-root": {
-              minHeight: 34,
-              my: "auto",
-              px: 2,
-              borderRadius: 5,
-              fontSize: 12.5,
-              fontWeight: 700,
-              color: "text.secondary",
-              letterSpacing: "0.01em",
-              transition: "all 0.2s",
-              "&:hover": {
-                color: "text.primary",
-                bgcolor: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)",
-              },
-              "&.Mui-selected": {
-                color: "#fff",
-                background: "linear-gradient(135deg, #2563eb, #0ea5e9)",
-                boxShadow: "0 2px 16px rgba(37,99,235,0.35)",
-              },
-            },
-          }}
-        >
-          <Tab value="html" label="HTML Canvas" />
-          <Tab value="mui" label="MUI Canvas" />
-          <Tab value="charts" label={
-            <Stack direction="row" alignItems="center" spacing={0.75}>
-              <span>Charts Canvas</span>
-              <Box sx={{
-                px: 0.75, py: 0.1, borderRadius: 3,
-                background: "linear-gradient(135deg, #2563eb, #0ea5e9)",
-                fontSize: 9, fontWeight: 800, color: "#fff",
-                letterSpacing: "0.05em", lineHeight: "16px",
-              }}>
-                NEW
-              </Box>
-            </Stack>
-          } />
-          <Tab value="infographic" label={
-            <Stack direction="row" alignItems="center" spacing={0.75}>
-              <span>Infographic</span>
-              <Box sx={{
-                px: 0.75, py: 0.1, borderRadius: 3,
-                background: "linear-gradient(135deg, #ec4899, #f59e0b)",
-                fontSize: 9, fontWeight: 800, color: "#fff",
-                letterSpacing: "0.05em", lineHeight: "16px",
-              }}>
-                NEW
-              </Box>
-            </Stack>
-          } />
-          <Tab value="diagram" label={
-            <Stack direction="row" alignItems="center" spacing={0.75}>
-              <span>Diagram</span>
-              <Box sx={{
-                px: 0.75, py: 0.1, borderRadius: 3,
-                background: "linear-gradient(135deg, #059669, #0891b2)",
-                fontSize: 9, fontWeight: 800, color: "#fff",
-                letterSpacing: "0.05em", lineHeight: "16px",
-              }}>
-                NEW
-              </Box>
-            </Stack>
-          } />
-        </Tabs>
-        <Typography variant="caption" sx={{
-          ml: "auto", color: "text.disabled",
-          display: { xs: "none", md: "block" },
-          fontSize: 11, letterSpacing: "0.01em",
-        }}>
-          {MODE_HINT[mode]}
-        </Typography>
-        <Box sx={{ display:"flex", alignItems:"center", gap:0.5, ml:1 }} onClick={e => e.stopPropagation()}>
-          <FormControlLabel
-            control={<Switch size="small" checked={pipelineMode} onChange={e => onPipelineModeChange(e.target.checked)} disabled={isLoading} />}
-            label={
-              <Box sx={{ display:"flex", alignItems:"center", gap:0.75 }}>
-                <Typography variant="caption" sx={{ fontWeight:700, fontSize:11, color: pipelineMode ? "primary.light" : "text.disabled" }}>
-                  Pipeline
-                </Typography>
-                {pipelineMode && (
-                  <Box sx={{ px:0.75, py:0.1, borderRadius:3, background:"linear-gradient(135deg,#2563eb,#ec4899)", fontSize:9, fontWeight:800, color:"#fff", letterSpacing:"0.05em", lineHeight:"16px" }}>
-                    5-AGENT
-                  </Box>
-                )}
-              </Box>
-            }
-            labelPlacement="end" sx={{ m:0 }}
-          />
-        </Box>
-      </Box>
+      {/* ── Prompt row ─────────────────────────────────────────────────────── */}
+      <Box
+        component="form"
+        onSubmit={handleSubmit}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        sx={{
+          bgcolor: isDraggingOver
+            ? isDark ? "rgba(37,99,235,0.1)" : "rgba(37,99,235,0.05)"
+            : promptBg,
+          backdropFilter: "blur(16px)",
+          borderBottom: "1px solid",
+          borderColor: isDraggingOver ? "rgba(37,99,235,0.4)" : "divider",
+          px: 1.5, pt: 1.25, pb: selectedSources.length > 0 ? 0.75 : 1.25,
+          display: "flex", flexDirection: "column", gap: 0.75, flexShrink: 0,
+          transition: "border-color 0.15s, background 0.15s",
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "flex-end", gap: 1 }}>
+          {/* Examples popover button */}
+          <Tooltip title="Example prompts" arrow>
+            <IconButton
+              size="small"
+              onClick={(e) => setExamplesAnchor(e.currentTarget)}
+              sx={{
+                width: 34, height: 34, borderRadius: 2, border: "1px solid",
+                borderColor: examplesAnchor ? "rgba(37,99,235,0.5)" : "divider",
+                bgcolor: examplesAnchor ? "rgba(37,99,235,0.08)" : "transparent",
+                color: examplesAnchor ? "primary.light" : "text.disabled",
+                flexShrink: 0, mb: "1px",
+                "&:hover": { borderColor: "rgba(37,99,235,0.35)", color: "text.secondary" },
+              }}
+            >
+              <ExamplesIcon />
+            </IconButton>
+          </Tooltip>
 
-      {/* ── Prompt panel ───────────────────────────────────────────────────── */}
-      <Box component="form" onSubmit={handleSubmit} sx={{
-        bgcolor: panelBg,
-        backdropFilter: "blur(16px)",
-        borderBottom: "1px solid",
-        borderColor: "divider",
-        p: 2, display: "flex", flexDirection: "column", gap: 1.5, flexShrink: 0,
-      }}>
-        {/* Example prompt chips */}
-        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.6 }}>
-          {examples.map((chip) => {
-            const isActive = prompt === chip;
-            return (
-              <Box
-                key={chip}
-                onClick={() => handleChipClick(chip)}
-                sx={{
-                  px: 1.25, py: 0.4, borderRadius: 10,
-                  fontSize: 11.5, fontWeight: 500,
-                  cursor: "pointer", border: "1px solid",
-                  borderColor: isActive ? "rgba(37,99,235,0.55)" : chipBorder,
-                  color: isActive ? "#60a5fa" : chipText,
-                  bgcolor: isActive ? chipActive : "transparent",
-                  boxShadow: isActive ? "0 0 12px rgba(37,99,235,0.12)" : "none",
-                  transition: "all 0.15s",
-                  "&:hover": {
-                    borderColor: "rgba(37,99,235,0.35)",
-                    color: "text.primary",
-                    bgcolor: isDark ? "rgba(37,99,235,0.06)" : "rgba(37,99,235,0.06)",
-                  },
-                  fontFamily: '"Plus Jakarta Sans", sans-serif',
-                }}
-              >
-                {chip}
-              </Box>
-            );
-          })}
-        </Box>
+          <Popover
+            open={Boolean(examplesAnchor)}
+            anchorEl={examplesAnchor}
+            onClose={() => setExamplesAnchor(null)}
+            anchorOrigin={{ vertical: "top", horizontal: "left" }}
+            transformOrigin={{ vertical: "bottom", horizontal: "left" }}
+            slotProps={{ paper: {
+              sx: {
+                mt: -1, p: 1.5, maxWidth: 480, width: "90vw",
+                background: isDark ? "#1e2330" : "#fff",
+                border: "1px solid", borderColor: "divider",
+                borderRadius: 3, boxShadow: "0 16px 48px rgba(0,0,0,0.35)",
+              }
+            }}}
+          >
+            <Typography variant="caption" sx={{ fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", fontSize: 12.5, color: "text.disabled", display: "block", mb: 1 }}>
+              {MODE_LABEL[mode]} examples
+            </Typography>
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.6 }}>
+              {examples.map((chip) => (
+                <Box
+                  key={chip}
+                  onClick={() => { setPrompt(chip); setExamplesAnchor(null); textareaRef.current?.focus(); }}
+                  sx={{
+                    px: 1.25, py: 0.45, borderRadius: 10,
+                    fontSize: 14.5, fontWeight: 500, cursor: "pointer",
+                    border: "1px solid", borderColor: chipBorder,
+                    color: chipText, transition: "all 0.13s",
+                    "&:hover": {
+                      borderColor: "rgba(37,99,235,0.4)",
+                      color: "text.primary",
+                      bgcolor: "rgba(37,99,235,0.06)",
+                    },
+                    fontFamily: '"Plus Jakarta Sans", sans-serif',
+                  }}
+                >
+                  {chip}
+                </Box>
+              ))}
+            </Box>
+          </Popover>
 
-        {/* Input row */}
-        <Box sx={{ display: "flex", gap: 1.5, alignItems: "flex-end" }}>
+          {/* Prompt textarea */}
           <TextField
             inputRef={textareaRef}
-            fullWidth multiline rows={2}
+            fullWidth multiline
+            minRows={1} maxRows={5}
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Describe the dashboard you want to generate…"
+            placeholder={
+              isDraggingOver
+                ? "Drop to add to prompt…"
+                : `Describe the ${MODE_LABEL[mode].toLowerCase()} you want… (Ctrl+Enter to generate)`
+            }
             size="small"
             disabled={isLoading}
             onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSubmit(e); }}
+            sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2.5 } }}
           />
+
+          {/* Generate button */}
           <Button
             type="submit"
             variant="contained"
             disabled={!prompt.trim() || isLoading}
-            sx={{ height: 56, minWidth: 130, flexShrink: 0, fontSize: 13.5 }}
-            startIcon={isLoading ? <CircularProgress size={14} color="inherit" /> : null}
+            sx={{ height: 36, minWidth: 110, flexShrink: 0, fontSize: 16, borderRadius: 2.5, mb: "1px" }}
+            startIcon={isLoading ? <CircularProgress size={12} color="inherit" /> : <PipelineIcon size={12} />}
           >
-            {isLoading ? "Generating…" : "✦ Generate"}
+            {isLoading ? "Working…" : "Generate"}
           </Button>
         </Box>
 
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <Typography variant="caption" sx={{ color: "text.disabled", fontSize: 10.5 }}>
-            Ctrl / ⌘ + Enter to generate
-          </Typography>
-        </Box>
-      </Box>
-
-      {/* ── Canvas toolbar ─────────────────────────────────────────────────── */}
-      <Box sx={{
-        px: 2, py: 0.75, flexShrink: 0,
-        bgcolor: toolbarBg,
-        borderBottom: "1px solid",
-        borderColor: "divider",
-        display: "flex", alignItems: "center",
-      }}>
-        <Typography variant="caption" sx={{
-          fontWeight: 700, textTransform: "uppercase",
-          letterSpacing: "0.1em", color: "text.disabled", fontSize: 10,
-        }}>
-          Render Canvas
-        </Typography>
-        {(showViewport || (output && mode === "html")) && (
-          <Box sx={{ ml: "auto" }}>
-            <ViewportToggle viewport={viewport} onChange={onViewportChange} />
+        {/* Selected source chips */}
+        {selectedSources.length > 0 && (
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, pb: 0.5, pl: "42px" }}>
+            {selectedSources.map(id => {
+              const source = MOCK_SOURCES.find(s => s.id === id);
+              if (!source) return null;
+              return (
+                <Chip
+                  key={id}
+                  label={source.label}
+                  size="small"
+                  onDelete={() => onSourceRemove?.(id)}
+                  icon={<Box sx={{ display: "flex", color: "inherit", opacity: 0.7, ml: "4px !important" }}><source.Icon /></Box>}
+                  sx={{
+                    height: 26, fontSize: 14, fontWeight: 600,
+                    bgcolor: isDark ? "rgba(37,99,235,0.15)" : "rgba(37,99,235,0.08)",
+                    color: isDark ? "rgba(147,197,253,0.9)" : "rgba(29,78,216,0.85)",
+                    border: "1px solid rgba(37,99,235,0.25)",
+                    "& .MuiChip-deleteIcon": { fontSize: 16, color: "inherit", opacity: 0.55, "&:hover": { opacity: 1 } },
+                    "& .MuiChip-icon": { color: "inherit" },
+                  }}
+                />
+              );
+            })}
+            <Typography variant="caption" sx={{ color: "text.disabled", fontSize: 12.5, alignSelf: "center", ml: 0.5 }}>
+              context
+            </Typography>
           </Box>
         )}
       </Box>
@@ -566,25 +721,26 @@ export default function GenerationArea({ mode, onModeChange, onGenerate, onApply
       <Box sx={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column", minHeight: 0 }}>
         {(mode === "mui" || mode === "charts" || mode === "infographic" || mode === "diagram") ? (
           <>
+            {!output && !isLoading && !error && <EmptyState mode={mode} />}
             {isLoading && pipelineStep && (
-              <Box sx={{ p:2, borderBottom:"1px solid", borderColor:"divider" }}>
+              <Box sx={{ p: 2, borderBottom: "1px solid", borderColor: "divider" }}>
                 <PipelineProgress pipelineStep={pipelineStep} />
               </Box>
             )}
-            <MuiCanvas html={output} isLoading={isLoading} error={error} viewport={viewport} />
+            {(output || isLoading || error) && (
+              <MuiCanvas html={output} isLoading={isLoading} error={error} viewport={viewport} />
+            )}
           </>
         ) : (
           <Box sx={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column" }}>
-            {!output && !isLoading && !error && <EmptyState />}
+            {!output && !isLoading && !error && <EmptyState mode={mode} />}
             {isLoading && (
-              pipelineStep ? (
-                <PipelineProgress pipelineStep={pipelineStep} />
-              ) : (
-                <Box sx={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:2 }}>
-                  <CircularProgress size={36} sx={{ color:"#2563eb" }} thickness={3.5} />
-                  <SarcasticLoader pipelineStep={null} />
-                </Box>
-              )
+              pipelineStep
+                ? <PipelineProgress pipelineStep={pipelineStep} />
+                : <Box sx={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2 }}>
+                    <CircularProgress size={32} sx={{ color: "#2563eb" }} thickness={3} />
+                    <SarcasticLoader pipelineStep={null} />
+                  </Box>
             )}
             {error && !isLoading && <Box sx={{ p: 3 }}><Alert severity="error">{error}</Alert></Box>}
             {output && !isLoading && (
@@ -596,10 +752,8 @@ export default function GenerationArea({ mode, onModeChange, onGenerate, onApply
                   bgcolor: isDark ? "#0a0e16" : "#e8ecf4",
                 }}>
                   <Box sx={{
-                    width: viewport === "mobile" ? 390 : 768,
-                    flexShrink: 0,
-                    borderRadius: viewport === "mobile" ? 5 : 3,
-                    overflow: "hidden",
+                    width: viewport === "mobile" ? 390 : 768, flexShrink: 0,
+                    borderRadius: viewport === "mobile" ? 5 : 3, overflow: "hidden",
                     boxShadow: isDark
                       ? "0 0 0 8px #1a1f2e, 0 0 0 10px #242a3a, 0 32px 80px rgba(0,0,0,0.6)"
                       : "0 0 0 8px #c8d0e8, 0 0 0 10px #b0bbd6, 0 32px 80px rgba(0,0,0,0.25)",
@@ -635,38 +789,40 @@ export default function GenerationArea({ mode, onModeChange, onGenerate, onApply
       {/* ── Critic feedback accordion ──────────────────────────────────────── */}
       {pipelineOutput?.criticFeedback && !isLoading && (
         <Accordion disableGutters elevation={0}
-          sx={{ borderTop:"1px solid", borderColor:"divider", bgcolor:"transparent", "&:before":{display:"none"} }}>
-          <AccordionSummary sx={{ px:2, py:0, minHeight:36, "& .MuiAccordionSummary-content":{my:0} }}>
-            <Box sx={{ display:"flex", alignItems:"center", gap:1 }}>
-              <Typography variant="caption" sx={{ fontWeight:800, textTransform:"uppercase", letterSpacing:"0.08em", fontSize:10, color:"text.secondary" }}>
-                Critic Feedback
+          sx={{ borderTop: "1px solid", borderColor: "divider", bgcolor: "transparent", "&:before": { display: "none" } }}>
+          <AccordionSummary sx={{ px: 2, py: 0, minHeight: 34, "& .MuiAccordionSummary-content": { my: 0 } }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Typography variant="caption" sx={{ fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em", fontSize: 12, color: "text.disabled" }}>
+                Agent Report
               </Typography>
               <Box sx={{
-                px:0.75, py:0.15, borderRadius:3, fontSize:10, fontWeight:800, lineHeight:"16px",
+                px: 0.75, py: 0.1, borderRadius: 3, fontSize: 12.5, fontWeight: 800, lineHeight: "16px",
                 background: pipelineOutput.criticFeedback.score >= 8 ? "rgba(16,185,129,0.15)" : pipelineOutput.criticFeedback.score >= 6 ? "rgba(245,158,11,0.15)" : "rgba(239,68,68,0.15)",
                 color: pipelineOutput.criticFeedback.score >= 8 ? "#10b981" : pipelineOutput.criticFeedback.score >= 6 ? "#f59e0b" : "#ef4444",
               }}>
                 {pipelineOutput.criticFeedback.score}/10
               </Box>
-              <Typography variant="caption" sx={{ color:"text.disabled", fontSize:10 }}>
-                {pipelineOutput.refinements > 0 ? `${pipelineOutput.refinements} refinement${pipelineOutput.refinements > 1 ? "s" : ""} applied` : "No refinements needed"}
+              <Typography variant="caption" sx={{ color: "text.disabled", fontSize: 12.5 }}>
+                {pipelineOutput.refinements > 0
+                  ? `${pipelineOutput.refinements} refinement${pipelineOutput.refinements > 1 ? "s" : ""} applied`
+                  : "No refinements needed"}
               </Typography>
             </Box>
           </AccordionSummary>
-          <AccordionDetails sx={{ px:2, pt:0.5, pb:1.5 }}>
+          <AccordionDetails sx={{ px: 2, pt: 0.5, pb: 1.5 }}>
             {pipelineOutput.criticFeedback.issues?.length > 0 && (
-              <Box sx={{ mb:1 }}>
-                <Typography variant="caption" sx={{ fontWeight:700, textTransform:"uppercase", fontSize:9, color:"text.disabled", display:"block", mb:0.5 }}>Issues Found</Typography>
+              <Box sx={{ mb: 1 }}>
+                <Typography variant="caption" sx={{ fontWeight: 700, textTransform: "uppercase", fontSize: 11, color: "text.disabled", display: "block", mb: 0.5 }}>Issues Found</Typography>
                 {pipelineOutput.criticFeedback.issues.map((issue, i) => (
-                  <Typography key={i} variant="caption" sx={{ display:"block", color:"text.secondary", fontSize:11, lineHeight:1.6, pl:1, borderLeft:"2px solid", borderColor:"warning.main", mb:0.4 }}>{issue}</Typography>
+                  <Typography key={i} variant="caption" sx={{ display: "block", color: "text.secondary", fontSize: 14, lineHeight: 1.6, pl: 1, borderLeft: "2px solid", borderColor: "warning.main", mb: 0.4 }}>{issue}</Typography>
                 ))}
               </Box>
             )}
             {pipelineOutput.criticFeedback.suggestions?.length > 0 && (
               <Box>
-                <Typography variant="caption" sx={{ fontWeight:700, textTransform:"uppercase", fontSize:9, color:"text.disabled", display:"block", mb:0.5 }}>Improvements Applied</Typography>
+                <Typography variant="caption" sx={{ fontWeight: 700, textTransform: "uppercase", fontSize: 11, color: "text.disabled", display: "block", mb: 0.5 }}>Improvements Applied</Typography>
                 {pipelineOutput.criticFeedback.suggestions.map((s, i) => (
-                  <Typography key={i} variant="caption" sx={{ display:"block", color:"text.secondary", fontSize:11, lineHeight:1.6, pl:1, borderLeft:"2px solid", borderColor:"success.main", mb:0.4 }}>{s}</Typography>
+                  <Typography key={i} variant="caption" sx={{ display: "block", color: "text.secondary", fontSize: 14, lineHeight: 1.6, pl: 1, borderLeft: "2px solid", borderColor: "success.main", mb: 0.4 }}>{s}</Typography>
                 ))}
               </Box>
             )}
