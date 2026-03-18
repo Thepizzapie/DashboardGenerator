@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Tooltip from "@mui/material/Tooltip";
@@ -380,26 +380,9 @@ export default function App() {
   const [toolboxType, setToolboxType] = useState(null); // null | "components" | "data"
   const [selectedSources, setSelectedSources] = useState([]);
   const [selectedComponents, setSelectedComponents] = useState([]);
-  const stepTickerRef = useRef(null);
-
   const showToast = useCallback((message, severity = "success") => {
     setToast({ open: true, message, severity });
   }, []);
-
-  function startStepTicker() {
-    const steps = ["planning", "styling", "generating", "inspecting", "critiquing", "refining"];
-    let i = 0;
-    setPipelineStep(steps[0]);
-    stepTickerRef.current = setInterval(() => {
-      i++;
-      if (i < steps.length) setPipelineStep(steps[i]);
-      else clearInterval(stepTickerRef.current);
-    }, 4500);
-  }
-
-  function stopStepTicker() {
-    if (stepTickerRef.current) { clearInterval(stepTickerRef.current); stepTickerRef.current = null; }
-  }
 
   useEffect(() => { loadSources(); }, []);
 
@@ -458,27 +441,50 @@ export default function App() {
 
     const forcePipeline = mode === "infographic" || mode === "diagram";
     if (pipelineMode || forcePipeline) {
-      startStepTicker();
       try {
         const res = await fetch(`${API}/generate-pipeline`, {
           method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ prompt: fullPrompt, mode }),
         });
-        if (!res.ok) { const e = await res.json(); throw new Error(e.error || `Server error ${res.status}`); }
-        const { html, planSpec, styleGuide, criticFeedback, refinements } = await res.json();
-        if (mode === "mui") setMuiOutput(html);
-        else if (mode === "charts") setChartsOutput(html);
-        else if (mode === "infographic") setInfographicOutput(html);
-        else if (mode === "diagram") setDiagramOutput(html);
-        else setHtmlOutput(html);
-        setPipelineOutput({ planSpec, styleGuide, criticFeedback, refinements });
-        setPipelineStep("done");
-        showToast("Pipeline complete", "success");
+        if (!res.ok) throw new Error(`Server error ${res.status}`);
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+
+        function processLine(line) {
+          if (!line.startsWith("data: ")) return;
+          let data;
+          try { data = JSON.parse(line.slice(6)); } catch { return; } // skip malformed
+          if (data.step) setPipelineStep(data.step);
+          if (data.error) throw new Error(data.error);
+          if (data.result) {
+            const { html, planSpec, styleGuide, criticFeedback, refinements } = data.result;
+            if (mode === "mui") setMuiOutput(html);
+            else if (mode === "charts") setChartsOutput(html);
+            else if (mode === "infographic") setInfographicOutput(html);
+            else if (mode === "diagram") setDiagramOutput(html);
+            else setHtmlOutput(html);
+            setPipelineOutput({ planSpec, styleGuide, criticFeedback, refinements });
+            setPipelineStep("done");
+            showToast("Pipeline complete", "success");
+          }
+        }
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop(); // hold back potentially incomplete last line
+          for (const line of lines) processLine(line);
+        }
+        // flush any remaining buffer content
+        if (buffer) processLine(buffer);
       } catch (err) {
         setError(err.message);
         setPipelineStep(null);
       } finally {
-        stopStepTicker();
         setIsLoading(false);
       }
     } else {

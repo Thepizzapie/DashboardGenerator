@@ -1106,43 +1106,70 @@ Output ONLY the JSON object.`;
 
 // ── Multi-agent pipeline ───────────────────────────────────────────────────────
 
-async function runPipeline(prompt, mode, dataContext, apiKey) {
+async function runPipeline(prompt, mode, dataContext, apiKey, emit = () => {}) {
   const MAX_REFINE_LOOPS = 2;
   const isEditorial = mode === "infographic" || mode === "diagram";
+  const pipelineStart = Date.now();
+  const log = (step, msg, extra = "") => {
+    const elapsed = ((Date.now() - pipelineStart) / 1000).toFixed(1);
+    console.log(`\n[Pipeline +${elapsed}s] ── ${step.toUpperCase()} ── ${msg}${extra ? `\n  ${extra}` : ""}`);
+  };
+
+  log("start", `mode=${mode}  prompt="${prompt.slice(0, 80)}${prompt.length > 80 ? "…" : ""}"`);
 
   let planSpec, styleGuide;
 
   if (isEditorial) {
-    // Editorial modes: use a narrative planner instead of dashboard planner; skip Stylist
+    emit({ step: "planning" });
+    log("planner", "Editorial planner running…");
+    const t = Date.now();
     const planRaw = await callClaude(
       buildEditorialPlannerPrompt(mode, dataContext),
       `User request: ${prompt}`,
       apiKey, 2000
     );
-    try { planSpec = JSON.parse(planRaw); }
-    catch { planSpec = { title: prompt, sections: [], dataSourcesUsed: [], visualMetaphors: [] }; }
-    styleGuide = null; // not used for editorial modes
+    try {
+      planSpec = JSON.parse(planRaw);
+      log("planner", `Done in ${((Date.now()-t)/1000).toFixed(1)}s`, `title="${planSpec.title}"  sections=${planSpec.sections?.length ?? 0}  sources=[${(planSpec.dataSourcesUsed||[]).join(", ")}]`);
+    } catch {
+      planSpec = { title: prompt, sections: [], dataSourcesUsed: [], visualMetaphors: [] };
+      log("planner", `JSON parse failed — using fallback`);
+    }
+    styleGuide = null;
   } else {
-    // Dashboard modes: Planner + Stylist
+    emit({ step: "planning" });
+    log("planner", "Dashboard planner running…");
+    const t1 = Date.now();
     const planRaw = await callClaude(
       buildPlannerPrompt(),
       `User request: ${prompt}\n\nDATA CONTEXT:\n${dataContext}`,
       apiKey, 2000
     );
-    try { planSpec = JSON.parse(planRaw); }
-    catch { planSpec = { title: "Dashboard", components: [], layout: "grid", dataSourcesUsed: [], highlights: [] }; }
+    try {
+      planSpec = JSON.parse(planRaw);
+      log("planner", `Done in ${((Date.now()-t1)/1000).toFixed(1)}s`, `title="${planSpec.title}"  components=${planSpec.components?.length ?? 0}  layout=${planSpec.layout}`);
+    } catch {
+      planSpec = { title: "Dashboard", components: [], layout: "grid", dataSourcesUsed: [], highlights: [] };
+      log("planner", `JSON parse failed — using fallback`);
+    }
 
+    emit({ step: "styling" });
+    log("stylist", "Stylist running…");
+    const t2 = Date.now();
     const styleRaw = await callClaude(
       buildStylistPrompt(),
       `PLAN SPEC:\n${JSON.stringify(planSpec, null, 2)}`,
       apiKey, 1000
     );
-    try { styleGuide = JSON.parse(styleRaw); }
-    catch {
+    try {
+      styleGuide = JSON.parse(styleRaw);
+      log("stylist", `Done in ${((Date.now()-t2)/1000).toFixed(1)}s`, `scheme=${styleGuide.colorScheme}  accent=${styleGuide.primaryAccent}  cards=${styleGuide.cardStyle}`);
+    } catch {
       styleGuide = {
         colorScheme: "dark", primaryAccent: "#2563eb", cardStyle: "flat",
         density: "normal", chartPalette: ["#2563eb","#10b981","#f59e0b","#ec4899","#8b5cf6","#38bdf8"],
       };
+      log("stylist", `JSON parse failed — using fallback`);
     }
   }
 
@@ -1184,17 +1211,29 @@ Chart palette: ${(styleGuide.chartPalette || []).join(", ")}
 USER REQUEST:\n${prompt}`;
   }
 
+  emit({ step: "generating" });
+  log("visualizer", "Visualizer running… (this is the long one)");
+  const tViz = Date.now();
   let html = await callClaude(sysPrompt, visualizerPrompt, apiKey, 16000);
+  log("visualizer", `Done in ${((Date.now()-tViz)/1000).toFixed(1)}s`, `html length=${html.length} chars`);
 
   // Step 3.5: Layout Inspector — scan for clipping/overflow/sizing issues
+  emit({ step: "inspecting" });
+  log("inspector", "Layout inspector running…");
+  const tInsp = Date.now();
   const layoutRaw = await callClaude(
     buildLayoutInspectorPrompt(mode),
     `HTML TO INSPECT:\n${html}`,
     apiKey, 1500
   );
   let layoutReport;
-  try { layoutReport = JSON.parse(layoutRaw); }
-  catch { layoutReport = { severity: "none", clippingIssues: [], overflowIssues: [], sizingIssues: [], fixes: [] }; }
+  try {
+    layoutReport = JSON.parse(layoutRaw);
+    log("inspector", `Done in ${((Date.now()-tInsp)/1000).toFixed(1)}s`, `severity=${layoutReport.severity}  clipping=${layoutReport.clippingIssues?.length ?? 0}  overflow=${layoutReport.overflowIssues?.length ?? 0}  fixes=${layoutReport.fixes?.length ?? 0}`);
+  } catch {
+    layoutReport = { severity: "none", clippingIssues: [], overflowIssues: [], sizingIssues: [], fixes: [] };
+    log("inspector", `JSON parse failed — skipping layout fix`);
+  }
 
   // If layout issues found, do a targeted fix pass before the Critic
   if (layoutReport.severity !== "none" && layoutReport.fixes && layoutReport.fixes.length > 0) {
@@ -1220,18 +1259,30 @@ RULES:
 - Return the complete corrected HTML
 
 CURRENT HTML:\n${html}`;
+    log("inspector", "Applying layout fixes…");
+    const tFix = Date.now();
     html = await callClaude(sysPrompt, layoutFixPrompt, apiKey, 16000);
+    log("inspector", `Layout fix done in ${((Date.now()-tFix)/1000).toFixed(1)}s`);
   }
 
   // Step 4: Critic
+  emit({ step: "critiquing" });
+  log("critic", "Critic running…");
+  const tCrit = Date.now();
   const criticRaw = await callClaude(
     buildCriticPrompt(mode),
     `ORIGINAL USER REQUEST:\n${prompt}\n\nGENERATED HTML:\n${html}`,
     apiKey, 2000
   );
   let criticFeedback;
-  try { criticFeedback = JSON.parse(criticRaw); }
-  catch { criticFeedback = { score: 7, issues: [], suggestions: [] }; }
+  try {
+    criticFeedback = JSON.parse(criticRaw);
+    log("critic", `Done in ${((Date.now()-tCrit)/1000).toFixed(1)}s`, `score=${criticFeedback.score}/10  issues=${criticFeedback.issues?.length ?? 0}  suggestions=${criticFeedback.suggestions?.length ?? 0}`);
+    if (criticFeedback.issues?.length) console.log("  Issues:\n" + criticFeedback.issues.map((v,i) => `    ${i+1}. ${v}`).join("\n"));
+  } catch {
+    criticFeedback = { score: 7, issues: [], suggestions: [] };
+    log("critic", `JSON parse failed — using fallback score 7`);
+  }
 
   // Merge layout issues into critic feedback so UI can show them
   if (layoutReport.severity !== "none") {
@@ -1254,9 +1305,13 @@ CURRENT HTML:\n${html}`;
     refinements < MAX_REFINE_LOOPS &&
     (criticFeedback.score < 7 || (criticFeedback.issues && criticFeedback.issues.length > 0))
   ) {
+    emit({ step: "refining" });
+    log("refiner", `Pass ${refinements + 1} running… (score was ${criticFeedback.score}/10, ${criticFeedback.issues?.length ?? 0} issues)`);
+    const tRef = Date.now();
     const refinePrompt = `You previously generated this ${outputTypeName}. Fix these issues:\n\nCRITIC SCORE: ${criticFeedback.score}/10\nISSUES:\n${(criticFeedback.issues || []).map((v, i) => `${i+1}. ${v}`).join("\n")}\nSUGGESTIONS:\n${(criticFeedback.suggestions || []).map((v, i) => `${i+1}. ${v}`).join("\n")}\n\nApply all fixes. Return complete improved HTML. No other changes.\n\nCURRENT HTML:\n${html}`;
     html = await callClaude(sysPrompt, refinePrompt, apiKey, 16000);
     refinements++;
+    log("refiner", `Pass ${refinements} done in ${((Date.now()-tRef)/1000).toFixed(1)}s`);
 
     if (refinements < MAX_REFINE_LOOPS) {
       const recriticRaw = await callClaude(
@@ -1270,6 +1325,8 @@ CURRENT HTML:\n${html}`;
     }
   }
 
+  const totalSec = ((Date.now() - pipelineStart) / 1000).toFixed(1);
+  log("done", `Pipeline complete in ${totalSec}s  refinements=${refinements}  final_score=${criticFeedback.score}/10  html=${html.length} chars`);
   return { html, planSpec, styleGuide, criticFeedback, layoutReport, refinements };
 }
 
@@ -1390,13 +1447,28 @@ app.post("/generate-pipeline", async (req, res) => {
   if (!prompt) return res.status(400).json({ error: "prompt is required" });
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return res.status(500).json({ error: "ANTHROPIC_API_KEY not set" });
+
+  res.writeHead(200, {
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache",
+    "Connection": "keep-alive",
+  });
+
+  const emit = (data) => res.write(`data: ${JSON.stringify(data)}\n\n`);
+
+  // Heartbeat every 15s to prevent proxy/socket timeouts on long pipelines
+  const heartbeat = setInterval(() => res.write(": ping\n\n"), 15000);
+
   try {
     const dataContext = buildDataContext();
-    const result = await runPipeline(prompt, mode, dataContext, apiKey);
-    res.json(result);
+    const result = await runPipeline(prompt, mode, dataContext, apiKey, emit);
+    emit({ result });
   } catch (err) {
     console.error("/generate-pipeline error:", err.message);
-    res.status(502).json({ error: err.message });
+    emit({ error: err.message });
+  } finally {
+    clearInterval(heartbeat);
+    res.end();
   }
 });
 
