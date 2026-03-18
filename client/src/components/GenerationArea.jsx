@@ -4,6 +4,7 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import CircularProgress from "@mui/material/CircularProgress";
+import LinearProgress from "@mui/material/LinearProgress";
 import Alert from "@mui/material/Alert";
 import Tooltip from "@mui/material/Tooltip";
 import Popover from "@mui/material/Popover";
@@ -740,7 +741,24 @@ export default function GenerationArea({
                 <PipelineProgress pipelineStep={pipelineStep} />
               </Box>
             )}
-            {(output || isLoading || error) && (
+            {/* First-time loading (no prior output): show centered bar + quip */}
+            {isLoading && !pipelineStep && !output && (
+              <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3, py: 10, px: 4 }}>
+                <Box sx={{ width: "100%", maxWidth: 420 }}>
+                  <LinearProgress
+                    variant="indeterminate"
+                    sx={{
+                      height: 5, borderRadius: 3,
+                      bgcolor: "rgba(37,99,235,0.12)",
+                      "& .MuiLinearProgress-bar": { borderRadius: 3, bgcolor: "#2563eb" },
+                    }}
+                  />
+                </Box>
+                <SarcasticLoader pipelineStep={null} />
+              </Box>
+            )}
+            {/* Re-generation (prior output exists): MuiCanvas shows old content + its own top progress bar */}
+            {(output || error) && (
               <MuiCanvas html={output} isLoading={isLoading} error={error} viewport={viewport} />
             )}
           </>
@@ -750,8 +768,17 @@ export default function GenerationArea({
             {isLoading && (
               pipelineStep
                 ? <PipelineProgress pipelineStep={pipelineStep} />
-                : <Box sx={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2 }}>
-                    <CircularProgress size={32} sx={{ color: "#2563eb" }} thickness={3} />
+                : <Box sx={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3, px: 4 }}>
+                    <Box sx={{ width: "100%", maxWidth: 420 }}>
+                      <LinearProgress
+                        variant="indeterminate"
+                        sx={{
+                          height: 5, borderRadius: 3,
+                          bgcolor: "rgba(37,99,235,0.12)",
+                          "& .MuiLinearProgress-bar": { borderRadius: 3, bgcolor: "#2563eb" },
+                        }}
+                      />
+                    </Box>
                     <SarcasticLoader pipelineStep={null} />
                   </Box>
             )}
@@ -790,9 +817,12 @@ export default function GenerationArea({
                   </Box>
                 </Box>
               ) : (
-                <Box sx={{ p: 3 }}>
-                  <div className="canvas-output" dangerouslySetInnerHTML={{ __html: output }} />
-                </Box>
+                <iframe
+                  srcDoc={output}
+                  title="Preview"
+                  sandbox="allow-scripts allow-same-origin"
+                  style={{ display: "block", border: "none", width: "100%", flex: 1, minHeight: "calc(100vh - 200px)" }}
+                />
               )
             )}
           </Box>

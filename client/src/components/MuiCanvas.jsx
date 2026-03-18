@@ -34,7 +34,7 @@ export default function MuiCanvas({ html, isLoading, error, viewport = "desktop"
         <iframe
           srcDoc={html}
           title="Generated UI"
-          sandbox="allow-scripts"
+          sandbox="allow-scripts allow-same-origin"
           style={{ flex: 1, border: "none", width: "100%", height: "100%" }}
         />
       )}
@@ -59,7 +59,7 @@ export default function MuiCanvas({ html, isLoading, error, viewport = "desktop"
             <iframe
               srcDoc={html}
               title="Generated UI"
-              sandbox="allow-scripts"
+              sandbox="allow-scripts allow-same-origin"
               style={{ display: "block", border: "none", width: constrainedWidth, height: viewport === "mobile" ? 720 : 900 }}
             />
             {viewport === "mobile" && (

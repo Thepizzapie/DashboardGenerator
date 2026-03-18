@@ -9,6 +9,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Collapse from "@mui/material/Collapse";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
+import Divider from "@mui/material/Divider";
 import { useTheme, alpha } from "@mui/material/styles";
 
 // ── Color presets ──────────────────────────────────────────────────────────────
@@ -369,6 +370,7 @@ export default function EditPanel({ output, mode, onApplyEdit, isApplying, onToa
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
 
+  const [correction, setCorrection] = useState("");
   const [instruction, setInstruction] = useState("");
   const [open, setOpen] = useState(true);
   const [editTab, setEditTab] = useState(0); // 0=Layout 1=Style 2=Data 3=Custom
@@ -489,6 +491,51 @@ export default function EditPanel({ output, mode, onApplyEdit, isApplying, onToa
       {/* ── Collapsible body ─────────────────────────────────────────────── */}
       <Collapse in={open}>
         <Box sx={{ px: 2, pb: 2, display: "flex", flexDirection: "column", gap: 1.75 }}>
+
+          {/* ── Correction prompt ────────────────────────────────────────── */}
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+            <TextField
+              fullWidth
+              multiline
+              rows={3}
+              size="small"
+              value={correction}
+              onChange={e => setCorrection(e.target.value)}
+              placeholder={'Describe what to change… e.g. \'make the header sticky\' or \'add a dark sidebar\''}
+              disabled={isApplying}
+              onKeyDown={e => {
+                if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && correction.trim() && !isApplying) {
+                  onApplyEdit(correction.trim());
+                  setCorrection("");
+                }
+              }}
+              sx={{
+                "& .MuiInputBase-root": { fontSize: 12.5 },
+                "& textarea": { lineHeight: 1.55 },
+              }}
+            />
+            <Button
+              variant="contained"
+              fullWidth
+              size="small"
+              disabled={!correction.trim() || isApplying}
+              onClick={() => {
+                const text = correction.trim();
+                if (!text || isApplying) return;
+                onApplyEdit(text);
+                setCorrection("");
+              }}
+              startIcon={isApplying ? <CircularProgress size={13} color="inherit" /> : null}
+              sx={{ height: 34, fontSize: 12.5, fontWeight: 700, letterSpacing: "0.02em" }}
+            >
+              {isApplying ? "Applying…" : "Apply Correction"}
+            </Button>
+          </Box>
+
+          {/* ── Divider before quick-edit controls ───────────────────────── */}
+          <Divider sx={{ fontSize: 9.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "text.disabled" }}>
+            Quick edits
+          </Divider>
 
           {/* ── Color presets ───────────────────────────────────────────── */}
           <Box>
