@@ -903,22 +903,22 @@ Each zone gets a filled badge header label. Zones drawn BEFORE nodes.
 <svg width="900" height="260" xmlns="http://www.w3.org/2000/svg">
   <defs><!-- arrow markers + icon defs here --></defs>
 
-  <!-- Zone 1 region (draw all zones first, then nodes on top) -->
+  <!-- Zone 1 region (draw all zones first, then nodes on top) — use WARM SOLID PASTEL fills, not low-opacity -->
   <rect x="20" y="40" width="230" height="195" rx="10"
-        fill="rgba(219,234,254,0.45)" stroke="#93c5fd" stroke-width="1.5"/>
+        fill="#dbeafe" stroke="#93c5fd" stroke-width="1.5"/>
   <!-- Zone header badge -->
-  <rect x="20" y="28" width="170" height="20" rx="10" fill="#3b82f6"/>
+  <rect x="20" y="28" width="170" height="20" rx="10" fill="#2563eb"/>
   <text x="105" y="41" text-anchor="middle" font-size="10" font-weight="700" fill="white">Zone 1: Data Ingestion</text>
 
   <!-- Zone 2 region -->
   <rect x="270" y="40" width="230" height="195" rx="10"
-        fill="rgba(220,252,231,0.45)" stroke="#86efac" stroke-width="1.5"/>
-  <rect x="270" y="28" width="170" height="20" rx="10" fill="#22c55e"/>
+        fill="#fef9c3" stroke="#fde047" stroke-width="1.5"/>
+  <rect x="270" y="28" width="170" height="20" rx="10" fill="#ca8a04"/>
   <text x="355" y="41" text-anchor="middle" font-size="10" font-weight="700" fill="white">Zone 2: Processing</text>
 
   <!-- Zone 3 region -->
   <rect x="520" y="40" width="360" height="195" rx="10"
-        fill="rgba(243,232,255,0.45)" stroke="#c4b5fd" stroke-width="1.5"/>
+        fill="#ede9fe" stroke="#c4b5fd" stroke-width="1.5"/>
   <rect x="520" y="28" width="170" height="20" rx="10" fill="#7c3aed"/>
   <text x="605" y="41" text-anchor="middle" font-size="10" font-weight="700" fill="white">Zone 3: Output</text>
 
@@ -1159,14 +1159,226 @@ Always define these marker variants in your `<defs>`:
 <text x="350" y="35" text-anchor="middle" font-size="9" fill="#7c3aed">refine (max 2x)</text>
 ```
 
-### 6. WHICH PATTERN TO USE — decision guide
-- User asks about **projects/tasks/people assignments** → Zone pipeline + rich nodes with progress bars + annotation callout on blocked items
-- User asks about **relationships/network** → D3 force sim with avatar circles as nodes, edge labels, group hulls
-- User asks about **trends/comparisons** → Multi-panel (a)(b)(c): bar chart + line trend + scatter or heatmap
-- User asks about **flow/process** → Zone pipeline with 3–5 horizontal zones, stacked nodes per zone, leader-line annotations
-- User asks about **hierarchy/org** → d3.tree with rich nodes (avatar + name + dept badge)
-- User asks about **model/algorithm pipeline** → Multi-panel figure with (a)(b) sub-sections: use mixed shapes (diamond for decisions, hexagon for transforms, pill for terminals), embed mini bar/distribution charts as nodes
-- User asks about **training / ML workflow** → Zone pipeline + backprop annotation arrow (thick dashed red) + embedded loss curve mini chart + labeled connectors with math notation (use tspan for subscripts: D&lt;tspan dy="4" font-size="8"&gt;KL&lt;/tspan&gt;)
+### 6. IMAGE THUMBNAIL NODES — embed picture frames as nodes
+Use when the diagram involves video frames, sample images, document previews, or dataset examples.
+These are colored rect "frames" with a picture-frame border, a placeholder colored fill, and a label beneath.
+
+```svg
+<!-- Image thumbnail node: video frame / sample image -->
+<g>
+  <!-- Outer picture frame -->
+  <rect x="60" y="80" width="80" height="60" rx="4"
+        fill="#1e293b" stroke="#64748b" stroke-width="1.5"/>
+  <!-- Inner image area (simulate photo content with gradient) -->
+  <defs>
+    <linearGradient id="img-grad-1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#334155"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+  </defs>
+  <rect x="63" y="83" width="74" height="54" rx="2" fill="url(#img-grad-1)"/>
+  <!-- Simulated content lines (document / frame content) -->
+  <rect x="68" y="95" width="34" height="3" rx="1" fill="rgba(255,255,255,0.25)"/>
+  <rect x="68" y="102" width="50" height="3" rx="1" fill="rgba(255,255,255,0.15)"/>
+  <rect x="68" y="109" width="40" height="3" rx="1" fill="rgba(255,255,255,0.1)"/>
+  <!-- Frame number badge (top-left) -->
+  <rect x="63" y="83" width="22" height="13" rx="2" fill="rgba(37,99,235,0.8)"/>
+  <text x="74" y="93" text-anchor="middle" font-size="8" font-weight="700" fill="white">f₁</text>
+  <!-- Label beneath -->
+  <text x="100" y="152" text-anchor="middle" font-size="10" font-weight="600" fill="#1e293b">Input Video</text>
+  <text x="100" y="164" text-anchor="middle" font-size="9" fill="#64748b">(I₁)</text>
+</g>
+
+<!-- Multi-frame stack (show depth/sequence) — offset 3 rects -->
+<rect x="178" y="88" width="72" height="54" rx="3" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/>
+<rect x="183" y="84" width="72" height="54" rx="3" fill="#cbd5e1" stroke="#94a3b8" stroke-width="1"/>
+<rect x="188" y="80" width="72" height="54" rx="3" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
+<!-- Top frame content -->
+<rect x="194" y="88" width="30" height="14" rx="2" fill="#dbeafe"/>
+<rect x="194" y="106" width="52" height="3" rx="1" fill="#e2e8f0"/>
+<rect x="194" y="113" width="40" height="3" rx="1" fill="#e2e8f0"/>
+<text x="224" y="146" text-anchor="middle" font-size="10" font-weight="600" fill="#1e293b">Evidence Set</text>
+<text x="224" y="158" text-anchor="middle" font-size="9" fill="#64748b">(S)</text>
+```
+
+### 7. CHARACTER / ROBOT AVATAR NODES — circular icon nodes for agents/roles
+Use for agent pipelines, multi-agent systems, roles in a workflow. Each agent gets a circle with an icon or stylized letter avatar.
+
+```svg
+<!-- Robot / Agent avatar node -->
+<g>
+  <!-- Outer ring (role color) -->
+  <circle cx="200" cy="120" r="28" fill="rgba(37,99,235,0.12)" stroke="#2563eb" stroke-width="2"/>
+  <!-- Inner circle -->
+  <circle cx="200" cy="120" r="22" fill="white" stroke="#93c5fd" stroke-width="1.5"/>
+  <!-- Robot head (simple SVG robot face) -->
+  <rect x="189" y="109" width="22" height="18" rx="4" fill="#1e40af" stroke="none"/>
+  <!-- Eyes -->
+  <circle cx="195" cy="117" r="2.5" fill="white"/>
+  <circle cx="205" cy="117" r="2.5" fill="white"/>
+  <circle cx="195" cy="117" r="1" fill="#60a5fa"/>
+  <circle cx="205" cy="117" r="1" fill="#60a5fa"/>
+  <!-- Mouth grill -->
+  <rect x="193" y="122" width="14" height="2" rx="1" fill="rgba(255,255,255,0.4)"/>
+  <!-- Antenna -->
+  <line x1="200" y1="109" x2="200" y2="103" stroke="#1e40af" stroke-width="1.5" stroke-linecap="round"/>
+  <circle cx="200" cy="101" r="2" fill="#2563eb"/>
+  <!-- Agent label below -->
+  <text x="200" y="157" text-anchor="middle" font-size="10" font-weight="700" fill="#1e293b">Planner</text>
+  <text x="200" y="169" text-anchor="middle" font-size="9" fill="#64748b">Agent</text>
+</g>
+
+<!-- Person / Role avatar (simpler: initial + colored ring) -->
+<g>
+  <circle cx="350" cy="120" r="24" fill="rgba(5,150,105,0.12)" stroke="#059669" stroke-width="2"/>
+  <circle cx="350" cy="113" r="8" fill="#dcfce7" stroke="#86efac" stroke-width="1.5"/>
+  <text x="350" y="117" text-anchor="middle" font-size="9" font-weight="800" fill="#065f46">ST</text>
+  <path d="M 332,136 Q 350,128 368,136" fill="#dcfce7" stroke="#86efac" stroke-width="1.5"/>
+  <text x="350" y="153" text-anchor="middle" font-size="10" font-weight="700" fill="#1e293b">Stylist</text>
+  <text x="350" y="165" text-anchor="middle" font-size="9" fill="#64748b">Agent</text>
+</g>
+```
+
+### 8. MATHEMATICAL NOTATION — subscripts, superscripts, Greek letters
+Use SVG tspan for inline math. Never use actual Unicode math symbols (they render inconsistently across browsers).
+
+```svg
+<!-- Subscript: D_KL -->
+<text x="100" y="120" font-size="11" fill="#1e293b">
+  D<tspan dy="3" font-size="8">KL</tspan>
+</text>
+
+<!-- Superscript: q_θ(x) -->
+<text x="160" y="120" font-size="11" fill="#1e293b">
+  q<tspan dy="3" font-size="8">θ</tspan><tspan dy="-3" font-size="11">(x)</tspan>
+</text>
+
+<!-- Italic variable in label: "Loss ℒ" -->
+<text x="220" y="120" font-size="11" fill="#1e293b">
+  Loss <tspan font-style="italic" font-weight="700">ℒ</tspan>
+</text>
+
+<!-- Arrow label with math: "Ĝ_t, K" -->
+<text x="320" y="120" font-size="10" fill="#475569">
+  Ĝ<tspan dy="3" font-size="8">t</tspan><tspan dy="-3">, K</tspan>
+</text>
+
+<!-- Loss equation in node body -->
+<text x="200" y="130" text-anchor="middle" font-size="10" fill="#64748b">
+  ℒ<tspan dy="3" font-size="8">Hybrid</tspan><tspan dy="-3"> = αℒ</tspan><tspan dy="3" font-size="8">CE</tspan><tspan dy="-3"> + ℒ</tspan><tspan dy="3" font-size="8">soft</tspan>
+</text>
+```
+
+### 9. MIXED PANEL CONTENT — flowchart + embedded chart in same SVG
+A single SVG panel can show a pipeline on the left and an inline chart/distribution on the right.
+Use a vertical divider line to separate the two halves.
+
+```svg
+<svg width="560" height="280" xmlns="http://www.w3.org/2000/svg">
+  <!-- Panel label (a) -->
+  <text x="12" y="18" font-size="13" font-weight="800" fill="#1e293b">(a) Training Framework</text>
+
+  <!-- LEFT HALF: flowchart (x: 10–300) -->
+  <!-- ... zone/node/arrow elements ... -->
+
+  <!-- Soft vertical divider -->
+  <line x1="300" y1="28" x2="300" y2="265" stroke="#e2e8f0" stroke-width="1.5" stroke-dasharray="4,3"/>
+
+  <!-- RIGHT HALF: embedded chart (x: 310–545) -->
+  <text x="425" y="48" text-anchor="middle" font-size="11" font-weight="700" fill="#1e293b">(b) Motivation</text>
+
+  <!-- Example: triangle / simplex diagram on right -->
+  <!-- Triangle vertices: top=(425,65), bottom-left=(355,220), bottom-right=(495,220) -->
+  <polygon points="425,65 355,220 495,220"
+           fill="rgba(219,234,254,0.3)" stroke="#93c5fd" stroke-width="1.5"/>
+  <!-- Vertex labels -->
+  <text x="425" y="58" text-anchor="middle" font-size="9" font-weight="700" fill="#1e40af">C₁</text>
+  <text x="346" y="232" text-anchor="middle" font-size="9" fill="#64748b">C₂</text>
+  <text x="504" y="232" text-anchor="middle" font-size="9" fill="#64748b">C₃</text>
+  <!-- Data point inside -->
+  <circle cx="425" cy="155" r="7" fill="#2563eb" stroke="white" stroke-width="1.5"/>
+  <text x="440" y="152" font-size="9" font-weight="600" fill="#1e40af">True Dist. (p*)</text>
+  <!-- Prediction point -->
+  <circle cx="400" cy="170" r="5" fill="#f59e0b" stroke="white" stroke-width="1.5"/>
+  <text x="388" y="185" font-size="9" fill="#64748b">q₀</text>
+
+  <!-- Embedded mini bar chart (right panel, bottom) -->
+  <!-- 5 bars for distribution visualization -->
+  <rect x="320" y="200" width="12" height="20" rx="2" fill="#c4b5fd"/>
+  <rect x="336" y="185" width="12" height="35" rx="2" fill="#a78bfa"/>
+  <rect x="352" y="170" width="12" height="50" rx="2" fill="#7c3aed"/>
+  <rect x="368" y="185" width="12" height="35" rx="2" fill="#a78bfa"/>
+  <rect x="384" y="200" width="12" height="20" rx="2" fill="#c4b5fd"/>
+  <!-- X axis -->
+  <line x1="318" y1="220" x2="400" y2="220" stroke="#94a3b8" stroke-width="1"/>
+</svg>
+```
+
+### 10. WARM PASTEL ZONE FILLS — not transparent, not dark
+Zone backgrounds should feel warm and colored, not just rgba(x,y,z,0.1). Use higher opacity fills.
+
+```svg
+<!-- Cream / warm yellow zone (neutral/input) -->
+<rect x="20" y="40" width="200" height="180" rx="10"
+      fill="#fef9c3" stroke="#fde047" stroke-width="1.5"/>
+
+<!-- Light blue zone (processing / analysis) -->
+<rect x="240" y="40" width="200" height="180" rx="10"
+      fill="#dbeafe" stroke="#93c5fd" stroke-width="1.5"/>
+
+<!-- Light orange zone (output / results) -->
+<rect x="460" y="40" width="200" height="180" rx="10"
+      fill="#fed7aa" stroke="#fdba74" stroke-width="1.5"/>
+
+<!-- Light green zone (success / verified) -->
+<rect x="680" y="40" width="200" height="180" rx="10"
+      fill="#dcfce7" stroke="#86efac" stroke-width="1.5"/>
+
+<!-- Light purple zone (model / AI) -->
+<rect x="900" y="40" width="200" height="180" rx="10"
+      fill="#ede9fe" stroke="#c4b5fd" stroke-width="1.5"/>
+
+<!-- Light pink zone (critique / evaluation) -->
+<rect x="1120" y="40" width="200" height="180" rx="10"
+      fill="#fce7f3" stroke="#f9a8d4" stroke-width="1.5"/>
+
+<!-- Dashed sub-container (Module A / Module B groupings inside a zone) -->
+<rect x="50" y="60" width="140" height="140" rx="8"
+      fill="rgba(255,255,255,0.6)" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5,3"/>
+<rect x="44" y="52" width="90" height="16" rx="8" fill="#1e293b"/>
+<text x="89" y="63" text-anchor="middle" font-size="9" font-weight="700" fill="white">Module A</text>
+```
+
+### 11. PROMINENT FEEDBACK LOOP ARCS — iterative refinement flows
+These are visually dominant: thick colored arcs over the top of the diagram connecting end back to start.
+
+```svg
+<!-- Feedback/refinement arc (right-to-left, over the top) -->
+<!-- From right zone back to earlier zone, arcing above -->
+<path d="M 680,80 C 680,20 200,20 200,80"
+      fill="none" stroke="#7c3aed" stroke-width="2.5" stroke-dasharray="7,4"
+      marker-end="url(#arrow)"/>
+<!-- Label on the arc (centered above) -->
+<rect x="385" y="10" width="90" height="18" rx="9" fill="white" stroke="#c4b5fd" stroke-width="1"/>
+<text x="430" y="22" text-anchor="middle" font-size="9" font-weight="700" fill="#7c3aed">T = 2 Rounds</text>
+
+<!-- Secondary tighter feedback within a zone (local loop) -->
+<path d="M 420,100 C 450,100 450,160 420,160"
+      fill="none" stroke="#059669" stroke-width="1.5" stroke-dasharray="4,3"
+      marker-end="url(#arrow)"/>
+<text x="462" y="133" font-size="9" fill="#059669">retry</text>
+```
+
+### 12. WHICH PATTERN TO USE — decision guide
+- **projects/tasks/people** → Zone pipeline (warm pastel fills) + rich nodes (progress bars, avatar stacks, dept tags) + annotation callout on blocked items
+- **relationships/network** → D3 force sim with avatar circle nodes, edge labels, group hulls
+- **trends/comparisons** → Multi-panel (a)(b)(c): bar + line trend + scatter or heatmap, serif panel labels
+- **flow/process** → Zone pipeline (3–5 horizontal zones, stacked nodes) + labeled connectors + feedback arc if iterative
+- **hierarchy/org** → d3.tree with rich nodes (avatar + name + dept badge)
+- **agent/model pipeline** → Multi-panel: (a) flowchart with robot avatar nodes + dashed module containers, (b) mixed panel with inline chart; feedback arc labeled "T = N Rounds"; math notation on edges
+- **ML/training workflow** → Zone pipeline + backprop annotation (thick dashed red arc) + embedded loss curve mini chart + labeled connectors with math tspan notation
+- **video/document pipeline** → Image thumbnail nodes (multi-frame stack) + zone pipeline + robot agent avatar nodes at processing steps
+- **sample selection/data curation** → Module A/B dashed sub-containers inside zones, image thumbnail nodes as samples, count badges for quantities
 
 ## D3 FORCE SIMULATION — WHITESPACE FIX (MANDATORY)
 When using d3.forceSimulation for network/node-link diagrams, you MUST fit the SVG to the actual node bounds after simulation ends. Use this pattern — do NOT set a fixed large SVG height:
