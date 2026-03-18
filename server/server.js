@@ -795,6 +795,48 @@ Copy this ENTIRE <defs> block verbatim into every SVG diagram you create (merge 
   <symbol id="icon-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.5"/><polyline points="12,7 12,12 15,15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
 
   <symbol id="icon-inbox" viewBox="0 0 24 24"><polyline points="22,12 16,12 14,15 10,15 8,12 2,12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></symbol>
+
+  <!-- Business / KPI -->
+  <symbol id="icon-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="1.5"/></symbol>
+
+  <symbol id="icon-briefcase" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><line x1="12" y1="12" x2="12" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="2" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="1.5"/></symbol>
+
+  <symbol id="icon-trending-up" viewBox="0 0 24 24"><polyline points="22,7 13.5,15.5 8.5,10.5 2,17" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><polyline points="16,7 22,7 22,13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+
+  <symbol id="icon-trending-down" viewBox="0 0 24 24"><polyline points="22,17 13.5,8.5 8.5,13.5 2,7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><polyline points="16,17 22,17 22,11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+
+  <symbol id="icon-dollar" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+
+  <symbol id="icon-flag" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><line x1="4" y1="22" x2="4" y2="15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+
+  <symbol id="icon-ticket" viewBox="0 0 24 24"><path d="M20 12v-2a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v2a2 2 0 0 1 0 4v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2a2 2 0 0 1 0-4z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><line x1="12" y1="10" x2="12" y2="14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="2,2"/></symbol>
+
+  <symbol id="icon-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="12" r="6" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="12" r="2" fill="currentColor"/></symbol>
+
+  <symbol id="icon-star" viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></symbol>
+
+  <symbol id="icon-tag" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><line x1="7" y1="7" x2="7.01" y2="7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+
+  <symbol id="icon-bell" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M13.73 21a2 2 0 0 1-3.46 0" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+
+  <symbol id="icon-activity" viewBox="0 0 24 24"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+
+  <symbol id="icon-pie-chart" viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 1 1 8 2.83" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 12A10 10 0 0 0 12 2v10z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></symbol>
+
+  <!-- Dev / Process -->
+  <symbol id="icon-git-branch" viewBox="0 0 24 24"><line x1="6" y1="3" x2="6" y2="15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="18" cy="6" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="6" cy="18" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M18 9a9 9 0 0 1-9 9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+
+  <symbol id="icon-code" viewBox="0 0 24 24"><polyline points="16,18 22,12 16,6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><polyline points="8,6 2,12 8,18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="4" x2="12" y2="20" stroke="currentColor" stroke-width="0.75" stroke-linecap="round" stroke-dasharray="2,3"/></symbol>
+
+  <symbol id="icon-package" viewBox="0 0 24 24"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><polyline points="3.27,6.96 12,12.01 20.73,6.96" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="12" y1="22.08" x2="12" y2="12" stroke="currentColor" stroke-width="1.5"/></symbol>
+
+  <symbol id="icon-refresh" viewBox="0 0 24 24"><polyline points="23,4 23,10 17,10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><polyline points="1,20 1,14 7,14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+
+  <symbol id="icon-send" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><polygon points="22,2 15,22 11,13 2,9 22,2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></symbol>
+
+  <symbol id="icon-alert-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="12" y1="8" x2="12" y2="12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="12" y1="16" x2="12.01" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+
+  <symbol id="icon-x-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="15" y1="9" x2="9" y2="15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="9" y1="9" x2="15" y2="15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
 </defs>
 
 Available icon IDs (choose the best fit per node):
@@ -802,9 +844,10 @@ Available icon IDs (choose the best fit per node):
 - Apps: icon-browser, icon-mobile, icon-monitor, icon-api
 - Security: icon-lock, icon-shield, icon-key
 - People: icon-user, icon-users
-- Data/Process: icon-file, icon-queue, icon-filter, icon-transform, icon-sync, icon-gear, icon-link
-- Analytics: icon-chart, icon-email, icon-lightning
-- Status: icon-check, icon-warning, icon-clock, icon-inbox
+- Data/Process: icon-file, icon-queue, icon-filter, icon-transform, icon-sync, icon-gear, icon-link, icon-git-branch, icon-code, icon-package, icon-refresh, icon-send
+- Business/KPI: icon-calendar, icon-briefcase, icon-dollar, icon-flag, icon-ticket, icon-target, icon-star, icon-tag, icon-bell, icon-activity, icon-pie-chart
+- Analytics: icon-chart, icon-email, icon-lightning, icon-trending-up, icon-trending-down
+- Status: icon-check, icon-warning, icon-clock, icon-inbox, icon-alert-circle, icon-x-circle
 
 Usage: <use href="#icon-server" x="NODE_X+6" y="NODE_Y+12" width="18" height="18" color="#2563eb"/>
 The color attribute sets currentColor — use your accent color or #64748b for neutral.
@@ -939,7 +982,102 @@ Nodes should carry data directly: values, delta, status. Use badge overlays and 
 </g>
 \`\`\`
 
-### 3. EMBEDDED MINI SPARKLINES in nodes
+### 3. NODE SHAPES — use shape to convey semantic meaning
+Pick the shape that matches the node's role in the diagram.
+
+```svg
+<!-- ROUNDED RECT — default: services, components, tasks -->
+<rect x="X" y="Y" width="150" height="52" rx="8" fill="white" stroke="#94a3b8" stroke-width="1.5"/>
+
+<!-- DIAMOND — decision / gateway (if/else, routing, approval gate) -->
+<!-- Center at (cx,cy), half-width hw, half-height hh -->
+<polygon points="cx,cy-hh  cx+hw,cy  cx,cy+hh  cx-hw,cy"
+         fill="white" stroke="#f59e0b" stroke-width="1.5"/>
+<!-- Example: cx=200, cy=120, hw=52, hh=28 -->
+<polygon points="200,92 252,120 200,148 148,120"
+         fill="white" stroke="#f59e0b" stroke-width="2"/>
+<text x="200" y="116" text-anchor="middle" font-size="10" font-weight="600" fill="#1e293b">Approval</text>
+<text x="200" y="130" text-anchor="middle" font-size="9" fill="#64748b">Required?</text>
+
+<!-- PILL / STADIUM — terminal: start or end of a flow -->
+<rect x="X" y="Y" width="120" height="32" rx="16" fill="#1e293b" stroke="none"/>
+<text x="X+60" y="Y+20" text-anchor="middle" font-size="11" font-weight="700" fill="white">START</text>
+
+<!-- HEXAGON — transformation / processing step -->
+<!-- Center (cx,cy), size s: points of a flat-top hexagon -->
+<polygon points="cx+s,cy  cx+s/2,cy-s*0.866  cx-s/2,cy-s*0.866  cx-s,cy  cx-s/2,cy+s*0.866  cx+s/2,cy+s*0.866"
+         fill="rgba(243,232,255,0.5)" stroke="#a78bfa" stroke-width="1.5"/>
+<!-- Concrete example: cx=300, cy=120, s=40 -->
+<polygon points="340,120 320,85.4 280,85.4 260,120 280,154.6 320,154.6"
+         fill="rgba(243,232,255,0.5)" stroke="#a78bfa" stroke-width="1.5"/>
+<text x="300" y="116" text-anchor="middle" font-size="10" font-weight="600" fill="#6d28d9">Transform</text>
+<text x="300" y="130" text-anchor="middle" font-size="9" fill="#7c3aed">Normalize</text>
+
+<!-- PARALLELOGRAM — data input / output -->
+<polygon points="X+15,Y  X+W+15,Y  X+W,Y+H  X,Y+H"
+         fill="rgba(219,234,254,0.4)" stroke="#93c5fd" stroke-width="1.5"/>
+<!-- Example: X=50, Y=100, W=130, H=44 -->
+<polygon points="65,100 195,100 180,144 50,144"
+         fill="rgba(219,234,254,0.4)" stroke="#93c5fd" stroke-width="1.5"/>
+<text x="122" y="127" text-anchor="middle" font-size="11" font-weight="600" fill="#1e40af">CSV Upload</text>
+```
+
+### 4. COMPOSITE NODE PATTERNS — pack more data into one node
+
+```svg
+<!-- MULTI-METRIC GRID: 3 values side-by-side inside a node (KPI snapshot) -->
+<g>
+  <rect x="80" y="80" width="210" height="70" rx="8" fill="white" stroke="#94a3b8" stroke-width="1.5"/>
+  <use href="#icon-briefcase" x="90" y="90" width="14" height="14" color="#64748b"/>
+  <text x="110" y="102" font-size="11" font-weight="700" fill="#1e293b">Q2 Pipeline</text>
+  <!-- Divider lines -->
+  <line x1="80" y1="112" x2="290" y2="112" stroke="#f1f5f9" stroke-width="1"/>
+  <line x1="150" y1="112" x2="150" y2="150" stroke="#f1f5f9" stroke-width="1"/>
+  <line x1="220" y1="112" x2="220" y2="150" stroke="#f1f5f9" stroke-width="1"/>
+  <!-- Cell 1: Budget -->
+  <text x="115" y="127" text-anchor="middle" font-size="15" font-weight="800" fill="#1e293b">$2.4M</text>
+  <text x="115" y="141" text-anchor="middle" font-size="9" fill="#94a3b8">Budget</text>
+  <!-- Cell 2: Progress -->
+  <text x="185" y="127" text-anchor="middle" font-size="15" font-weight="800" fill="#059669">68%</text>
+  <text x="185" y="141" text-anchor="middle" font-size="9" fill="#94a3b8">Done</text>
+  <!-- Cell 3: Days left -->
+  <text x="255" y="127" text-anchor="middle" font-size="15" font-weight="800" fill="#dc2626">-5d</text>
+  <text x="255" y="141" text-anchor="middle" font-size="9" fill="#94a3b8">Overdue</text>
+</g>
+
+<!-- COUNT BUBBLE BADGE: circle with number, used for ticket counts, open issues -->
+<!-- Floating badge in corner of a node: red = critical count -->
+<circle cx="NODE_RIGHT+8" cy="NODE_TOP-8" r="10" fill="#dc2626"/>
+<text x="NODE_RIGHT+8" y="NODE_TOP-4" text-anchor="middle" font-size="9" font-weight="800" fill="white">7</text>
+<!-- Neutral count badge (blue) -->
+<circle cx="NODE_RIGHT+8" cy="NODE_TOP-8" r="10" fill="#2563eb"/>
+<text x="NODE_RIGHT+8" y="NODE_TOP-4" text-anchor="middle" font-size="9" font-weight="800" fill="white">12</text>
+
+<!-- OVERLAPPING AVATAR STACK: show team members on a node -->
+<!-- 3 overlapping circles (offset 18px each) -->
+<circle cx="116" cy="109" r="11" fill="#dbeafe" stroke="white" stroke-width="2"/>
+<text x="116" y="113" text-anchor="middle" font-size="8" font-weight="700" fill="#1d4ed8">SC</text>
+<circle cx="134" cy="109" r="11" fill="#dcfce7" stroke="white" stroke-width="2"/>
+<text x="134" y="113" text-anchor="middle" font-size="8" font-weight="700" fill="#166534">MK</text>
+<circle cx="152" cy="109" r="11" fill="#fef9c3" stroke="white" stroke-width="2"/>
+<text x="152" y="113" text-anchor="middle" font-size="8" font-weight="700" fill="#854d0e">AL</text>
+<!-- Overflow badge if more people -->
+<circle cx="170" cy="109" r="11" fill="#f1f5f9" stroke="white" stroke-width="2"/>
+<text x="170" y="113" text-anchor="middle" font-size="8" font-weight="600" fill="#64748b">+4</text>
+
+<!-- DEPT TAG CHIP: small colored label strip above node label -->
+<rect x="NODE_X+6" y="NODE_Y+6" width="52" height="14" rx="7"
+      fill="rgba(37,99,235,0.12)" stroke="rgba(37,99,235,0.3)" stroke-width="1"/>
+<text x="NODE_X+32" y="NODE_Y+16" text-anchor="middle" font-size="8" font-weight="700"
+      fill="#2563eb" letter-spacing="0.04em">ENGINEERING</text>
+
+<!-- FULL-FILL BACKGROUND NODE: for highlighted/active nodes -->
+<rect x="X" y="Y" width="155" height="58" rx="8" fill="#1e40af" stroke="none"/>
+<text x="X+78" y="Y+26" text-anchor="middle" font-size="12" font-weight="700" fill="white">Active Sprint</text>
+<text x="X+78" y="Y+42" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.75)">3 of 5 tasks done</text>
+```
+
+### 5. EMBEDDED MINI SPARKLINES in nodes
 Embed a tiny bar or line chart inside a node body. Scale bars to fit node height (~24px tall chart area).
 
 \`\`\`svg
@@ -979,12 +1117,56 @@ Add after all nodes/charts are drawn. Use dashed boxes to highlight critical pat
 <text x="bar_cx" y="bar_top-24" text-anchor="middle" font-size="9" font-weight="700" fill="#dc2626">102% OVER</text>
 \`\`\`
 
-### 5. WHICH PATTERN TO USE — decision guide
+### 5. CONNECTOR / ARROW STYLES — vary by meaning
+
+Always define these marker variants in your `<defs>`:
+```svg
+<defs>
+  <!-- Standard solid arrow -->
+  <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+    <path d="M0,0 L0,6 L8,3 z" fill="#64748b"/>
+  </marker>
+  <!-- Thick accent arrow (primary data flow) -->
+  <marker id="arrow-accent" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+    <path d="M0,0 L0,6 L8,3 z" fill="#2563eb"/>
+  </marker>
+  <!-- Red critical arrow -->
+  <marker id="arrow-critical" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+    <path d="M0,0 L0,6 L8,3 z" fill="#dc2626"/>
+  </marker>
+</defs>
+
+<!-- PRIMARY FLOW — thick, colored, solid (main pipeline direction) -->
+<path d="M 200,120 L 268,120" fill="none" stroke="#2563eb" stroke-width="2.5" marker-end="url(#arrow-accent)"/>
+
+<!-- SECONDARY / OPTIONAL FLOW — thin, dashed gray -->
+<path d="M 200,160 L 268,160" fill="none" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#arrow)"/>
+
+<!-- BIDIRECTIONAL — arrows on both ends -->
+<path d="M 200,200 L 268,200" fill="none" stroke="#64748b" stroke-width="1.5" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+
+<!-- LABELED CONNECTOR — throughput / SLA annotation on edge -->
+<path d="M 200,80 C 234,80 234,50 268,50" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="215" y="56" width="54" height="14" rx="7" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+<text x="242" y="66" text-anchor="middle" font-size="9" font-weight="600" fill="#475569">23 req/s</text>
+
+<!-- CRITICAL PATH / BACKPROPAGATION — thick red with bold label -->
+<path d="M 350,120 C 320,120 320,80 290,80" fill="none" stroke="#dc2626" stroke-width="2.5" stroke-dasharray="6,3" marker-end="url(#arrow-critical)"/>
+<text x="318" y="94" text-anchor="middle" font-size="10" font-weight="800" fill="#dc2626" letter-spacing="0.05em">BACKPROP</text>
+
+<!-- FEEDBACK LOOP — curved arc back (refinement loops, iterative flows) -->
+<path d="M 500,90 C 500,40 200,40 200,90" fill="none" stroke="#7c3aed" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arrow)"/>
+<text x="350" y="35" text-anchor="middle" font-size="9" fill="#7c3aed">refine (max 2x)</text>
+```
+
+### 6. WHICH PATTERN TO USE — decision guide
 - User asks about **projects/tasks/people assignments** → Zone pipeline + rich nodes with progress bars + annotation callout on blocked items
 - User asks about **relationships/network** → D3 force sim with avatar circles as nodes, edge labels, group hulls
 - User asks about **trends/comparisons** → Multi-panel (a)(b)(c): bar chart + line trend + scatter or heatmap
 - User asks about **flow/process** → Zone pipeline with 3–5 horizontal zones, stacked nodes per zone, leader-line annotations
 - User asks about **hierarchy/org** → d3.tree with rich nodes (avatar + name + dept badge)
+- User asks about **model/algorithm pipeline** → Multi-panel figure with (a)(b) sub-sections: use mixed shapes (diamond for decisions, hexagon for transforms, pill for terminals), embed mini bar/distribution charts as nodes
+- User asks about **training / ML workflow** → Zone pipeline + backprop annotation arrow (thick dashed red) + embedded loss curve mini chart + labeled connectors with math notation (use tspan for subscripts: D&lt;tspan dy="4" font-size="8"&gt;KL&lt;/tspan&gt;)
 
 ## D3 FORCE SIMULATION — WHITESPACE FIX (MANDATORY)
 When using d3.forceSimulation for network/node-link diagrams, you MUST fit the SVG to the actual node bounds after simulation ends. Use this pattern — do NOT set a fixed large SVG height:
