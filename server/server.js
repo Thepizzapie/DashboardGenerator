@@ -18,90 +18,242 @@ app.use("/api", require("./routes/sources"));
 // ── Mock data sources ────────────────────────────────────────────────────────
 
 const mockData = {
+  // ── People ──────────────────────────────────────────────────────────────────
   employees: [
-    { name: "Alice Johnson",  dept: "Engineering", role: "Senior Dev",        status: "active",   hire_date: "2021-03-15", salary: 145000 },
-    { name: "Bob Smith",      dept: "Marketing",   role: "Manager",           status: "active",   hire_date: "2019-07-01", salary: 118000 },
-    { name: "Carol White",    dept: "Design",      role: "UX Lead",           status: "on-leave", hire_date: "2020-11-22", salary: 132000 },
-    { name: "David Brown",    dept: "Engineering", role: "Junior Dev",        status: "active",   hire_date: "2023-01-10", salary: 92000  },
-    { name: "Eve Davis",      dept: "Sales",       role: "Account Executive", status: "active",   hire_date: "2022-05-18", salary: 98000  },
-    { name: "Frank Miller",   dept: "Engineering", role: "DevOps",            status: "active",   hire_date: "2020-09-03", salary: 138000 },
-    { name: "Grace Lee",      dept: "HR",          role: "HR Manager",        status: "active",   hire_date: "2018-04-12", salary: 112000 },
-    { name: "Henry Chen",     dept: "Finance",     role: "Analyst",           status: "active",   hire_date: "2021-08-30", salary: 105000 },
-    { name: "Iris Patel",     dept: "Engineering", role: "Tech Lead",         status: "active",   hire_date: "2019-02-14", salary: 158000 },
-    { name: "Jake Torres",    dept: "Sales",       role: "Sales Rep",         status: "active",   hire_date: "2023-06-05", salary: 85000  },
+    { name: "Alice Johnson",    dept: "Engineering", role: "Senior Dev",         level: "Senior",     status: "active",   hire_date: "2021-03-15", salary: 145000, manager: "Iris Patel",    location: "NYC",    performance: 4.5 },
+    { name: "Bob Smith",        dept: "Marketing",   role: "Marketing Manager",  level: "Manager",    status: "active",   hire_date: "2019-07-01", salary: 118000, manager: "Sandra Kim",    location: "LA",     performance: 3.8 },
+    { name: "Carol White",      dept: "Design",      role: "UX Lead",            level: "Senior",     status: "on-leave", hire_date: "2020-11-22", salary: 132000, manager: "Sandra Kim",    location: "NYC",    performance: 4.2 },
+    { name: "David Brown",      dept: "Engineering", role: "Junior Dev",         level: "Junior",     status: "active",   hire_date: "2023-01-10", salary: 92000,  manager: "Alice Johnson", location: "Remote", performance: 3.5 },
+    { name: "Eve Davis",        dept: "Sales",       role: "Account Executive",  level: "Senior",     status: "active",   hire_date: "2022-05-18", salary: 98000,  manager: "Marcus Reid",   location: "Chicago",performance: 4.7 },
+    { name: "Frank Miller",     dept: "Engineering", role: "DevOps Engineer",    level: "Senior",     status: "active",   hire_date: "2020-09-03", salary: 138000, manager: "Iris Patel",    location: "NYC",    performance: 4.1 },
+    { name: "Grace Lee",        dept: "HR",          role: "HR Manager",         level: "Manager",    status: "active",   hire_date: "2018-04-12", salary: 112000, manager: "Sandra Kim",    location: "NYC",    performance: 4.0 },
+    { name: "Henry Chen",       dept: "Finance",     role: "Financial Analyst",  level: "Mid",        status: "active",   hire_date: "2021-08-30", salary: 105000, manager: "Sandra Kim",    location: "Remote", performance: 3.9 },
+    { name: "Iris Patel",       dept: "Engineering", role: "VP Engineering",     level: "Leadership", status: "active",   hire_date: "2019-02-14", salary: 198000, manager: "Sandra Kim",    location: "NYC",    performance: 4.8 },
+    { name: "Jake Torres",      dept: "Sales",       role: "Sales Rep",          level: "Junior",     status: "active",   hire_date: "2023-06-05", salary: 85000,  manager: "Marcus Reid",   location: "Chicago",performance: 3.6 },
+    { name: "Karen Nguyen",     dept: "Engineering", role: "Backend Dev",        level: "Mid",        status: "active",   hire_date: "2022-02-28", salary: 128000, manager: "Alice Johnson", location: "NYC",    performance: 4.3 },
+    { name: "Liam Foster",      dept: "Marketing",   role: "Content Strategist", level: "Mid",        status: "active",   hire_date: "2021-11-15", salary: 94000,  manager: "Bob Smith",     location: "LA",     performance: 3.7 },
+    { name: "Maya Rodriguez",   dept: "Design",      role: "Product Designer",   level: "Mid",        status: "active",   hire_date: "2022-07-20", salary: 108000, manager: "Carol White",   location: "Remote", performance: 4.4 },
+    { name: "Nathan Wu",        dept: "Engineering", role: "ML Engineer",        level: "Senior",     status: "active",   hire_date: "2020-05-11", salary: 162000, manager: "Iris Patel",    location: "NYC",    performance: 4.6 },
+    { name: "Olivia Hart",      dept: "Sales",       role: "Sales Manager",      level: "Manager",    status: "active",   hire_date: "2018-09-30", salary: 135000, manager: "Marcus Reid",   location: "Chicago",performance: 4.2 },
+    { name: "Paul Kim",         dept: "Engineering", role: "Frontend Dev",       level: "Mid",        status: "on-leave", hire_date: "2021-06-14", salary: 118000, manager: "Alice Johnson", location: "Remote", performance: 3.8 },
+    { name: "Quinn Patel",      dept: "Finance",     role: "Controller",         level: "Senior",     status: "active",   hire_date: "2017-03-22", salary: 148000, manager: "Sandra Kim",    location: "NYC",    performance: 4.5 },
+    { name: "Rachel Thompson",  dept: "HR",          role: "Recruiter",          level: "Mid",        status: "active",   hire_date: "2022-10-05", salary: 88000,  manager: "Grace Lee",     location: "NYC",    performance: 3.9 },
+    { name: "Sam Ortiz",        dept: "Engineering", role: "Security Engineer",  level: "Senior",     status: "active",   hire_date: "2020-01-08", salary: 152000, manager: "Frank Miller",  location: "NYC",    performance: 4.3 },
+    { name: "Tina Brooks",      dept: "Marketing",   role: "SEO Specialist",     level: "Junior",     status: "active",   hire_date: "2023-08-21", salary: 78000,  manager: "Bob Smith",     location: "LA",     performance: 3.4 },
+    { name: "Uma Singh",        dept: "Design",      role: "Motion Designer",    level: "Junior",     status: "active",   hire_date: "2023-03-14", salary: 82000,  manager: "Carol White",   location: "Remote", performance: 3.6 },
+    { name: "Victor Lane",      dept: "Engineering", role: "Data Engineer",      level: "Senior",     status: "active",   hire_date: "2019-11-01", salary: 155000, manager: "Nathan Wu",     location: "NYC",    performance: 4.4 },
+    { name: "Wendy Cross",      dept: "Sales",       role: "Account Executive",  level: "Senior",     status: "active",   hire_date: "2020-08-17", salary: 102000, manager: "Olivia Hart",   location: "Chicago",performance: 4.1 },
+    { name: "Xander Bell",      dept: "Engineering", role: "Platform Engineer",  level: "Mid",        status: "active",   hire_date: "2022-04-25", salary: 132000, manager: "Frank Miller",  location: "NYC",    performance: 3.9 },
+    { name: "Yara Moss",        dept: "Finance",     role: "FP&A Manager",       level: "Manager",    status: "active",   hire_date: "2018-07-09", salary: 142000, manager: "Quinn Patel",   location: "NYC",    performance: 4.6 },
+    { name: "Zoe Carson",       dept: "Marketing",   role: "Growth Manager",     level: "Manager",    status: "active",   hire_date: "2019-12-03", salary: 125000, manager: "Bob Smith",     location: "LA",     performance: 4.3 },
+    { name: "Marcus Reid",      dept: "Sales",       role: "VP Sales",           level: "Leadership", status: "active",   hire_date: "2016-06-20", salary: 210000, manager: "Sandra Kim",    location: "Chicago",performance: 4.7 },
+    { name: "Sandra Kim",       dept: "Executive",   role: "CEO",                level: "C-Suite",    status: "active",   hire_date: "2015-01-01", salary: 320000, manager: null,            location: "NYC",    performance: 4.9 },
   ],
 
+  // ── Projects ─────────────────────────────────────────────────────────────────
   projects: [
-    { name: "Website Redesign",    owner: "Carol White",  status: "in-progress", pct_complete: 65,  budget: 80000,  spent: 52000,  due_date: "2026-04-15" },
-    { name: "API Migration",       owner: "Alice Johnson", status: "in-progress", pct_complete: 40,  budget: 120000, spent: 48000,  due_date: "2026-05-01" },
-    { name: "Mobile App v2",       owner: "David Brown",  status: "planning",    pct_complete: 10,  budget: 200000, spent: 20000,  due_date: "2026-06-30" },
-    { name: "Analytics Dashboard", owner: "Bob Smith",    status: "completed",   pct_complete: 100, budget: 45000,  spent: 43200,  due_date: "2026-03-01" },
-    { name: "Security Audit",      owner: "Iris Patel",   status: "in-progress", pct_complete: 75,  budget: 30000,  spent: 22500,  due_date: "2026-03-25" },
-    { name: "Customer Portal",     owner: "Eve Davis",    status: "planning",    pct_complete: 5,   budget: 95000,  spent: 4750,   due_date: "2026-07-01" },
-    { name: "Data Warehouse",      owner: "Henry Chen",   status: "in-progress", pct_complete: 55,  budget: 160000, spent: 88000,  due_date: "2026-05-20" },
+    { name: "Website Redesign",      owner: "Carol White",   team: ["Carol White","Maya Rodriguez","Liam Foster"],                        status: "in-progress", pct_complete: 65,  budget: 80000,  spent: 52000,  due_date: "2026-04-15", priority: "high",     dept: "Design" },
+    { name: "API Migration v3",      owner: "Alice Johnson", team: ["Alice Johnson","Karen Nguyen","David Brown","Xander Bell"],          status: "in-progress", pct_complete: 40,  budget: 120000, spent: 48000,  due_date: "2026-05-01", priority: "critical", dept: "Engineering" },
+    { name: "Mobile App v2",         owner: "David Brown",   team: ["David Brown","Paul Kim","Uma Singh","Maya Rodriguez"],               status: "planning",    pct_complete: 10,  budget: 200000, spent: 20000,  due_date: "2026-06-30", priority: "high",     dept: "Engineering" },
+    { name: "Analytics Dashboard",   owner: "Bob Smith",     team: ["Bob Smith","Henry Chen","Nathan Wu"],                               status: "completed",   pct_complete: 100, budget: 45000,  spent: 43200,  due_date: "2026-03-01", priority: "medium",   dept: "Marketing" },
+    { name: "Security Audit Q1",     owner: "Iris Patel",    team: ["Sam Ortiz","Frank Miller","Iris Patel"],                            status: "in-progress", pct_complete: 75,  budget: 30000,  spent: 22500,  due_date: "2026-03-25", priority: "critical", dept: "Engineering" },
+    { name: "Customer Portal",       owner: "Eve Davis",     team: ["Eve Davis","Karen Nguyen","Maya Rodriguez","Tina Brooks"],          status: "planning",    pct_complete: 5,   budget: 95000,  spent: 4750,   due_date: "2026-07-01", priority: "high",     dept: "Sales" },
+    { name: "Data Warehouse Phase 2",owner: "Henry Chen",    team: ["Victor Lane","Nathan Wu","Henry Chen","Yara Moss"],                 status: "in-progress", pct_complete: 55,  budget: 160000, spent: 88000,  due_date: "2026-05-20", priority: "high",     dept: "Engineering" },
+    { name: "ML Recommendation Engine",owner: "Nathan Wu",  team: ["Nathan Wu","Victor Lane","Karen Nguyen"],                           status: "in-progress", pct_complete: 30,  budget: 250000, spent: 75000,  due_date: "2026-08-15", priority: "high",     dept: "Engineering" },
+    { name: "Brand Refresh",         owner: "Liam Foster",  team: ["Liam Foster","Carol White","Uma Singh","Tina Brooks"],              status: "in-progress", pct_complete: 50,  budget: 55000,  spent: 27500,  due_date: "2026-04-30", priority: "medium",   dept: "Marketing" },
+    { name: "Sales CRM Upgrade",     owner: "Olivia Hart",  team: ["Olivia Hart","Eve Davis","Jake Torres","Wendy Cross"],              status: "planning",    pct_complete: 15,  budget: 70000,  spent: 10500,  due_date: "2026-06-01", priority: "high",     dept: "Sales" },
+    { name: "DevOps CI/CD Overhaul", owner: "Frank Miller", team: ["Frank Miller","Sam Ortiz","Xander Bell"],                          status: "in-progress", pct_complete: 80,  budget: 40000,  spent: 32000,  due_date: "2026-03-31", priority: "high",     dept: "Engineering" },
+    { name: "GDPR Compliance Audit", owner: "Grace Lee",    team: ["Grace Lee","Quinn Patel","Sam Ortiz","Rachel Thompson"],            status: "completed",   pct_complete: 100, budget: 25000,  spent: 24100,  due_date: "2026-02-28", priority: "critical", dept: "HR" },
+    { name: "Investor Deck Q2",      owner: "Yara Moss",    team: ["Yara Moss","Henry Chen","Sandra Kim"],                             status: "planning",    pct_complete: 20,  budget: 15000,  spent: 3000,   due_date: "2026-04-05", priority: "medium",   dept: "Finance" },
+    { name: "SSO Identity Platform", owner: "Sam Ortiz",    team: ["Sam Ortiz","Frank Miller","Alice Johnson"],                        status: "in-progress", pct_complete: 60,  budget: 85000,  spent: 51000,  due_date: "2026-05-15", priority: "critical", dept: "Engineering" },
   ],
 
+  // ── KPIs & Metrics ───────────────────────────────────────────────────────────
   kpi_metrics: [
-    { label: "Monthly Revenue",   value: "$284,500", current_val: 284500, target: 270000, delta: "+12%"   },
-    { label: "Active Users",      value: "14,230",   current_val: 14230,  target: 15000,  delta: "+8%"    },
-    { label: "Support Tickets",   value: "47",       current_val: 47,     target: 40,     delta: "-23%"   },
-    { label: "Uptime",            value: "99.97%",   current_val: 99.97,  target: 99.9,   delta: "+0.02%" },
-    { label: "Avg Response Time", value: "142ms",    current_val: 142,    target: 200,    delta: "-18%"   },
-    { label: "NPS Score",         value: "72",       current_val: 72,     target: 70,     delta: "+5"     },
-    { label: "Conversion Rate",   value: "3.8%",     current_val: 3.8,    target: 4.0,    delta: "+0.4%"  },
-    { label: "Churn Rate",        value: "1.2%",     current_val: 1.2,    target: 1.5,    delta: "-0.3%"  },
+    { label: "Monthly Revenue",      value: "$2.84M",   current_val: 2840000,  target: 2700000, delta: "+5.2%",   trend: "up",   category: "revenue" },
+    { label: "ARR",                  value: "$34.1M",   current_val: 34100000, target: 36000000,delta: "-5.3%",   trend: "down", category: "revenue" },
+    { label: "Active Users",         value: "142,300",  current_val: 142300,   target: 150000,  delta: "+8.1%",   trend: "up",   category: "product" },
+    { label: "DAU / MAU",            value: "38%",      current_val: 38,       target: 42,      delta: "-4pts",   trend: "down", category: "product" },
+    { label: "Support Tickets Open", value: "47",       current_val: 47,       target: 40,      delta: "+17.5%",  trend: "down", category: "support" },
+    { label: "Avg Resolution Time",  value: "4.2h",     current_val: 4.2,      target: 3.0,     delta: "+40%",    trend: "down", category: "support" },
+    { label: "Uptime SLA",           value: "99.97%",   current_val: 99.97,    target: 99.9,    delta: "+0.07pts",trend: "up",   category: "infra" },
+    { label: "Avg API Latency",      value: "142ms",    current_val: 142,      target: 200,     delta: "-29%",    trend: "up",   category: "infra" },
+    { label: "NPS Score",            value: "72",       current_val: 72,       target: 70,      delta: "+2.9%",   trend: "up",   category: "product" },
+    { label: "MoM Conversion Rate",  value: "3.8%",     current_val: 3.8,      target: 4.0,     delta: "-0.2pts", trend: "down", category: "revenue" },
+    { label: "Gross Margin",         value: "68.4%",    current_val: 68.4,     target: 70,      delta: "-1.6pts", trend: "down", category: "revenue" },
+    { label: "CAC",                  value: "$312",     current_val: 312,      target: 280,     delta: "+11.4%",  trend: "down", category: "revenue" },
+    { label: "LTV",                  value: "$4,820",   current_val: 4820,     target: 5000,    delta: "-3.6%",   trend: "down", category: "revenue" },
+    { label: "LTV:CAC Ratio",        value: "15.4x",    current_val: 15.4,     target: 17.8,    delta: "-13.5%",  trend: "down", category: "revenue" },
+    { label: "Net Dollar Retention", value: "108%",     current_val: 108,      target: 110,     delta: "-2pts",   trend: "down", category: "revenue" },
+    { label: "Churn Rate",           value: "1.2%",     current_val: 1.2,      target: 1.0,     delta: "+0.2pts", trend: "down", category: "revenue" },
+    { label: "Employees (FTE)",      value: "127",      current_val: 127,      target: 140,     delta: "-9.3%",   trend: "neutral",category:"people" },
+    { label: "Offer Acceptance Rate",value: "74%",      current_val: 74,       target: 85,      delta: "-11pts",  trend: "down", category: "people" },
+    { label: "Voluntary Attrition",  value: "8.4%",     current_val: 8.4,      target: 7.0,     delta: "+1.4pts", trend: "down", category: "people" },
   ],
 
-  inventory: [
-    { item: "Laptop Dell XPS 15",  sku: "HW-001", qty: 12, capacity: 20, unit: "units", status: "in-stock",    reorder_point: 5  },
-    { item: "USB-C Hub 7-port",    sku: "HW-002", qty: 3,  capacity: 30, unit: "units", status: "low-stock",   reorder_point: 10 },
-    { item: "Standing Desk",       sku: "FN-001", qty: 0,  capacity: 10, unit: "units", status: "out-of-stock", reorder_point: 3  },
-    { item: 'Monitor 27" 4K',      sku: "HW-003", qty: 8,  capacity: 15, unit: "units", status: "in-stock",    reorder_point: 4  },
-    { item: "Mechanical Keyboard", sku: "HW-004", qty: 2,  capacity: 25, unit: "units", status: "low-stock",   reorder_point: 8  },
-    { item: "Webcam HD 1080p",     sku: "HW-005", qty: 15, capacity: 20, unit: "units", status: "in-stock",    reorder_point: 5  },
-    { item: "Ergonomic Chair",     sku: "FN-002", qty: 1,  capacity: 12, unit: "units", status: "low-stock",   reorder_point: 4  },
-    { item: "Noise-Cancel Headset",sku: "HW-006", qty: 0,  capacity: 15, unit: "units", status: "out-of-stock", reorder_point: 5  },
+  // ── Revenue & Finance ────────────────────────────────────────────────────────
+  monthly_revenue: [
+    { month: "Apr 2025", mrr: 2210000, new_arr: 185000, expansion: 62000, churn: 28000, net_new: 219000 },
+    { month: "May 2025", mrr: 2290000, new_arr: 198000, expansion: 71000, churn: 31000, net_new: 238000 },
+    { month: "Jun 2025", mrr: 2380000, new_arr: 220000, expansion: 68000, churn: 35000, net_new: 253000 },
+    { month: "Jul 2025", mrr: 2440000, new_arr: 195000, expansion: 55000, churn: 38000, net_new: 212000 },
+    { month: "Aug 2025", mrr: 2510000, new_arr: 241000, expansion: 72000, churn: 29000, net_new: 284000 },
+    { month: "Sep 2025", mrr: 2590000, new_arr: 268000, expansion: 84000, churn: 33000, net_new: 319000 },
+    { month: "Oct 2025", mrr: 2640000, new_arr: 215000, expansion: 61000, churn: 41000, net_new: 235000 },
+    { month: "Nov 2025", mrr: 2690000, new_arr: 228000, expansion: 78000, churn: 36000, net_new: 270000 },
+    { month: "Dec 2025", mrr: 2750000, new_arr: 310000, expansion: 92000, churn: 44000, net_new: 358000 },
+    { month: "Jan 2026", mrr: 2780000, new_arr: 195000, expansion: 58000, churn: 52000, net_new: 201000 },
+    { month: "Feb 2026", mrr: 2810000, new_arr: 212000, expansion: 65000, churn: 39000, net_new: 238000 },
+    { month: "Mar 2026", mrr: 2840000, new_arr: 224000, expansion: 69000, churn: 42000, net_new: 251000 },
   ],
 
-  sales_pipeline: [
-    { deal: "Acme Corp ERP",         stage: "Proposal",    value: 85000,  probability: 60, close_date: "2026-04-10", rep: "Eve Davis"  },
-    { deal: "Globex SaaS Expansion", stage: "Negotiation", value: 142000, probability: 80, close_date: "2026-03-28", rep: "Jake Torres" },
-    { deal: "Initech Onboarding",    stage: "Discovery",   value: 32000,  probability: 30, close_date: "2026-05-15", rep: "Eve Davis"  },
-    { deal: "Umbrella Corp Renewal", stage: "Closed Won",  value: 210000, probability: 100,close_date: "2026-03-01", rep: "Jake Torres" },
-    { deal: "Soylent Analytics",     stage: "Proposal",    value: 67500,  probability: 55, close_date: "2026-04-22", rep: "Bob Smith"  },
-    { deal: "Cyberdyne Platform",    stage: "Discovery",   value: 195000, probability: 25, close_date: "2026-06-30", rep: "Eve Davis"  },
-    { deal: "Stark Industries MDM",  stage: "Negotiation", value: 88000,  probability: 75, close_date: "2026-03-31", rep: "Jake Torres" },
+  revenue_by_segment: [
+    { segment: "Enterprise",    mrr: 1420000, customers: 38,  avg_acv: 448421, churn_rate: 0.4, ndr: 118 },
+    { segment: "Mid-Market",    mrr: 854000,  customers: 142, avg_acv: 72197,  churn_rate: 1.1, ndr: 108 },
+    { segment: "SMB",           mrr: 412000,  customers: 891, avg_acv: 5546,   churn_rate: 2.8, ndr: 94  },
+    { segment: "Startup",       mrr: 154000,  customers: 1240,avg_acv: 1490,   churn_rate: 4.2, ndr: 88  },
   ],
 
-  support: [
-    { id: "TKT-1041", subject: "Login SSO broken after update",     priority: "critical", status: "open",        assignee: "Frank Miller",  hours_open: 3  },
-    { id: "TKT-1039", subject: "Dashboard export returns empty CSV",priority: "high",     status: "in-progress", assignee: "Alice Johnson", hours_open: 18 },
-    { id: "TKT-1038", subject: "Slow query on /api/reports",        priority: "high",     status: "in-progress", assignee: "Iris Patel",    hours_open: 26 },
-    { id: "TKT-1035", subject: "Email notifications not sending",   priority: "medium",   status: "open",        assignee: "Frank Miller",  hours_open: 42 },
-    { id: "TKT-1032", subject: "UI glitch on mobile Safari",        priority: "low",      status: "open",        assignee: "Carol White",   hours_open: 71 },
-    { id: "TKT-1030", subject: "User can't update billing address",  priority: "medium",   status: "resolved",    assignee: "Alice Johnson", hours_open: 8  },
-    { id: "TKT-1028", subject: "Password reset link expires too fast",priority: "low",    status: "resolved",    assignee: "Grace Lee",     hours_open: 55 },
-  ],
-
+  // ── Budget ────────────────────────────────────────────────────────────────────
   budget: [
-    { department: "Engineering", allocated: 520000, spent: 387000 },
-    { department: "Marketing",   allocated: 180000, spent: 162000 },
-    { department: "Sales",       allocated: 240000, spent: 198000 },
-    { department: "Design",      allocated: 95000,  spent: 61000  },
-    { department: "HR",          allocated: 75000,  spent: 48000  },
-    { department: "Finance",     allocated: 60000,  spent: 41000  },
-    { department: "DevOps",      allocated: 140000, spent: 128000 },
+    { department: "Engineering",  allocated: 5200000, spent: 3870000, headcount: 12, q1_forecast: 1420000 },
+    { department: "Marketing",    allocated: 1800000, spent: 1620000, headcount: 5,  q1_forecast: 495000  },
+    { department: "Sales",        allocated: 2400000, spent: 1980000, headcount: 6,  q1_forecast: 680000  },
+    { department: "Design",       allocated: 950000,  spent: 610000,  headcount: 4,  q1_forecast: 248000  },
+    { department: "HR",           allocated: 750000,  spent: 480000,  headcount: 3,  q1_forecast: 195000  },
+    { department: "Finance",      allocated: 600000,  spent: 410000,  headcount: 3,  q1_forecast: 162000  },
+    { department: "DevOps/Infra", allocated: 1400000, spent: 1280000, headcount: 3,  q1_forecast: 368000  },
+    { department: "Executive",    allocated: 800000,  spent: 580000,  headcount: 1,  q1_forecast: 210000  },
   ],
 
+  // ── Sales Pipeline ────────────────────────────────────────────────────────────
+  sales_pipeline: [
+    { deal: "Acme Corp ERP Suite",       stage: "Proposal",    value: 185000,  probability: 60, close_date: "2026-04-10", rep: "Eve Davis",   industry: "Manufacturing", source: "Outbound" },
+    { deal: "Globex SaaS Expansion",     stage: "Negotiation", value: 342000,  probability: 80, close_date: "2026-03-28", rep: "Jake Torres", industry: "Tech",          source: "Expansion" },
+    { deal: "Initech Platform",          stage: "Discovery",   value: 92000,   probability: 30, close_date: "2026-05-15", rep: "Eve Davis",   industry: "Finance",       source: "Inbound" },
+    { deal: "Umbrella Corp Renewal",     stage: "Closed Won",  value: 510000,  probability: 100,close_date: "2026-03-01", rep: "Jake Torres", industry: "Healthcare",    source: "Renewal" },
+    { deal: "Soylent Analytics Pro",     stage: "Proposal",    value: 167500,  probability: 55, close_date: "2026-04-22", rep: "Wendy Cross", industry: "Food & Bev",    source: "Inbound" },
+    { deal: "Cyberdyne Platform",        stage: "Discovery",   value: 495000,  probability: 25, close_date: "2026-06-30", rep: "Eve Davis",   industry: "Defense",       source: "Outbound" },
+    { deal: "Stark Industries MDM",      stage: "Negotiation", value: 288000,  probability: 75, close_date: "2026-03-31", rep: "Wendy Cross", industry: "Tech",          source: "Outbound" },
+    { deal: "Wayne Enterprises SIEM",    stage: "Proposal",    value: 425000,  probability: 50, close_date: "2026-05-01", rep: "Olivia Hart", industry: "Finance",       source: "Partner" },
+    { deal: "Oscorp Data Ops",           stage: "Closed Won",  value: 128000,  probability: 100,close_date: "2026-02-20", rep: "Jake Torres", industry: "Biotech",       source: "Inbound" },
+    { deal: "LexCorp Cloud Migration",   stage: "Discovery",   value: 210000,  probability: 20, close_date: "2026-07-15", rep: "Olivia Hart", industry: "Energy",        source: "Outbound" },
+    { deal: "Pied Piper API Gateway",    stage: "Negotiation", value: 95000,   probability: 70, close_date: "2026-04-05", rep: "Wendy Cross", industry: "Tech",          source: "Inbound" },
+    { deal: "Hooli Enterprise SSO",      stage: "Closed Lost", value: 380000,  probability: 0,  close_date: "2026-02-15", rep: "Eve Davis",   industry: "Tech",          source: "Outbound" },
+    { deal: "Dunder Mifflin SaaS",       stage: "Proposal",    value: 45000,   probability: 65, close_date: "2026-04-18", rep: "Jake Torres", industry: "Retail",        source: "Inbound" },
+    { deal: "Vehement Capital Analytics",stage: "Closed Won",  value: 840000,  probability: 100,close_date: "2026-03-10", rep: "Olivia Hart", industry: "Finance",       source: "Outbound" },
+  ],
+
+  // ── Support Tickets ───────────────────────────────────────────────────────────
+  support: [
+    { id: "TKT-1052", subject: "OAuth2 tokens expiring prematurely",            priority: "critical", status: "open",        assignee: "Sam Ortiz",     category: "Auth",       hours_open: 2,  created: "2026-03-17" },
+    { id: "TKT-1051", subject: "Login SSO broken after v3.2 deploy",            priority: "critical", status: "in-progress", assignee: "Frank Miller",  category: "Auth",       hours_open: 5,  created: "2026-03-17" },
+    { id: "TKT-1049", subject: "Dashboard export returns empty CSV",            priority: "high",     status: "in-progress", assignee: "Alice Johnson", category: "Reports",    hours_open: 18, created: "2026-03-16" },
+    { id: "TKT-1048", subject: "Slow query on /api/reports endpoint (>8s)",     priority: "high",     status: "in-progress", assignee: "Karen Nguyen",  category: "Performance",hours_open: 26, created: "2026-03-15" },
+    { id: "TKT-1047", subject: "Webhook retry loop causing duplicate charges",  priority: "critical", status: "open",        assignee: "Frank Miller",  category: "Billing",    hours_open: 8,  created: "2026-03-16" },
+    { id: "TKT-1045", subject: "Email notifications not sending (SMTP)",        priority: "high",     status: "open",        assignee: "Frank Miller",  category: "Comms",      hours_open: 42, created: "2026-03-14" },
+    { id: "TKT-1043", subject: "File upload silently fails >50MB",              priority: "medium",   status: "in-progress", assignee: "David Brown",   category: "Upload",     hours_open: 31, created: "2026-03-15" },
+    { id: "TKT-1041", subject: "UI rendering glitch on mobile Safari iOS 17",   priority: "medium",   status: "open",        assignee: "Paul Kim",      category: "Frontend",   hours_open: 71, created: "2026-03-12" },
+    { id: "TKT-1040", subject: "User can't update billing address (400 error)", priority: "medium",   status: "resolved",    assignee: "Alice Johnson", category: "Billing",    hours_open: 8,  created: "2026-03-16" },
+    { id: "TKT-1038", subject: "Password reset link expires in 5min not 1hr",   priority: "low",      status: "resolved",    assignee: "Grace Lee",     category: "Auth",       hours_open: 55, created: "2026-03-13" },
+    { id: "TKT-1037", subject: "CSV import drops unicode characters",           priority: "medium",   status: "open",        assignee: "Karen Nguyen",  category: "Data",       hours_open: 88, created: "2026-03-11" },
+    { id: "TKT-1035", subject: "MFA enrollment page blank on Firefox",          priority: "high",     status: "open",        assignee: "Paul Kim",      category: "Auth",       hours_open: 96, created: "2026-03-10" },
+    { id: "TKT-1033", subject: "Scheduled report email attached wrong file",    priority: "medium",   status: "in-progress", assignee: "David Brown",   category: "Reports",    hours_open: 112,created: "2026-03-09" },
+    { id: "TKT-1030", subject: "API rate limit headers missing from response",  priority: "low",      status: "resolved",    assignee: "Xander Bell",   category: "API",        hours_open: 24, created: "2026-03-15" },
+    { id: "TKT-1028", subject: "Tooltip overlaps chart legend at small viewports",priority: "low",    status: "open",        assignee: "Paul Kim",      category: "Frontend",   hours_open: 140,created: "2026-03-07" },
+  ],
+
+  // ── Inventory ─────────────────────────────────────────────────────────────────
+  inventory: [
+    { item: "MacBook Pro 16\" M3",    sku: "HW-011", qty: 8,  capacity: 20, unit: "units", status: "in-stock",     reorder_point: 5,  unit_cost: 3499, supplier: "Apple",    lead_days: 14 },
+    { item: "Dell XPS 15",            sku: "HW-001", qty: 12, capacity: 20, unit: "units", status: "in-stock",     reorder_point: 5,  unit_cost: 1899, supplier: "Dell",     lead_days: 7  },
+    { item: "USB-C Hub 7-port",       sku: "HW-002", qty: 3,  capacity: 30, unit: "units", status: "low-stock",    reorder_point: 10, unit_cost: 79,   supplier: "Anker",    lead_days: 3  },
+    { item: "Standing Desk Uplift",   sku: "FN-001", qty: 0,  capacity: 10, unit: "units", status: "out-of-stock",  reorder_point: 3,  unit_cost: 1299, supplier: "Uplift",   lead_days: 21 },
+    { item: "Monitor 32\" 4K LG",    sku: "HW-003", qty: 8,  capacity: 15, unit: "units", status: "in-stock",     reorder_point: 4,  unit_cost: 899,  supplier: "LG",       lead_days: 10 },
+    { item: "Mechanical Keyboard",    sku: "HW-004", qty: 2,  capacity: 25, unit: "units", status: "low-stock",    reorder_point: 8,  unit_cost: 149,  supplier: "Keychron", lead_days: 5  },
+    { item: "Webcam Logitech 4K",     sku: "HW-005", qty: 15, capacity: 20, unit: "units", status: "in-stock",     reorder_point: 5,  unit_cost: 199,  supplier: "Logitech", lead_days: 4  },
+    { item: "Ergonomic Chair Steelcase",sku:"FN-002", qty: 1, capacity: 12, unit: "units", status: "low-stock",    reorder_point: 4,  unit_cost: 1650, supplier: "Steelcase",lead_days: 28 },
+    { item: "Sony WH-1000XM5",        sku: "HW-006", qty: 0,  capacity: 15, unit: "units", status: "out-of-stock",  reorder_point: 5,  unit_cost: 349,  supplier: "Sony",     lead_days: 7  },
+    { item: "iPad Pro 12.9\" M4",     sku: "HW-012", qty: 5,  capacity: 10, unit: "units", status: "in-stock",     reorder_point: 3,  unit_cost: 1099, supplier: "Apple",    lead_days: 14 },
+    { item: "Thunderbolt Dock",       sku: "HW-013", qty: 18, capacity: 25, unit: "units", status: "in-stock",     reorder_point: 6,  unit_cost: 249,  supplier: "CalDigit", lead_days: 5  },
+    { item: "Office Chair Mesh Mid",  sku: "FN-003", qty: 6,  capacity: 20, unit: "units", status: "in-stock",     reorder_point: 5,  unit_cost: 425,  supplier: "HON",      lead_days: 14 },
+    { item: "NAS Synology 4-bay",     sku: "HW-014", qty: 2,  capacity: 5,  unit: "units", status: "low-stock",    reorder_point: 2,  unit_cost: 699,  supplier: "Synology", lead_days: 10 },
+  ],
+
+  // ── Sprint / Engineering Velocity ────────────────────────────────────────────
   sprint: [
-    { story: "Auth refresh token flow",    points: 8,  status: "done",        assignee: "Alice Johnson", sprint: "Sprint 22" },
-    { story: "Export to PDF",              points: 5,  status: "done",        assignee: "David Brown",   sprint: "Sprint 22" },
-    { story: "Dark mode toggle",           points: 3,  status: "done",        assignee: "Carol White",   sprint: "Sprint 22" },
-    { story: "Bulk user import CSV",       points: 13, status: "in-progress", assignee: "Iris Patel",    sprint: "Sprint 22" },
-    { story: "Webhook retry logic",        points: 8,  status: "in-progress", assignee: "Frank Miller",  sprint: "Sprint 22" },
-    { story: "Rate limiting middleware",   points: 5,  status: "todo",        assignee: "Alice Johnson", sprint: "Sprint 22" },
-    { story: "Dashboard widget drag/drop", points: 13, status: "todo",        assignee: "Carol White",   sprint: "Sprint 22" },
-    { story: "Mobile push notifications",  points: 8,  status: "blocked",     assignee: "David Brown",   sprint: "Sprint 22" },
+    { story: "OAuth2 token refresh endpoint",       points: 8,  status: "done",        assignee: "Alice Johnson", sprint: "Sprint 22", epic: "Auth" },
+    { story: "Export pipeline to PDF/CSV",          points: 5,  status: "done",        assignee: "David Brown",   sprint: "Sprint 22", epic: "Reports" },
+    { story: "Dark/light mode theme toggle",        points: 3,  status: "done",        assignee: "Paul Kim",      sprint: "Sprint 22", epic: "UI" },
+    { story: "Bulk user import via CSV",            points: 13, status: "in-progress", assignee: "Karen Nguyen",  sprint: "Sprint 22", epic: "Admin" },
+    { story: "Webhook retry with exponential backoff",points:8,  status: "in-progress", assignee: "Frank Miller",  sprint: "Sprint 22", epic: "Infra" },
+    { story: "Rate limiting middleware (Redis)",    points: 5,  status: "todo",        assignee: "Alice Johnson", sprint: "Sprint 22", epic: "Infra" },
+    { story: "Dashboard widget drag-and-drop",      points: 13, status: "todo",        assignee: "Paul Kim",      sprint: "Sprint 22", epic: "UI" },
+    { story: "Mobile push notifications (FCM)",     points: 8,  status: "blocked",     assignee: "David Brown",   sprint: "Sprint 22", epic: "Mobile" },
+    { story: "SAML SSO enterprise connector",       points: 13, status: "done",        assignee: "Sam Ortiz",     sprint: "Sprint 21", epic: "Auth" },
+    { story: "Recharts migration from v1",          points: 8,  status: "done",        assignee: "Paul Kim",      sprint: "Sprint 21", epic: "UI" },
+    { story: "Multi-tenant data isolation audit",   points: 13, status: "done",        assignee: "Sam Ortiz",     sprint: "Sprint 21", epic: "Security" },
+    { story: "Payment webhook idempotency keys",    points: 8,  status: "done",        assignee: "Karen Nguyen",  sprint: "Sprint 21", epic: "Billing" },
+    { story: "Real-time notification service",      points: 13, status: "in-progress", assignee: "Xander Bell",   sprint: "Sprint 21", epic: "Infra" },
+    { story: "Admin role permission matrix",        points: 5,  status: "done",        assignee: "Alice Johnson", sprint: "Sprint 21", epic: "Auth" },
+  ],
+
+  sprint_velocity: [
+    { sprint: "Sprint 17", committed: 52, completed: 45, bugs_closed: 8,  team_size: 6 },
+    { sprint: "Sprint 18", committed: 55, completed: 51, bugs_closed: 12, team_size: 6 },
+    { sprint: "Sprint 19", committed: 58, completed: 48, bugs_closed: 7,  team_size: 7 },
+    { sprint: "Sprint 20", committed: 60, completed: 58, bugs_closed: 14, team_size: 7 },
+    { sprint: "Sprint 21", committed: 65, completed: 61, bugs_closed: 10, team_size: 8 },
+    { sprint: "Sprint 22", committed: 68, completed: 40, bugs_closed: 6,  team_size: 8 }, // in progress
+  ],
+
+  // ── Infrastructure / SRE ─────────────────────────────────────────────────────
+  infra_services: [
+    { service: "API Gateway",        region: "us-east-1", status: "healthy",  uptime_30d: 99.98, p99_latency_ms: 82,  error_rate_pct: 0.02, cost_month: 4200  },
+    { service: "Auth Service",       region: "us-east-1", status: "degraded", uptime_30d: 99.71, p99_latency_ms: 420, error_rate_pct: 0.48, cost_month: 1800  },
+    { service: "Data Pipeline",      region: "us-east-1", status: "healthy",  uptime_30d: 99.95, p99_latency_ms: 340, error_rate_pct: 0.05, cost_month: 8900  },
+    { service: "Notification Worker",region: "us-east-1", status: "down",     uptime_30d: 98.20, p99_latency_ms: 0,   error_rate_pct: 100,  cost_month: 620   },
+    { service: "Report Generator",   region: "us-west-2", status: "healthy",  uptime_30d: 99.91, p99_latency_ms: 1820,error_rate_pct: 0.12, cost_month: 3100  },
+    { service: "File Storage CDN",   region: "us-east-1", status: "healthy",  uptime_30d: 100,   p99_latency_ms: 28,  error_rate_pct: 0.00, cost_month: 2400  },
+    { service: "Search Index",       region: "us-east-1", status: "healthy",  uptime_30d: 99.88, p99_latency_ms: 95,  error_rate_pct: 0.08, cost_month: 5600  },
+    { service: "ML Inference API",   region: "us-west-2", status: "healthy",  uptime_30d: 99.82, p99_latency_ms: 680, error_rate_pct: 0.19, cost_month: 12400 },
+    { service: "Billing Processor",  region: "us-east-1", status: "healthy",  uptime_30d: 99.99, p99_latency_ms: 145, error_rate_pct: 0.01, cost_month: 2100  },
+    { service: "Analytics DB",       region: "us-east-1", status: "degraded", uptime_30d: 99.60, p99_latency_ms: 8400,error_rate_pct: 0.88, cost_month: 18200 },
+  ],
+
+  // ── Marketing / Growth ────────────────────────────────────────────────────────
+  marketing_campaigns: [
+    { campaign: "Q1 SaaS Summit Sponsorship", channel: "Events",      spend: 45000,  leads: 312, opps: 28, closed: 4, revenue: 185000, roi: 311 },
+    { campaign: "LinkedIn ABM Enterprise",    channel: "Paid Social", spend: 28000,  leads: 185, opps: 41, closed: 8, revenue: 420000, roi: 1400},
+    { campaign: "Google Search Brand",        channel: "SEM",         spend: 18500,  leads: 892, opps: 67, closed: 14,revenue: 198000, roi: 970 },
+    { campaign: "Webinar: AI in Finance",     channel: "Content",     spend: 8200,   leads: 541, opps: 38, closed: 7, revenue: 112000, roi: 1266},
+    { campaign: "G2 Review Push",             channel: "Review Sites",spend: 5500,   leads: 228, opps: 19, closed: 5, revenue: 84000,  roi: 1427},
+    { campaign: "Cold Outbound SDR",          channel: "Outbound",    spend: 62000,  leads: 1840,opps: 92, closed: 11,revenue: 295000, roi: 376 },
+    { campaign: "Partner Referral Program",   channel: "Partners",    spend: 15000,  leads: 148, opps: 52, closed: 18,revenue: 680000, roi: 4433},
+    { campaign: "Product Hunt Launch",        channel: "PR/Launch",   spend: 3800,   leads: 2140,opps: 21, closed: 3, revenue: 42000,  roi: 1005},
+  ],
+
+  web_analytics: [
+    { month: "Oct 2025", sessions: 84200,  pageviews: 312000, signups: 1820, trials: 410, paid_conversions: 62 },
+    { month: "Nov 2025", sessions: 91800,  pageviews: 338000, signups: 2140, trials: 488, paid_conversions: 71 },
+    { month: "Dec 2025", sessions: 78400,  pageviews: 281000, signups: 1640, trials: 352, paid_conversions: 58 },
+    { month: "Jan 2026", sessions: 102100, pageviews: 388000, signups: 2580, trials: 540, paid_conversions: 84 },
+    { month: "Feb 2026", sessions: 115400, pageviews: 441000, signups: 2920, trials: 612, paid_conversions: 97 },
+    { month: "Mar 2026", sessions: 124800, pageviews: 478000, signups: 3180, trials: 668, paid_conversions: 108},
+  ],
+
+  // ── Product Usage ─────────────────────────────────────────────────────────────
+  feature_adoption: [
+    { feature: "Dashboard Builder",   mau: 98400,  pct_users: 69, satisfaction: 4.4, p99_load_ms: 820  },
+    { feature: "Report Scheduler",    mau: 62100,  pct_users: 44, satisfaction: 3.9, p99_load_ms: 1240 },
+    { feature: "API Key Management",  mau: 44800,  pct_users: 32, satisfaction: 4.1, p99_load_ms: 310  },
+    { feature: "Team Collaboration",  mau: 38200,  pct_users: 27, satisfaction: 3.6, p99_load_ms: 540  },
+    { feature: "SSO / SAML",          mau: 29700,  pct_users: 21, satisfaction: 4.6, p99_load_ms: 280  },
+    { feature: "Data Connectors",     mau: 25400,  pct_users: 18, satisfaction: 3.8, p99_load_ms: 2100 },
+    { feature: "Mobile App",          mau: 18900,  pct_users: 13, satisfaction: 3.2, p99_load_ms: 1580 },
+    { feature: "AI Insights (Beta)",  mau: 8200,   pct_users: 6,  satisfaction: 4.2, p99_load_ms: 3400 },
+    { feature: "Audit Logs",          mau: 6800,   pct_users: 5,  satisfaction: 4.5, p99_load_ms: 420  },
+    { feature: "Webhooks",            mau: 5100,   pct_users: 4,  satisfaction: 3.7, p99_load_ms: 190  },
   ],
 };
 
@@ -227,6 +379,7 @@ Always hard-code computed results as numbers in the HTML.
 6. For tab interactivity, add a <script> at the end that wires up .tab-btn clicks to toggle .active.
 7. If the user asks for sorting: add a <script> that wires up <th> click → sort the table rows in the DOM (toggle asc/desc, re-append sorted <tr> elements, update a sort indicator ▲/▼ in the header).
 8. If the user asks for filtering: add a <script> with a filter <select> or <input> above the table that hides non-matching <tr> rows via style.display.
+9. CRITICAL — global scope for onclick: ALL functions called from HTML onclick= attributes (e.g. sortTable, filterRows, toggleTab) MUST be defined at the TOP LEVEL of the <script> block — NOT inside DOMContentLoaded, NOT inside any other function. Event listeners attached via addEventListener can be inside DOMContentLoaded. But any function referenced directly in onclick="fnName()" must be globally accessible via window scope.
 
 ## DATA CONTEXT (real data — use these values):
 ${dataContext}`;
@@ -985,7 +1138,7 @@ Nodes should carry data directly: values, delta, status. Use badge overlays and 
 ### 3. NODE SHAPES — use shape to convey semantic meaning
 Pick the shape that matches the node's role in the diagram.
 
-```svg
+\`\`\`svg
 <!-- ROUNDED RECT — default: services, components, tasks -->
 <rect x="X" y="Y" width="150" height="52" rx="8" fill="white" stroke="#94a3b8" stroke-width="1.5"/>
 
@@ -1020,11 +1173,11 @@ Pick the shape that matches the node's role in the diagram.
 <polygon points="65,100 195,100 180,144 50,144"
          fill="rgba(219,234,254,0.4)" stroke="#93c5fd" stroke-width="1.5"/>
 <text x="122" y="127" text-anchor="middle" font-size="11" font-weight="600" fill="#1e40af">CSV Upload</text>
-```
+\`\`\`
 
 ### 4. COMPOSITE NODE PATTERNS — pack more data into one node
 
-```svg
+\`\`\`svg
 <!-- MULTI-METRIC GRID: 3 values side-by-side inside a node (KPI snapshot) -->
 <g>
   <rect x="80" y="80" width="210" height="70" rx="8" fill="white" stroke="#94a3b8" stroke-width="1.5"/>
@@ -1075,7 +1228,7 @@ Pick the shape that matches the node's role in the diagram.
 <rect x="X" y="Y" width="155" height="58" rx="8" fill="#1e40af" stroke="none"/>
 <text x="X+78" y="Y+26" text-anchor="middle" font-size="12" font-weight="700" fill="white">Active Sprint</text>
 <text x="X+78" y="Y+42" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.75)">3 of 5 tasks done</text>
-```
+\`\`\`
 
 ### 5. EMBEDDED MINI SPARKLINES in nodes
 Embed a tiny bar or line chart inside a node body. Scale bars to fit node height (~24px tall chart area).
@@ -1119,8 +1272,8 @@ Add after all nodes/charts are drawn. Use dashed boxes to highlight critical pat
 
 ### 5. CONNECTOR / ARROW STYLES — vary by meaning
 
-Always define these marker variants in your `<defs>`:
-```svg
+Always define these marker variants in your \`<defs>\`:
+\`\`\`svg
 <defs>
   <!-- Standard solid arrow -->
   <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
@@ -1157,13 +1310,13 @@ Always define these marker variants in your `<defs>`:
 <!-- FEEDBACK LOOP — curved arc back (refinement loops, iterative flows) -->
 <path d="M 500,90 C 500,40 200,40 200,90" fill="none" stroke="#7c3aed" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arrow)"/>
 <text x="350" y="35" text-anchor="middle" font-size="9" fill="#7c3aed">refine (max 2x)</text>
-```
+\`\`\`
 
 ### 6. IMAGE THUMBNAIL NODES — embed picture frames as nodes
 Use when the diagram involves video frames, sample images, document previews, or dataset examples.
 These are colored rect "frames" with a picture-frame border, a placeholder colored fill, and a label beneath.
 
-```svg
+\`\`\`svg
 <!-- Image thumbnail node: video frame / sample image -->
 <g>
   <!-- Outer picture frame -->
@@ -1199,12 +1352,12 @@ These are colored rect "frames" with a picture-frame border, a placeholder color
 <rect x="194" y="113" width="40" height="3" rx="1" fill="#e2e8f0"/>
 <text x="224" y="146" text-anchor="middle" font-size="10" font-weight="600" fill="#1e293b">Evidence Set</text>
 <text x="224" y="158" text-anchor="middle" font-size="9" fill="#64748b">(S)</text>
-```
+\`\`\`
 
 ### 7. CHARACTER / ROBOT AVATAR NODES — circular icon nodes for agents/roles
 Use for agent pipelines, multi-agent systems, roles in a workflow. Each agent gets a circle with an icon or stylized letter avatar.
 
-```svg
+\`\`\`svg
 <!-- Robot / Agent avatar node -->
 <g>
   <!-- Outer ring (role color) -->
@@ -1237,12 +1390,12 @@ Use for agent pipelines, multi-agent systems, roles in a workflow. Each agent ge
   <text x="350" y="153" text-anchor="middle" font-size="10" font-weight="700" fill="#1e293b">Stylist</text>
   <text x="350" y="165" text-anchor="middle" font-size="9" fill="#64748b">Agent</text>
 </g>
-```
+\`\`\`
 
 ### 8. MATHEMATICAL NOTATION — subscripts, superscripts, Greek letters
 Use SVG tspan for inline math. Never use actual Unicode math symbols (they render inconsistently across browsers).
 
-```svg
+\`\`\`svg
 <!-- Subscript: D_KL -->
 <text x="100" y="120" font-size="11" fill="#1e293b">
   D<tspan dy="3" font-size="8">KL</tspan>
@@ -1267,13 +1420,13 @@ Use SVG tspan for inline math. Never use actual Unicode math symbols (they rende
 <text x="200" y="130" text-anchor="middle" font-size="10" fill="#64748b">
   ℒ<tspan dy="3" font-size="8">Hybrid</tspan><tspan dy="-3"> = αℒ</tspan><tspan dy="3" font-size="8">CE</tspan><tspan dy="-3"> + ℒ</tspan><tspan dy="3" font-size="8">soft</tspan>
 </text>
-```
+\`\`\`
 
 ### 9. MIXED PANEL CONTENT — flowchart + embedded chart in same SVG
 A single SVG panel can show a pipeline on the left and an inline chart/distribution on the right.
 Use a vertical divider line to separate the two halves.
 
-```svg
+\`\`\`svg
 <svg width="560" height="280" xmlns="http://www.w3.org/2000/svg">
   <!-- Panel label (a) -->
   <text x="12" y="18" font-size="13" font-weight="800" fill="#1e293b">(a) Training Framework</text>
@@ -1312,12 +1465,12 @@ Use a vertical divider line to separate the two halves.
   <!-- X axis -->
   <line x1="318" y1="220" x2="400" y2="220" stroke="#94a3b8" stroke-width="1"/>
 </svg>
-```
+\`\`\`
 
 ### 10. WARM PASTEL ZONE FILLS — not transparent, not dark
 Zone backgrounds should feel warm and colored, not just rgba(x,y,z,0.1). Use higher opacity fills.
 
-```svg
+\`\`\`svg
 <!-- Cream / warm yellow zone (neutral/input) -->
 <rect x="20" y="40" width="200" height="180" rx="10"
       fill="#fef9c3" stroke="#fde047" stroke-width="1.5"/>
@@ -1347,12 +1500,12 @@ Zone backgrounds should feel warm and colored, not just rgba(x,y,z,0.1). Use hig
       fill="rgba(255,255,255,0.6)" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5,3"/>
 <rect x="44" y="52" width="90" height="16" rx="8" fill="#1e293b"/>
 <text x="89" y="63" text-anchor="middle" font-size="9" font-weight="700" fill="white">Module A</text>
-```
+\`\`\`
 
 ### 11. PROMINENT FEEDBACK LOOP ARCS — iterative refinement flows
 These are visually dominant: thick colored arcs over the top of the diagram connecting end back to start.
 
-```svg
+\`\`\`svg
 <!-- Feedback/refinement arc (right-to-left, over the top) -->
 <!-- From right zone back to earlier zone, arcing above -->
 <path d="M 680,80 C 680,20 200,20 200,80"
@@ -1367,7 +1520,7 @@ These are visually dominant: thick colored arcs over the top of the diagram conn
       fill="none" stroke="#059669" stroke-width="1.5" stroke-dasharray="4,3"
       marker-end="url(#arrow)"/>
 <text x="462" y="133" font-size="9" fill="#059669">retry</text>
-```
+\`\`\`
 
 ### 12. WHICH PATTERN TO USE — decision guide
 - **projects/tasks/people** → Zone pipeline (warm pastel fills) + rich nodes (progress bars, avatar stacks, dept tags) + annotation callout on blocked items
@@ -1425,6 +1578,16 @@ This prevents nodes from drifting far apart and overlapping within clusters.
 8. ABSOLUTELY NO STAT CARDS. Do not create <div> elements that contain only text numbers (KPI cards, metric tiles, summary cards). Every panel MUST contain an SVG or D3 chart. If you are tempted to add a "summary card" with just a number — replace it with a chart instead.
 9. NO EMOJI anywhere in the HTML output — not in headings, not in cards, not in labels. Emoji render as garbled characters (ðŸ"´, â€¢) in many browsers and PDF exports. Use plain text only.
 
+## SVG CLIPPING — ZERO TOLERANCE (violations will be caught and rejected)
+Every SVG you write MUST follow these rules or labels/nodes WILL be clipped:
+- Add \`overflow="visible"\` to EVERY \`<svg>\` element — no exceptions.
+- viewBox must include padding: add at least 20px on all sides beyond your content bounds. If nodes go from x=40 to x=860, set viewBox="-20 -20 920 [height+40]".
+- D3 margin convention: top/bottom margins must be at least 50px for axis labels, 60px if you have a chart title inside the SVG.
+- Text labels on bars/nodes: always check that y-position for labels above bars is margin.top or greater (never negative). Labels below bars must not exceed height + margin.bottom.
+- Long text in SVG \`<text>\` elements: use \`<tspan>\` line-breaks or truncate with ellipsis — never let text overflow the SVG width.
+- After computing D3 layouts, verify the outermost element fits: \`d3.max(nodes, d => d.x + nodeWidth)\` must be < svgWidth.
+- Container divs holding SVGs: NEVER set \`overflow: hidden\` or a fixed \`max-height\` smaller than the SVG.
+
 ## DATA CONTEXT:
 ${dataContext}`;
 }
@@ -1432,61 +1595,19 @@ ${dataContext}`;
 // ── Pipeline agent prompts ─────────────────────────────────────────────────────
 
 function buildPlannerPrompt() {
-  return `You are a dashboard planning agent. Given a user request and available data, output a JSON specification for the dashboard.
+  return `Output a JSON dashboard plan. ONLY the JSON object — no markdown, no prose.
 
-Output ONLY valid JSON — no markdown, no prose, no code fences.
+{"title":string,"layout":"single-col"|"two-col"|"grid","components":[{"type":string,"purpose":string,"priority":number}],"dataSourcesUsed":[string],"highlights":[string]}
 
-Schema:
-{
-  "title": string,
-  "summary": string,
-  "layout": "single-col" | "two-col" | "grid",
-  "components": [
-    { "type": string, "purpose": string, "dataKeys": [string], "priority": number }
-  ],
-  "kpiCount": number,
-  "chartCount": number,
-  "tableCount": number,
-  "dataSourcesUsed": [string],
-  "highlights": [string]
-}
-
-Rules:
-- 3–8 components total. Priority 1 = most important.
-- Choose component types from: kpi-card, bar-chart, line-chart, pie-chart, table, stat-card, progress-bar, radar-chart, treemap.
-- dataSourcesUsed should list the mock data arrays that are relevant.
-- highlights = 3–5 key insights the dashboard should surface.
-- Output ONLY the JSON object.`;
+component types: kpi-card, bar-chart, line-chart, pie-chart, table, stat-card, progress-bar, radar-chart, treemap. 3–8 components. highlights = 3–5 key insights.`;
 }
 
 function buildStylistPrompt() {
-  return `You are a dashboard styling agent. Given a plan spec, output a JSON style guide.
+  return `Output a JSON style guide for the dashboard plan. ONLY the JSON object — no markdown, no prose.
 
-Output ONLY valid JSON — no markdown, no prose, no code fences.
+{"colorScheme":"dark"|"light","primaryAccent":hex,"cardStyle":"glass"|"flat"|"elevated"|"outlined","density":"compact"|"normal"|"spacious","chartPalette":[6 hex colors]}
 
-Schema:
-{
-  "colorScheme": "dark" | "light",
-  "primaryAccent": string (hex),
-  "secondaryAccent": string (hex),
-  "successColor": string (hex),
-  "warningColor": string (hex),
-  "errorColor": string (hex),
-  "cardStyle": "glass" | "flat" | "elevated" | "outlined",
-  "density": "compact" | "normal" | "spacious",
-  "typography": {
-    "scale": "small" | "medium" | "large",
-    "headingWeight": number,
-    "monoAccents": boolean
-  },
-  "chartPalette": [6 hex color strings],
-  "rationale": string
-}
-
-Rules:
-- Choose colors that work well together and suit the dashboard's purpose.
-- chartPalette must have exactly 6 distinct, visually harmonious hex colors.
-- Output ONLY the JSON object.`;
+chartPalette must have exactly 6 distinct harmonious hex colors.`;
 }
 
 function buildCriticPrompt(mode = "html") {
@@ -1559,96 +1680,37 @@ Output ONLY the JSON object.`;
 }
 
 function buildEditorialPlannerPrompt(mode, dataContext) {
-  const typeName = mode === "infographic" ? "data-driven editorial infographic" : "technical diagram / academic figure";
-  const styleDesc = mode === "infographic"
-    ? "The Pudding / Reuters Graphics / Bloomberg BW editorial style — full-bleed sections, narrative prose, inline SVG charts, NO cards or dashboards"
-    : "D3.js academic figure style — SVG flowcharts, node-link diagrams, methodology figures, white background, serif typography, NO cards or HTML components";
+  const typeName = mode === "infographic" ? "infographic" : "diagram";
+  const visualTypes = "annotated-chart, timeline, flow-diagram, comparison-table, network-graph, bar-chart, scatter-plot, treemap";
 
-  return `You are an editorial content strategist. Given a user request and available data, output a JSON specification for a ${typeName}.
+  return `Output a JSON plan for a ${typeName}. ONLY the JSON object — no markdown, no prose.
 
-Output ONLY valid JSON — no markdown, no prose, no code fences.
+{"title":string,"subtitle":string,"narrative":string,"sections":[{"heading":string,"purpose":string,"visualType":string,"keyFacts":[string]}],"dataSourcesUsed":[string],"visualMetaphors":[string],"typography":"serif"|"sans","colorMood":string}
 
-Schema:
-{
-  "title": string,
-  "subtitle": string,
-  "narrative": string (the story arc, 1-2 sentences),
-  "sections": [
-    { "heading": string, "purpose": string, "visualType": string, "keyFacts": [string] }
-  ],
-  "dataSourcesUsed": [string],
-  "visualMetaphors": [string],
-  "typography": "serif" | "sans",
-  "colorMood": string
-}
+Rules: 2–5 sections. visualType from: ${visualTypes}. keyFacts = 2–4 facts verbatim from data (exact names/numbers). No dashboard cards or KPI tiles.
 
-Rules:
-- 2–5 sections. Each section has a clear editorial purpose.
-- visualType must be one of: annotated-chart, timeline, flow-diagram, comparison-table, stat-callout, network-graph, bar-chart, scatter-plot, treemap
-- keyFacts: 2–4 specific facts pulled VERBATIM from the DATA CONTEXT below — use exact names, numbers, and dates. Do NOT invent any names, values, or entities not present in the data.
-- dataSourcesUsed: list the exact array names from DATA CONTEXT that are relevant (e.g. "employees", "projects", "kpi_metrics")
-- This will be rendered as: ${styleDesc}
-- Do NOT suggest dashboard cards, KPI tiles, or component grids
-- Output ONLY the JSON object.
-
-## DATA CONTEXT (use exact names and values from this):
+DATA CONTEXT:
 ${dataContext}`;
 }
 
 function buildLayoutInspectorPrompt(mode) {
   const isEditorial = mode === "infographic" || mode === "diagram";
-  return `You are a frontend layout inspector. Your job is to statically analyze HTML/CSS/SVG source code and identify elements that will visually clip, overflow, or not render correctly in a browser iframe.
+  return `Scan this HTML for layout bugs. Output ONLY a JSON object — no markdown, no prose.
 
-Output ONLY valid JSON — no markdown, no prose, no code fences.
+{"severity":"none"|"minor"|"major","clippingIssues":[string],"overflowIssues":[string],"sizingIssues":[string],"fixes":[string]}
 
-Schema:
-{
-  "severity": "none" | "minor" | "major",
-  "clippingIssues": [string],
-  "overflowIssues": [string],
-  "sizingIssues": [string],
-  "fixes": [string]
-}
+Check for: SVG missing overflow="visible" with near-edge labels; text nodes outside viewBox bounds; overflow:hidden on chart containers; SVG width/height of 0; legends overlapping chart area; ${isEditorial ? "SVG viewBox too tight for content." : "Recharts ResponsiveContainer with height=100% in unbound flex parent."}
 
-Scan specifically for these patterns:
-
-CLIPPING — elements likely to get cut off:
-- SVG elements that lack \`overflow="visible"\` when labels/text extend near the edges
-- SVG \`<text>\` nodes near the top/bottom of the viewBox without padding
-- Funnel, pyramid, or trapezoid shapes where bottom labels fall outside the SVG height
-- D3 or inline SVG charts where the SVG height is too small for axis labels
-- \`clip-path\` applied to a container that cuts off child elements
-- Recharts containers where \`height\` is a fixed small value (< 200px)
-- Any chart legend that overlaps or overflows the chart area
-
-OVERFLOW — containers hiding content:
-- \`overflow: hidden\` on a flex/grid container that holds a chart or diagram
-- \`overflow: hidden\` on a card/div that contains an SVG with labels
-- Parent container with a fixed \`max-height\` smaller than chart content
-- \`white-space: nowrap\` on labels that may get cut
-
-SIZING — wrong dimensions:
-- SVG \`width\` or \`height\` attributes set to 0 or very small values
-- Recharts \`<ResponsiveContainer>\` with \`height="100%"\` inside a flex parent with no fixed height
-- Absolute-positioned elements with no containing block
-- Elements wider than their container causing horizontal scroll inside the canvas
-- Container div with a fixed \`height\` or \`min-height\` larger than its SVG content — causes whitespace gap below charts
-- D3 SVG whose \`height\` attribute is set before simulation ends (should be set inside the "end" callback after computing node bounding box)
-
-For each issue found, write a concrete, specific fix in the "fixes" array (e.g. "Add overflow='visible' to the funnel SVG on line ~N" or "Change the KPI row container from overflow:hidden to overflow:visible").
-
-If no issues are found, set severity to "none" and leave all arrays empty.
-
-${isEditorial ? "This is an editorial infographic/diagram — pay special attention to SVG viewBox bounds and text label overflow." : "This is a dashboard — pay special attention to Recharts ResponsiveContainer heights and card overflow:hidden."}
-
-Output ONLY the JSON object.`;
+Each fix must be specific (e.g. "Add overflow='visible' to SVG on line ~N"). If no issues, severity="none" and empty arrays.`;
 }
 
 // ── Multi-agent pipeline ───────────────────────────────────────────────────────
 
 async function runPipeline(prompt, mode, dataContext, apiKey, emit = () => {}) {
-  const MAX_REFINE_LOOPS = 2;
   const isEditorial = mode === "infographic" || mode === "diagram";
+  const MAX_REFINE_LOOPS = isEditorial ? 1 : 2;
+  const SONNET = "claude-sonnet-4-20250514";
+  const HAIKU = SONNET;
   const pipelineStart = Date.now();
   const log = (step, msg, extra = "") => {
     const elapsed = ((Date.now() - pipelineStart) / 1000).toFixed(1);
@@ -1666,10 +1728,10 @@ async function runPipeline(prompt, mode, dataContext, apiKey, emit = () => {}) {
     const planRaw = await callClaude(
       buildEditorialPlannerPrompt(mode, dataContext),
       `User request: ${prompt}`,
-      apiKey, 2000
+      apiKey, 2000, HAIKU
     );
     try {
-      planSpec = JSON.parse(planRaw);
+      planSpec = parseJSON(planRaw);
       log("planner", `Done in ${((Date.now()-t)/1000).toFixed(1)}s`, `title="${planSpec.title}"  sections=${planSpec.sections?.length ?? 0}  sources=[${(planSpec.dataSourcesUsed||[]).join(", ")}]`);
     } catch {
       planSpec = { title: prompt, sections: [], dataSourcesUsed: [], visualMetaphors: [] };
@@ -1683,10 +1745,10 @@ async function runPipeline(prompt, mode, dataContext, apiKey, emit = () => {}) {
     const planRaw = await callClaude(
       buildPlannerPrompt(),
       `User request: ${prompt}\n\nDATA CONTEXT:\n${dataContext}`,
-      apiKey, 2000
+      apiKey, 2000, HAIKU
     );
     try {
-      planSpec = JSON.parse(planRaw);
+      planSpec = parseJSON(planRaw);
       log("planner", `Done in ${((Date.now()-t1)/1000).toFixed(1)}s`, `title="${planSpec.title}"  components=${planSpec.components?.length ?? 0}  layout=${planSpec.layout}`);
     } catch {
       planSpec = { title: "Dashboard", components: [], layout: "grid", dataSourcesUsed: [], highlights: [] };
@@ -1699,10 +1761,10 @@ async function runPipeline(prompt, mode, dataContext, apiKey, emit = () => {}) {
     const styleRaw = await callClaude(
       buildStylistPrompt(),
       `PLAN SPEC:\n${JSON.stringify(planSpec, null, 2)}`,
-      apiKey, 1000
+      apiKey, 1000, HAIKU
     );
     try {
-      styleGuide = JSON.parse(styleRaw);
+      styleGuide = parseJSON(styleRaw);
       log("stylist", `Done in ${((Date.now()-t2)/1000).toFixed(1)}s`, `scheme=${styleGuide.colorScheme}  accent=${styleGuide.primaryAccent}  cards=${styleGuide.cardStyle}`);
     } catch {
       styleGuide = {
@@ -1764,11 +1826,11 @@ USER REQUEST:\n${prompt}`;
   const layoutRaw = await callClaude(
     buildLayoutInspectorPrompt(mode),
     `HTML TO INSPECT:\n${html}`,
-    apiKey, 1500
+    apiKey, 1500, HAIKU
   );
   let layoutReport;
   try {
-    layoutReport = JSON.parse(layoutRaw);
+    layoutReport = parseJSON(layoutRaw);
     log("inspector", `Done in ${((Date.now()-tInsp)/1000).toFixed(1)}s`, `severity=${layoutReport.severity}  clipping=${layoutReport.clippingIssues?.length ?? 0}  overflow=${layoutReport.overflowIssues?.length ?? 0}  fixes=${layoutReport.fixes?.length ?? 0}`);
   } catch {
     layoutReport = { severity: "none", clippingIssues: [], overflowIssues: [], sizingIssues: [], fixes: [] };
@@ -1812,11 +1874,11 @@ CURRENT HTML:\n${html}`;
   const criticRaw = await callClaude(
     buildCriticPrompt(mode),
     `ORIGINAL USER REQUEST:\n${prompt}\n\nGENERATED HTML:\n${html}`,
-    apiKey, 2000
+    apiKey, 2000, SONNET
   );
   let criticFeedback;
   try {
-    criticFeedback = JSON.parse(criticRaw);
+    criticFeedback = parseJSON(criticRaw);
     log("critic", `Done in ${((Date.now()-tCrit)/1000).toFixed(1)}s`, `score=${criticFeedback.score}/10  issues=${criticFeedback.issues?.length ?? 0}  suggestions=${criticFeedback.suggestions?.length ?? 0}`);
     if (criticFeedback.issues?.length) console.log("  Issues:\n" + criticFeedback.issues.map((v,i) => `    ${i+1}. ${v}`).join("\n"));
   } catch {
@@ -1843,7 +1905,7 @@ CURRENT HTML:\n${html}`;
   const outputTypeName = isEditorial ? (mode === "infographic" ? "infographic" : "diagram") : "dashboard";
   while (
     refinements < MAX_REFINE_LOOPS &&
-    (criticFeedback.score < 7 || (criticFeedback.issues && criticFeedback.issues.length > 0))
+    criticFeedback.score < 8
   ) {
     emit({ step: "refining" });
     log("refiner", `Pass ${refinements + 1} running… (score was ${criticFeedback.score}/10, ${criticFeedback.issues?.length ?? 0} issues)`);
@@ -1857,11 +1919,11 @@ CURRENT HTML:\n${html}`;
       const recriticRaw = await callClaude(
         buildCriticPrompt(mode),
         `ORIGINAL USER REQUEST:\n${prompt}\n\nGENERATED HTML:\n${html}`,
-        apiKey, 2000
+        apiKey, 2000, SONNET
       );
-      try { criticFeedback = JSON.parse(recriticRaw); }
+      try { criticFeedback = parseJSON(recriticRaw); }
       catch { break; }
-      if (criticFeedback.score >= 7 && (!criticFeedback.issues || criticFeedback.issues.length === 0)) break;
+      if (criticFeedback.score >= 8) break;
     }
   }
 
@@ -1870,9 +1932,15 @@ CURRENT HTML:\n${html}`;
   return { html, planSpec, styleGuide, criticFeedback, layoutReport, refinements };
 }
 
+// ── JSON parser that tolerates markdown fences ────────────────────────────────
+function parseJSON(raw) {
+  const stripped = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim();
+  return JSON.parse(stripped);
+}
+
 // ── Shared Claude call ────────────────────────────────────────────────────────
 
-async function callClaude(systemPrompt, userPrompt, apiKey, maxTokens = 16000) {
+async function callClaude(systemPrompt, userPrompt, apiKey, maxTokens = 16000, model = "claude-sonnet-4-20250514") {
   const response = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -1881,7 +1949,7 @@ async function callClaude(systemPrompt, userPrompt, apiKey, maxTokens = 16000) {
       "anthropic-version": "2023-06-01",
     },
     body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
+      model,
       max_tokens: maxTokens,
       system: systemPrompt,
       messages: [{ role: "user", content: userPrompt }],
@@ -1956,7 +2024,7 @@ app.post("/generate-infographic", async (req, res) => {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return res.status(500).json({ error: "ANTHROPIC_API_KEY not set" });
   try {
-    const dataContext = buildDataContext();
+    const dataContext = await buildDataContext();
     const html = await callClaude(buildInfographicSystemPrompt(dataContext), prompt, apiKey);
     res.json({ html });
   } catch (err) {
@@ -1971,7 +2039,7 @@ app.post("/generate-diagram", async (req, res) => {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return res.status(500).json({ error: "ANTHROPIC_API_KEY not set" });
   try {
-    const dataContext = buildDataContext();
+    const dataContext = await buildDataContext();
     const html = await callClaude(buildDiagramSystemPrompt(dataContext), prompt, apiKey);
     res.json({ html });
   } catch (err) {
@@ -2000,7 +2068,7 @@ app.post("/generate-pipeline", async (req, res) => {
   const heartbeat = setInterval(() => res.write(": ping\n\n"), 15000);
 
   try {
-    const dataContext = buildDataContext();
+    const dataContext = await buildDataContext();
     const result = await runPipeline(prompt, mode, dataContext, apiKey, emit);
     emit({ result });
   } catch (err) {
