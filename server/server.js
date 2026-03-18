@@ -1648,35 +1648,13 @@ Scoring: 9-10 = excellent, 7-8 = good, 5-6 = needs improvement, 1-4 = poor.
 Output ONLY the JSON object.`;
   }
 
-  return `You are a dashboard quality critic. Review the generated dashboard HTML against the original user request and output a JSON critique.
+  return `Score this dashboard HTML. ONLY the JSON object — no markdown, no prose.
 
-Output ONLY valid JSON — no markdown, no prose, no code fences.
+{"score":number(1-10),"issues":[string],"suggestions":[string],"missingKPIs":[string],"dataAccuracy":"accurate"|"minor-issues"|"major-issues","layoutAssessment":"good"|"cluttered"|"sparse"}
 
-Schema:
-{
-  "score": number (1-10),
-  "issues": [string],
-  "suggestions": [string],
-  "missingKPIs": [string],
-  "dataAccuracy": "accurate" | "minor-issues" | "major-issues",
-  "layoutAssessment": "good" | "cluttered" | "sparse"
-}
-
-Check for:
-1. Does the dashboard address everything in the user's prompt?
-2. Are real data values used (not placeholder text like "XXX" or "TBD")?
-3. Are computed/aggregate values correct — verify totals, percentages, averages against the raw data?
-4. Are KPI cards present when the prompt implies metrics?
-5. Is the layout balanced — not too cluttered or sparse?
-6. Are all values non-placeholder and meaningful?
-
-Data accuracy rules (lower score for any violations):
-- Wrong computed total/percentage vs source data: -2 per error
-- Fabricated values not derivable from available data: -2 per instance
-- Any "N/A", "TBD", "XX", "??", or empty value cells: -1 each
-
-Scoring: 9-10 = excellent, 7-8 = good, 5-6 = needs improvement, 1-4 = poor.
-Output ONLY the JSON object.`;
+Check: prompt fully addressed; no placeholder text (XXX/TBD/N/A); computed values correct; KPIs present if implied; layout balanced.
+Deduct: -2 wrong totals/percentages, -2 fabricated values, -1 placeholder cells.
+Scoring: 9-10=excellent, 7-8=good, 5-6=needs work, 1-4=poor.`;
 }
 
 function buildEditorialPlannerPrompt(mode, dataContext) {
@@ -1819,25 +1797,34 @@ USER REQUEST:\n${prompt}`;
   let html = await callClaude(sysPrompt, visualizerPrompt, apiKey, 16000);
   log("visualizer", `Done in ${((Date.now()-tViz)/1000).toFixed(1)}s`, `html length=${html.length} chars`);
 
-  // Step 3.5: Layout Inspector — scan for clipping/overflow/sizing issues
+  // Step 3.5 + 4: Layout Inspector and Critic run in parallel (both only read html)
   emit({ step: "inspecting" });
-  log("inspector", "Layout inspector running…");
+  log("inspector", "Layout inspector + critic running in parallel…");
   const tInsp = Date.now();
-  const layoutRaw = await callClaude(
-    buildLayoutInspectorPrompt(mode),
-    `HTML TO INSPECT:\n${html}`,
-    apiKey, 1500, HAIKU
-  );
+  const [layoutRaw, criticRaw] = await Promise.all([
+    callClaude(
+      buildLayoutInspectorPrompt(mode),
+      `HTML TO INSPECT:\n${html}`,
+      apiKey, 1500, HAIKU
+    ),
+    callClaude(
+      buildCriticPrompt(mode),
+      `ORIGINAL USER REQUEST:\n${prompt}\n\nGENERATED HTML:\n${html}`,
+      apiKey, 2000, SONNET
+    ),
+  ]);
+  log("inspector", `Parallel calls done in ${((Date.now()-tInsp)/1000).toFixed(1)}s`);
+
   let layoutReport;
   try {
     layoutReport = parseJSON(layoutRaw);
-    log("inspector", `Done in ${((Date.now()-tInsp)/1000).toFixed(1)}s`, `severity=${layoutReport.severity}  clipping=${layoutReport.clippingIssues?.length ?? 0}  overflow=${layoutReport.overflowIssues?.length ?? 0}  fixes=${layoutReport.fixes?.length ?? 0}`);
+    log("inspector", `severity=${layoutReport.severity}  clipping=${layoutReport.clippingIssues?.length ?? 0}  overflow=${layoutReport.overflowIssues?.length ?? 0}  fixes=${layoutReport.fixes?.length ?? 0}`);
   } catch {
     layoutReport = { severity: "none", clippingIssues: [], overflowIssues: [], sizingIssues: [], fixes: [] };
     log("inspector", `JSON parse failed — skipping layout fix`);
   }
 
-  // If layout issues found, do a targeted fix pass before the Critic
+  // If layout issues found, do a targeted fix pass before refinement
   if (layoutReport.severity !== "none" && layoutReport.fixes && layoutReport.fixes.length > 0) {
     const allLayoutIssues = [
       ...(layoutReport.clippingIssues || []),
@@ -1867,19 +1854,12 @@ CURRENT HTML:\n${html}`;
     log("inspector", `Layout fix done in ${((Date.now()-tFix)/1000).toFixed(1)}s`);
   }
 
-  // Step 4: Critic
+  // Parse critic result
   emit({ step: "critiquing" });
-  log("critic", "Critic running…");
-  const tCrit = Date.now();
-  const criticRaw = await callClaude(
-    buildCriticPrompt(mode),
-    `ORIGINAL USER REQUEST:\n${prompt}\n\nGENERATED HTML:\n${html}`,
-    apiKey, 2000, SONNET
-  );
   let criticFeedback;
   try {
     criticFeedback = parseJSON(criticRaw);
-    log("critic", `Done in ${((Date.now()-tCrit)/1000).toFixed(1)}s`, `score=${criticFeedback.score}/10  issues=${criticFeedback.issues?.length ?? 0}  suggestions=${criticFeedback.suggestions?.length ?? 0}`);
+    log("critic", `score=${criticFeedback.score}/10  issues=${criticFeedback.issues?.length ?? 0}  suggestions=${criticFeedback.suggestions?.length ?? 0}`);
     if (criticFeedback.issues?.length) console.log("  Issues:\n" + criticFeedback.issues.map((v,i) => `    ${i+1}. ${v}`).join("\n"));
   } catch {
     criticFeedback = { score: 7, issues: [], suggestions: [] };
