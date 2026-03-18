@@ -648,6 +648,13 @@ function buildDiagramSystemPrompt(dataContext) {
 
 Output a COMPLETE, self-contained HTML document (<!DOCTYPE html> through </html>). No markdown. No code fences.
 
+⚠️ CRITICAL — READ BEFORE WRITING A SINGLE LINE:
+You are NOT building a dashboard. You are NOT building a summary page. You are NOT building stat cards.
+EVERY panel you create MUST contain a rendered SVG or D3 visualization — a chart, a network graph, a flowchart, a node diagram, an axis plot.
+If a panel contains only text or numbers with no SVG/D3, that panel is WRONG. Replace it with a chart.
+Do not create an "Executive Summary" section. Do not create bullet-point cards. Do not create KPI tiles.
+Your FIRST element after the page title must be a D3 script or an SVG element — not a <div> with text.
+
 ## AVAILABLE LIBRARIES
 Load via CDN — include these script tags in <head>:
 - D3 v7: <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
@@ -885,6 +892,8 @@ This prevents nodes from drifting far apart and overlapping within clusters.
 5. @media print styles must be included so the page prints/exports to PDF correctly.
 6. NEVER use dark backgrounds. NEVER add interactive buttons or tabs.
 7. DATA FIDELITY: Employee names, project names, budgets, salaries, dates, and percentages must be taken verbatim from the DATA CONTEXT below. If a value is not in the data, compute it from values that are (e.g. burn rate = spent/budget). Never substitute with generic names like "Project Alpha" or "Alice Chen".
+8. ABSOLUTELY NO STAT CARDS. Do not create <div> elements that contain only text numbers (KPI cards, metric tiles, summary cards). Every panel MUST contain an SVG or D3 chart. If you are tempted to add a "summary card" with just a number — replace it with a chart instead.
+9. NO EMOJI anywhere in the HTML output — not in headings, not in cards, not in labels. Emoji render as garbled characters (ðŸ"´, â€¢) in many browsers and PDF exports. Use plain text only.
 
 ## DATA CONTEXT:
 ${dataContext}`;
@@ -974,14 +983,15 @@ Check for:
 2. Are all data values concrete and specific — no "N/A", "TBD", "XX%", or placeholder text?
 3. Are computed values (totals, percentages, averages) arithmetically correct?
 4. Is the visual hierarchy clear — main story obvious at a glance?
-5. Does it use the correct output format — ${mode === "infographic" ? "full editorial HTML with prose sections, not dashboard cards" : "SVG/D3 figure with proper node labels and connectors, not HTML cards"}?
+5. Does it use the correct output format?${mode === "infographic" ? "\n   VALID: Full editorial HTML with prose sections and inline SVG charts.\n   INVALID: MUI card grids, stat card dashboards, number-only layouts." : "\n   VALID: SVG/D3 charts inside <div> containers, multi-panel figures with D3 force/bar/scatter/network, hand-crafted SVG flowcharts.\n   INVALID: Pure HTML stat cards with just text/numbers, MUI-style card grids with no SVG content, dashboards with no D3 or SVG visualization at all."}
 6. Are there any visual encoding issues (wrong chart type, missing labels, unreadable contrast)?
 
 Penalty rules (lower score significantly for these):
-- Any MUI/HTML card components in output: -3 points
+- HTML stat cards with ONLY text/numbers and NO SVG or D3 chart: -4 points
+- MUI/React component syntax (sx={{}}, <Box>, <Card>) in output: -3 points
 - Placeholder/fake data values: -2 points per instance
-- Wrong format (dashboard instead of ${typeName}): -4 points
 - Missing key visual elements the prompt asked for: -2 points each
+- NOTE: div containers wrapping D3/SVG charts are CORRECT and should NOT be penalized
 
 Scoring: 9-10 = excellent, 7-8 = good, 5-6 = needs improvement, 1-4 = poor.
 Output ONLY the JSON object.`;
