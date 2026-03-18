@@ -273,60 +273,46 @@ function DataSourcesSection({ userSources, onAddSource, onDeleteSource, onFetchS
   );
 }
 
-export default function Sidebar({ mode, drawerWidth, userSources, onAddSource, onDeleteSource, onFetchSource, onUploadCsv }) {
+export default function Sidebar({ open, mode, drawerWidth, userSources, onAddSource, onDeleteSource, onFetchSource, onUploadCsv }) {
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
-
   return (
     <Drawer
       variant="permanent"
       sx={{
-        width: drawerWidth,
+        width: open ? drawerWidth : 0,
         flexShrink: 0,
+        transition: "width 0.22s cubic-bezier(0.4,0,0.2,1)",
+        overflow: "hidden",
         "& .MuiDrawer-paper": {
           width: drawerWidth,
           boxSizing: "border-box",
           position: "relative",
           height: "100%",
           overflowY: "auto",
+          overflowX: "hidden",
+          transform: open ? "translateX(0)" : `translateX(-${drawerWidth}px)`,
+          transition: "transform 0.22s cubic-bezier(0.4,0,0.2,1)",
         },
       }}
     >
       {/* Section header */}
       <Box sx={{
-        px: 2, py: 1.25,
-        borderBottom: "1px solid",
-        borderColor: "divider",
+        px: 2, py: 1,
+        borderBottom: "1px solid", borderColor: "divider",
         background: isDark
-          ? "linear-gradient(135deg, rgba(37,99,235,0.08) 0%, rgba(14,165,233,0.04) 100%)"
-          : "linear-gradient(135deg, rgba(37,99,235,0.05) 0%, rgba(14,165,233,0.03) 100%)",
+          ? "linear-gradient(135deg, rgba(37,99,235,0.07) 0%, rgba(14,165,233,0.03) 100%)"
+          : "linear-gradient(135deg, rgba(37,99,235,0.04) 0%, rgba(14,165,233,0.02) 100%)",
       }}>
         <Typography variant="caption" sx={{ color: "text.disabled", fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 700, display: "block" }}>
-          Component Registry
+          {mode === "infographic" || mode === "diagram" ? "Data Sources" : "Component Registry"}
         </Typography>
       </Box>
 
-      <Section
-        title="HTML Components"
-        label="CSS"
-        labelColor="primary"
-        items={HTML_COMPONENTS}
-        defaultExpanded={mode === "html"}
-      />
-      <Section
-        title="MUI Components"
-        label="MUI"
-        labelColor="info"
-        items={MUI_COMPONENTS}
-        defaultExpanded={mode === "mui"}
-      />
-      <Section
-        title="Recharts Charts"
-        label="CHARTS"
-        labelColor="warning"
-        items={CHARTS_COMPONENTS}
-        defaultExpanded={mode === "charts"}
-      />
+      {mode === "html"   && <Section title="HTML Components" label="CSS"    labelColor="primary" items={HTML_COMPONENTS}   defaultExpanded={true} />}
+      {mode === "mui"    && <Section title="MUI Components"  label="MUI"    labelColor="info"    items={MUI_COMPONENTS}    defaultExpanded={true} />}
+      {mode === "charts" && <Section title="Recharts Charts" label="CHARTS" labelColor="warning" items={CHARTS_COMPONENTS} defaultExpanded={true} />}
+
       <DataSourcesSection
         userSources={userSources}
         onAddSource={onAddSource}

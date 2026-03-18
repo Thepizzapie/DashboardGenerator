@@ -850,6 +850,142 @@ The color attribute sets currentColor — use your accent color or #64748b for n
 </div>
 \`\`\`
 
+## PAPERVIZAGENT-QUALITY PATTERNS — use these for publication-grade output
+
+### 1. ZONE PIPELINE LAYOUT
+Multi-stage horizontal flow with colored zone regions and stacked nodes per zone.
+Each zone gets a filled badge header label. Zones drawn BEFORE nodes.
+
+\`\`\`svg
+<svg width="900" height="260" xmlns="http://www.w3.org/2000/svg">
+  <defs><!-- arrow markers + icon defs here --></defs>
+
+  <!-- Zone 1 region (draw all zones first, then nodes on top) -->
+  <rect x="20" y="40" width="230" height="195" rx="10"
+        fill="rgba(219,234,254,0.45)" stroke="#93c5fd" stroke-width="1.5"/>
+  <!-- Zone header badge -->
+  <rect x="20" y="28" width="170" height="20" rx="10" fill="#3b82f6"/>
+  <text x="105" y="41" text-anchor="middle" font-size="10" font-weight="700" fill="white">Zone 1: Data Ingestion</text>
+
+  <!-- Zone 2 region -->
+  <rect x="270" y="40" width="230" height="195" rx="10"
+        fill="rgba(220,252,231,0.45)" stroke="#86efac" stroke-width="1.5"/>
+  <rect x="270" y="28" width="170" height="20" rx="10" fill="#22c55e"/>
+  <text x="355" y="41" text-anchor="middle" font-size="10" font-weight="700" fill="white">Zone 2: Processing</text>
+
+  <!-- Zone 3 region -->
+  <rect x="520" y="40" width="360" height="195" rx="10"
+        fill="rgba(243,232,255,0.45)" stroke="#c4b5fd" stroke-width="1.5"/>
+  <rect x="520" y="28" width="170" height="20" rx="10" fill="#7c3aed"/>
+  <text x="605" y="41" text-anchor="middle" font-size="10" font-weight="700" fill="white">Zone 3: Output</text>
+
+  <!-- Nodes within Zone 1 (stacked vertically) -->
+  <!-- Node A -->
+  <g>
+    <rect x="40" y="60" width="150" height="52" rx="8" fill="white" stroke="#93c5fd" stroke-width="1.5"/>
+    <use href="#icon-database" x="50" y="72" width="16" height="16" color="#2563eb"/>
+    <text x="72" y="84" font-size="11" font-weight="600" fill="#1e293b">Source DB</text>
+    <text x="72" y="98" font-size="10" fill="#64748b">8 tables, 1.2M rows</text>
+  </g>
+  <!-- Node B below Node A -->
+  <g>
+    <rect x="40" y="130" width="150" height="52" rx="8" fill="white" stroke="#93c5fd" stroke-width="1.5"/>
+    <use href="#icon-file" x="50" y="142" width="16" height="16" color="#2563eb"/>
+    <text x="72" y="154" font-size="11" font-weight="600" fill="#1e293b">CSV Uploads</text>
+    <text x="72" y="168" font-size="10" fill="#64748b">3 files / week</text>
+  </g>
+
+  <!-- Arrow from Zone 1 to Zone 2 -->
+  <path d="M 200,115 L 262,115" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+</svg>
+\`\`\`
+
+### 2. RICH NODES — data badge overlays + status rings
+Nodes should carry data directly: values, delta, status. Use badge overlays and colored borders.
+
+\`\`\`svg
+<!-- Node with status color-coded border + data badge -->
+<g>
+  <!-- Red border = at risk/delayed -->
+  <rect x="100" y="80" width="155" height="58" rx="8" fill="white" stroke="#dc2626" stroke-width="2"/>
+  <use href="#icon-folder" x="110" y="92" width="16" height="16" color="#dc2626"/>
+  <text x="132" y="104" font-size="12" font-weight="600" fill="#1e293b">Data Migration</text>
+  <text x="132" y="118" font-size="10" fill="#64748b">$320K · 78% done</text>
+  <!-- Status badge (top-right corner of node) -->
+  <rect x="204" y="74" width="56" height="16" rx="8" fill="#fef2f2" stroke="#fca5a5" stroke-width="1"/>
+  <text x="232" y="85" text-anchor="middle" font-size="9" font-weight="700" fill="#dc2626">-5 days</text>
+</g>
+
+<!-- Node with green border = on track + progress bar embedded -->
+<g>
+  <rect x="100" y="160" width="155" height="68" rx="8" fill="white" stroke="#059669" stroke-width="1.5"/>
+  <use href="#icon-check" x="110" y="170" width="16" height="16" color="#059669"/>
+  <text x="132" y="182" font-size="12" font-weight="600" fill="#1e293b">API Upgrade</text>
+  <text x="132" y="196" font-size="10" fill="#64748b">$180K · 91% done</text>
+  <!-- Inline progress bar -->
+  <rect x="110" y="204" width="130" height="6" rx="3" fill="#e2e8f0"/>
+  <rect x="110" y="204" width="118" height="6" rx="3" fill="#059669"/>  <!-- 91% of 130 = 118px -->
+  <text x="244" y="211" font-size="9" font-weight="600" fill="#059669">91%</text>
+</g>
+
+<!-- Node with person assignment sub-label + avatar circle -->
+<g>
+  <rect x="300" y="80" width="155" height="58" rx="8" fill="white" stroke="#94a3b8" stroke-width="1.5"/>
+  <!-- Avatar circle -->
+  <circle cx="318" cy="109" r="12" fill="#dbeafe" stroke="#93c5fd" stroke-width="1"/>
+  <text x="318" y="113" text-anchor="middle" font-size="9" font-weight="700" fill="#1d4ed8">SC</text>
+  <text x="336" y="104" font-size="12" font-weight="600" fill="#1e293b">Sarah Chen</text>
+  <text x="336" y="118" font-size="10" fill="#64748b">3 projects · Sr. Eng</text>
+</g>
+\`\`\`
+
+### 3. EMBEDDED MINI SPARKLINES in nodes
+Embed a tiny bar or line chart inside a node body. Scale bars to fit node height (~24px tall chart area).
+
+\`\`\`svg
+<!-- Node with embedded mini bar sparkline (e.g. 4-sprint velocity trend) -->
+<g>
+  <rect x="200" y="100" width="165" height="75" rx="8" fill="white" stroke="#94a3b8" stroke-width="1.5"/>
+  <use href="#icon-lightning" x="210" y="110" width="14" height="14" color="#7c3aed"/>
+  <text x="230" y="122" font-size="11" font-weight="600" fill="#1e293b">Sprint Velocity</text>
+  <text x="210" y="136" font-size="9" fill="#94a3b8">last 4 sprints</text>
+  <!-- Mini bars (scale: max=78pts → 28px tall, base y=163) -->
+  <rect x="212" y="151" width="9" height="12" rx="1" fill="#c4b5fd"/>  <!-- S1: 42pts, h=42*28/78=15 -->
+  <rect x="225" y="146" width="9" height="17" rx="1" fill="#a78bfa"/>  <!-- S2: 58pts -->
+  <rect x="238" y="141" width="9" height="22" rx="1" fill="#7c3aed"/>  <!-- S3: 67pts -->
+  <rect x="251" y="136" width="9" height="27" rx="1" fill="#059669"/>  <!-- S4: 78pts, on-track color -->
+  <!-- Trend arrow annotation -->
+  <text x="264" y="148" font-size="9" font-weight="700" fill="#059669">+18%</text>
+</g>
+\`\`\`
+
+### 4. ANNOTATION LAYER — callouts, highlight boxes, leader lines
+Add after all nodes/charts are drawn. Use dashed boxes to highlight critical paths.
+
+\`\`\`svg
+<!-- Dashed callout box highlighting a critical group -->
+<rect x="88" y="66" width="175" height="80" rx="6"
+      fill="rgba(239,68,68,0.05)" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="5,3"/>
+<text x="94" y="62" font-size="10" font-weight="700" fill="#dc2626">CRITICAL PATH</text>
+
+<!-- Leader line with label (curved, dashed) -->
+<path d="M 275,155 C 310,155 310,200 345,200"
+      fill="none" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arrow)"/>
+<text x="350" y="203" font-size="10" fill="#64748b">blocks Mobile launch</text>
+
+<!-- Inline annotation on a data point (e.g. on a D3 bar) -->
+<line x1="bar_cx" y1="bar_top" x2="bar_cx" y2="bar_top-20" stroke="#dc2626" stroke-width="1" stroke-dasharray="3,2"/>
+<rect x="bar_cx-22" y="bar_top-34" width="44" height="14" rx="4" fill="#fef2f2" stroke="#fca5a5"/>
+<text x="bar_cx" y="bar_top-24" text-anchor="middle" font-size="9" font-weight="700" fill="#dc2626">102% OVER</text>
+\`\`\`
+
+### 5. WHICH PATTERN TO USE — decision guide
+- User asks about **projects/tasks/people assignments** → Zone pipeline + rich nodes with progress bars + annotation callout on blocked items
+- User asks about **relationships/network** → D3 force sim with avatar circles as nodes, edge labels, group hulls
+- User asks about **trends/comparisons** → Multi-panel (a)(b)(c): bar chart + line trend + scatter or heatmap
+- User asks about **flow/process** → Zone pipeline with 3–5 horizontal zones, stacked nodes per zone, leader-line annotations
+- User asks about **hierarchy/org** → d3.tree with rich nodes (avatar + name + dept badge)
+
 ## D3 FORCE SIMULATION — WHITESPACE FIX (MANDATORY)
 When using d3.forceSimulation for network/node-link diagrams, you MUST fit the SVG to the actual node bounds after simulation ends. Use this pattern — do NOT set a fixed large SVG height:
 
