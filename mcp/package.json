@@ -1,0 +1,16 @@
+{
+  "name": "dashy-mcp",
+  "version": "1.0.0",
+  "description": "MCP server exposing Dashy dashboard generation as agent tools",
+  "type": "module",
+  "main": "index.js",
+  "bin": { "dashy-mcp": "./index.js" },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.27.1",
+    "zod": "^3.22.4"
+  }
+}
