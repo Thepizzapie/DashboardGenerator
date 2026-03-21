@@ -15,9 +15,9 @@ export function createAppTheme(mode = "dark") {
       error:   { main: "#ef4444" },
       info:    { main: "#38bdf8" },
       background: isDark
-        ? { default: "#1a1d23", paper: "#21262d" }
+        ? { default: "#0f1117", paper: "#161b27" }
         : { default: "#f4f6ff", paper: "#ffffff" },
-      divider: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.07)",
+      divider: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.07)",
       text: isDark
         ? { primary: "#f0f4ff", secondary: "#8b98b4", disabled: "#4a5568" }
         : { primary: "#0f172a", secondary: "#64748b", disabled: "#cbd5e1" },
@@ -39,7 +39,7 @@ export function createAppTheme(mode = "dark") {
         styleOverrides: {
           root: {
             background: isDark
-              ? "rgba(26,29,35,0.92)"
+              ? "rgba(15,17,23,0.92)"
               : "rgba(244,246,255,0.85)",
             backdropFilter: "blur(24px)",
             boxShadow: "none",
@@ -49,7 +49,7 @@ export function createAppTheme(mode = "dark") {
       MuiDrawer: {
         styleOverrides: {
           paper: {
-            background: isDark ? "#1a1d23" : "#f8faff",
+            background: isDark ? "#0f1117" : "#f8faff",
             borderRight: isDark
               ? "1px solid rgba(255,255,255,0.08)"
               : "1px solid rgba(0,0,0,0.07)",
@@ -120,9 +120,9 @@ export function createAppTheme(mode = "dark") {
       MuiDialog: {
         styleOverrides: {
           paper: {
-            background: isDark ? "#21262d" : "#ffffff",
+            background: isDark ? "#161b27" : "#ffffff",
             backdropFilter: "blur(24px)",
-            border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(0,0,0,0.08)",
+            border: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.08)",
           },
         },
       },

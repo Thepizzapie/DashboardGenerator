@@ -1,275 +1,120 @@
 require("dotenv").config({ path: "../.env" });
 const express = require("express");
 const cors = require("cors");
-const { initDb, getAllSources } = require("./db");
+const helmet = require("helmet");
+const { z } = require("zod");
+const { initDb, getAllSources, logUsageEvent } = require("./db");
+const { requireAuth } = require("./middleware/auth");
+const { globalLimiter, generationLimiterHour, generationLimiterDay } = require("./middleware/rateLimit");
 
 const app = express();
-const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(",")
-  : ["http://localhost:5173"];
-app.use(cors({ origin: allowedOrigins }));
-app.use(express.json());
+
+// ── Security headers ──────────────────────────────────────────────────────────
+app.use(helmet({
+  contentSecurityPolicy: false, // Disabled — generated HTML uses inline scripts
+  crossOriginEmbedderPolicy: false, // Required for iframe embeds
+}));
+
+// ── CORS ──────────────────────────────────────────────────────────────────────
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(",")
+  : process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(",")
+    : ["http://localhost:5173"];
+
+app.use(cors({
+  origin: (origin, cb) => {
+    if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+    cb(new Error("Not allowed by CORS"));
+  },
+  credentials: true,
+}));
+
+// ── Global rate limit (safety net, no auth needed) ────────────────────────────
+app.use(globalLimiter);
+
+app.use(express.json({ limit: "10mb" }));
+
+// ── Health check ──────────────────────────────────────────────────────────────
+app.get("/health", (req, res) => {
+  res.json({ status: "ok", uptime: Math.floor(process.uptime()), timestamp: Date.now() });
+});
 
 // ── Init DB ───────────────────────────────────────────────────────────────────
-
 initDb();
+
+// ── Routes ────────────────────────────────────────────────────────────────────
 app.use("/api", require("./routes/sources"));
+app.use("/api/dashboards", require("./routes/dashboards"));
+app.use("/api/share", require("./routes/share"));
+app.use("/api/usage", require("./routes/usage"));
+app.use("/api/preferences", require("./routes/preferences"));
 
 // ── Mock data sources ────────────────────────────────────────────────────────
 
-const mockData = {
-  // ── People ──────────────────────────────────────────────────────────────────
-  employees: [
-    { name: "Alice Johnson",    dept: "Engineering", role: "Senior Dev",         level: "Senior",     status: "active",   hire_date: "2021-03-15", salary: 145000, manager: "Iris Patel",    location: "NYC",    performance: 4.5 },
-    { name: "Bob Smith",        dept: "Marketing",   role: "Marketing Manager",  level: "Manager",    status: "active",   hire_date: "2019-07-01", salary: 118000, manager: "Sandra Kim",    location: "LA",     performance: 3.8 },
-    { name: "Carol White",      dept: "Design",      role: "UX Lead",            level: "Senior",     status: "on-leave", hire_date: "2020-11-22", salary: 132000, manager: "Sandra Kim",    location: "NYC",    performance: 4.2 },
-    { name: "David Brown",      dept: "Engineering", role: "Junior Dev",         level: "Junior",     status: "active",   hire_date: "2023-01-10", salary: 92000,  manager: "Alice Johnson", location: "Remote", performance: 3.5 },
-    { name: "Eve Davis",        dept: "Sales",       role: "Account Executive",  level: "Senior",     status: "active",   hire_date: "2022-05-18", salary: 98000,  manager: "Marcus Reid",   location: "Chicago",performance: 4.7 },
-    { name: "Frank Miller",     dept: "Engineering", role: "DevOps Engineer",    level: "Senior",     status: "active",   hire_date: "2020-09-03", salary: 138000, manager: "Iris Patel",    location: "NYC",    performance: 4.1 },
-    { name: "Grace Lee",        dept: "HR",          role: "HR Manager",         level: "Manager",    status: "active",   hire_date: "2018-04-12", salary: 112000, manager: "Sandra Kim",    location: "NYC",    performance: 4.0 },
-    { name: "Henry Chen",       dept: "Finance",     role: "Financial Analyst",  level: "Mid",        status: "active",   hire_date: "2021-08-30", salary: 105000, manager: "Sandra Kim",    location: "Remote", performance: 3.9 },
-    { name: "Iris Patel",       dept: "Engineering", role: "VP Engineering",     level: "Leadership", status: "active",   hire_date: "2019-02-14", salary: 198000, manager: "Sandra Kim",    location: "NYC",    performance: 4.8 },
-    { name: "Jake Torres",      dept: "Sales",       role: "Sales Rep",          level: "Junior",     status: "active",   hire_date: "2023-06-05", salary: 85000,  manager: "Marcus Reid",   location: "Chicago",performance: 3.6 },
-    { name: "Karen Nguyen",     dept: "Engineering", role: "Backend Dev",        level: "Mid",        status: "active",   hire_date: "2022-02-28", salary: 128000, manager: "Alice Johnson", location: "NYC",    performance: 4.3 },
-    { name: "Liam Foster",      dept: "Marketing",   role: "Content Strategist", level: "Mid",        status: "active",   hire_date: "2021-11-15", salary: 94000,  manager: "Bob Smith",     location: "LA",     performance: 3.7 },
-    { name: "Maya Rodriguez",   dept: "Design",      role: "Product Designer",   level: "Mid",        status: "active",   hire_date: "2022-07-20", salary: 108000, manager: "Carol White",   location: "Remote", performance: 4.4 },
-    { name: "Nathan Wu",        dept: "Engineering", role: "ML Engineer",        level: "Senior",     status: "active",   hire_date: "2020-05-11", salary: 162000, manager: "Iris Patel",    location: "NYC",    performance: 4.6 },
-    { name: "Olivia Hart",      dept: "Sales",       role: "Sales Manager",      level: "Manager",    status: "active",   hire_date: "2018-09-30", salary: 135000, manager: "Marcus Reid",   location: "Chicago",performance: 4.2 },
-    { name: "Paul Kim",         dept: "Engineering", role: "Frontend Dev",       level: "Mid",        status: "on-leave", hire_date: "2021-06-14", salary: 118000, manager: "Alice Johnson", location: "Remote", performance: 3.8 },
-    { name: "Quinn Patel",      dept: "Finance",     role: "Controller",         level: "Senior",     status: "active",   hire_date: "2017-03-22", salary: 148000, manager: "Sandra Kim",    location: "NYC",    performance: 4.5 },
-    { name: "Rachel Thompson",  dept: "HR",          role: "Recruiter",          level: "Mid",        status: "active",   hire_date: "2022-10-05", salary: 88000,  manager: "Grace Lee",     location: "NYC",    performance: 3.9 },
-    { name: "Sam Ortiz",        dept: "Engineering", role: "Security Engineer",  level: "Senior",     status: "active",   hire_date: "2020-01-08", salary: 152000, manager: "Frank Miller",  location: "NYC",    performance: 4.3 },
-    { name: "Tina Brooks",      dept: "Marketing",   role: "SEO Specialist",     level: "Junior",     status: "active",   hire_date: "2023-08-21", salary: 78000,  manager: "Bob Smith",     location: "LA",     performance: 3.4 },
-    { name: "Uma Singh",        dept: "Design",      role: "Motion Designer",    level: "Junior",     status: "active",   hire_date: "2023-03-14", salary: 82000,  manager: "Carol White",   location: "Remote", performance: 3.6 },
-    { name: "Victor Lane",      dept: "Engineering", role: "Data Engineer",      level: "Senior",     status: "active",   hire_date: "2019-11-01", salary: 155000, manager: "Nathan Wu",     location: "NYC",    performance: 4.4 },
-    { name: "Wendy Cross",      dept: "Sales",       role: "Account Executive",  level: "Senior",     status: "active",   hire_date: "2020-08-17", salary: 102000, manager: "Olivia Hart",   location: "Chicago",performance: 4.1 },
-    { name: "Xander Bell",      dept: "Engineering", role: "Platform Engineer",  level: "Mid",        status: "active",   hire_date: "2022-04-25", salary: 132000, manager: "Frank Miller",  location: "NYC",    performance: 3.9 },
-    { name: "Yara Moss",        dept: "Finance",     role: "FP&A Manager",       level: "Manager",    status: "active",   hire_date: "2018-07-09", salary: 142000, manager: "Quinn Patel",   location: "NYC",    performance: 4.6 },
-    { name: "Zoe Carson",       dept: "Marketing",   role: "Growth Manager",     level: "Manager",    status: "active",   hire_date: "2019-12-03", salary: 125000, manager: "Bob Smith",     location: "LA",     performance: 4.3 },
-    { name: "Marcus Reid",      dept: "Sales",       role: "VP Sales",           level: "Leadership", status: "active",   hire_date: "2016-06-20", salary: 210000, manager: "Sandra Kim",    location: "Chicago",performance: 4.7 },
-    { name: "Sandra Kim",       dept: "Executive",   role: "CEO",                level: "C-Suite",    status: "active",   hire_date: "2015-01-01", salary: 320000, manager: null,            location: "NYC",    performance: 4.9 },
-  ],
-
-  // ── Projects ─────────────────────────────────────────────────────────────────
-  projects: [
-    { name: "Website Redesign",      owner: "Carol White",   team: ["Carol White","Maya Rodriguez","Liam Foster"],                        status: "in-progress", pct_complete: 65,  budget: 80000,  spent: 52000,  due_date: "2026-04-15", priority: "high",     dept: "Design" },
-    { name: "API Migration v3",      owner: "Alice Johnson", team: ["Alice Johnson","Karen Nguyen","David Brown","Xander Bell"],          status: "in-progress", pct_complete: 40,  budget: 120000, spent: 48000,  due_date: "2026-05-01", priority: "critical", dept: "Engineering" },
-    { name: "Mobile App v2",         owner: "David Brown",   team: ["David Brown","Paul Kim","Uma Singh","Maya Rodriguez"],               status: "planning",    pct_complete: 10,  budget: 200000, spent: 20000,  due_date: "2026-06-30", priority: "high",     dept: "Engineering" },
-    { name: "Analytics Dashboard",   owner: "Bob Smith",     team: ["Bob Smith","Henry Chen","Nathan Wu"],                               status: "completed",   pct_complete: 100, budget: 45000,  spent: 43200,  due_date: "2026-03-01", priority: "medium",   dept: "Marketing" },
-    { name: "Security Audit Q1",     owner: "Iris Patel",    team: ["Sam Ortiz","Frank Miller","Iris Patel"],                            status: "in-progress", pct_complete: 75,  budget: 30000,  spent: 22500,  due_date: "2026-03-25", priority: "critical", dept: "Engineering" },
-    { name: "Customer Portal",       owner: "Eve Davis",     team: ["Eve Davis","Karen Nguyen","Maya Rodriguez","Tina Brooks"],          status: "planning",    pct_complete: 5,   budget: 95000,  spent: 4750,   due_date: "2026-07-01", priority: "high",     dept: "Sales" },
-    { name: "Data Warehouse Phase 2",owner: "Henry Chen",    team: ["Victor Lane","Nathan Wu","Henry Chen","Yara Moss"],                 status: "in-progress", pct_complete: 55,  budget: 160000, spent: 88000,  due_date: "2026-05-20", priority: "high",     dept: "Engineering" },
-    { name: "ML Recommendation Engine",owner: "Nathan Wu",  team: ["Nathan Wu","Victor Lane","Karen Nguyen"],                           status: "in-progress", pct_complete: 30,  budget: 250000, spent: 75000,  due_date: "2026-08-15", priority: "high",     dept: "Engineering" },
-    { name: "Brand Refresh",         owner: "Liam Foster",  team: ["Liam Foster","Carol White","Uma Singh","Tina Brooks"],              status: "in-progress", pct_complete: 50,  budget: 55000,  spent: 27500,  due_date: "2026-04-30", priority: "medium",   dept: "Marketing" },
-    { name: "Sales CRM Upgrade",     owner: "Olivia Hart",  team: ["Olivia Hart","Eve Davis","Jake Torres","Wendy Cross"],              status: "planning",    pct_complete: 15,  budget: 70000,  spent: 10500,  due_date: "2026-06-01", priority: "high",     dept: "Sales" },
-    { name: "DevOps CI/CD Overhaul", owner: "Frank Miller", team: ["Frank Miller","Sam Ortiz","Xander Bell"],                          status: "in-progress", pct_complete: 80,  budget: 40000,  spent: 32000,  due_date: "2026-03-31", priority: "high",     dept: "Engineering" },
-    { name: "GDPR Compliance Audit", owner: "Grace Lee",    team: ["Grace Lee","Quinn Patel","Sam Ortiz","Rachel Thompson"],            status: "completed",   pct_complete: 100, budget: 25000,  spent: 24100,  due_date: "2026-02-28", priority: "critical", dept: "HR" },
-    { name: "Investor Deck Q2",      owner: "Yara Moss",    team: ["Yara Moss","Henry Chen","Sandra Kim"],                             status: "planning",    pct_complete: 20,  budget: 15000,  spent: 3000,   due_date: "2026-04-05", priority: "medium",   dept: "Finance" },
-    { name: "SSO Identity Platform", owner: "Sam Ortiz",    team: ["Sam Ortiz","Frank Miller","Alice Johnson"],                        status: "in-progress", pct_complete: 60,  budget: 85000,  spent: 51000,  due_date: "2026-05-15", priority: "critical", dept: "Engineering" },
-  ],
-
-  // ── KPIs & Metrics ───────────────────────────────────────────────────────────
-  kpi_metrics: [
-    { label: "Monthly Revenue",      value: "$2.84M",   current_val: 2840000,  target: 2700000, delta: "+5.2%",   trend: "up",   category: "revenue" },
-    { label: "ARR",                  value: "$34.1M",   current_val: 34100000, target: 36000000,delta: "-5.3%",   trend: "down", category: "revenue" },
-    { label: "Active Users",         value: "142,300",  current_val: 142300,   target: 150000,  delta: "+8.1%",   trend: "up",   category: "product" },
-    { label: "DAU / MAU",            value: "38%",      current_val: 38,       target: 42,      delta: "-4pts",   trend: "down", category: "product" },
-    { label: "Support Tickets Open", value: "47",       current_val: 47,       target: 40,      delta: "+17.5%",  trend: "down", category: "support" },
-    { label: "Avg Resolution Time",  value: "4.2h",     current_val: 4.2,      target: 3.0,     delta: "+40%",    trend: "down", category: "support" },
-    { label: "Uptime SLA",           value: "99.97%",   current_val: 99.97,    target: 99.9,    delta: "+0.07pts",trend: "up",   category: "infra" },
-    { label: "Avg API Latency",      value: "142ms",    current_val: 142,      target: 200,     delta: "-29%",    trend: "up",   category: "infra" },
-    { label: "NPS Score",            value: "72",       current_val: 72,       target: 70,      delta: "+2.9%",   trend: "up",   category: "product" },
-    { label: "MoM Conversion Rate",  value: "3.8%",     current_val: 3.8,      target: 4.0,     delta: "-0.2pts", trend: "down", category: "revenue" },
-    { label: "Gross Margin",         value: "68.4%",    current_val: 68.4,     target: 70,      delta: "-1.6pts", trend: "down", category: "revenue" },
-    { label: "CAC",                  value: "$312",     current_val: 312,      target: 280,     delta: "+11.4%",  trend: "down", category: "revenue" },
-    { label: "LTV",                  value: "$4,820",   current_val: 4820,     target: 5000,    delta: "-3.6%",   trend: "down", category: "revenue" },
-    { label: "LTV:CAC Ratio",        value: "15.4x",    current_val: 15.4,     target: 17.8,    delta: "-13.5%",  trend: "down", category: "revenue" },
-    { label: "Net Dollar Retention", value: "108%",     current_val: 108,      target: 110,     delta: "-2pts",   trend: "down", category: "revenue" },
-    { label: "Churn Rate",           value: "1.2%",     current_val: 1.2,      target: 1.0,     delta: "+0.2pts", trend: "down", category: "revenue" },
-    { label: "Employees (FTE)",      value: "127",      current_val: 127,      target: 140,     delta: "-9.3%",   trend: "neutral",category:"people" },
-    { label: "Offer Acceptance Rate",value: "74%",      current_val: 74,       target: 85,      delta: "-11pts",  trend: "down", category: "people" },
-    { label: "Voluntary Attrition",  value: "8.4%",     current_val: 8.4,      target: 7.0,     delta: "+1.4pts", trend: "down", category: "people" },
-  ],
-
-  // ── Revenue & Finance ────────────────────────────────────────────────────────
-  monthly_revenue: [
-    { month: "Apr 2025", mrr: 2210000, new_arr: 185000, expansion: 62000, churn: 28000, net_new: 219000 },
-    { month: "May 2025", mrr: 2290000, new_arr: 198000, expansion: 71000, churn: 31000, net_new: 238000 },
-    { month: "Jun 2025", mrr: 2380000, new_arr: 220000, expansion: 68000, churn: 35000, net_new: 253000 },
-    { month: "Jul 2025", mrr: 2440000, new_arr: 195000, expansion: 55000, churn: 38000, net_new: 212000 },
-    { month: "Aug 2025", mrr: 2510000, new_arr: 241000, expansion: 72000, churn: 29000, net_new: 284000 },
-    { month: "Sep 2025", mrr: 2590000, new_arr: 268000, expansion: 84000, churn: 33000, net_new: 319000 },
-    { month: "Oct 2025", mrr: 2640000, new_arr: 215000, expansion: 61000, churn: 41000, net_new: 235000 },
-    { month: "Nov 2025", mrr: 2690000, new_arr: 228000, expansion: 78000, churn: 36000, net_new: 270000 },
-    { month: "Dec 2025", mrr: 2750000, new_arr: 310000, expansion: 92000, churn: 44000, net_new: 358000 },
-    { month: "Jan 2026", mrr: 2780000, new_arr: 195000, expansion: 58000, churn: 52000, net_new: 201000 },
-    { month: "Feb 2026", mrr: 2810000, new_arr: 212000, expansion: 65000, churn: 39000, net_new: 238000 },
-    { month: "Mar 2026", mrr: 2840000, new_arr: 224000, expansion: 69000, churn: 42000, net_new: 251000 },
-  ],
-
-  revenue_by_segment: [
-    { segment: "Enterprise",    mrr: 1420000, customers: 38,  avg_acv: 448421, churn_rate: 0.4, ndr: 118 },
-    { segment: "Mid-Market",    mrr: 854000,  customers: 142, avg_acv: 72197,  churn_rate: 1.1, ndr: 108 },
-    { segment: "SMB",           mrr: 412000,  customers: 891, avg_acv: 5546,   churn_rate: 2.8, ndr: 94  },
-    { segment: "Startup",       mrr: 154000,  customers: 1240,avg_acv: 1490,   churn_rate: 4.2, ndr: 88  },
-  ],
-
-  // ── Budget ────────────────────────────────────────────────────────────────────
-  budget: [
-    { department: "Engineering",  allocated: 5200000, spent: 3870000, headcount: 12, q1_forecast: 1420000 },
-    { department: "Marketing",    allocated: 1800000, spent: 1620000, headcount: 5,  q1_forecast: 495000  },
-    { department: "Sales",        allocated: 2400000, spent: 1980000, headcount: 6,  q1_forecast: 680000  },
-    { department: "Design",       allocated: 950000,  spent: 610000,  headcount: 4,  q1_forecast: 248000  },
-    { department: "HR",           allocated: 750000,  spent: 480000,  headcount: 3,  q1_forecast: 195000  },
-    { department: "Finance",      allocated: 600000,  spent: 410000,  headcount: 3,  q1_forecast: 162000  },
-    { department: "DevOps/Infra", allocated: 1400000, spent: 1280000, headcount: 3,  q1_forecast: 368000  },
-    { department: "Executive",    allocated: 800000,  spent: 580000,  headcount: 1,  q1_forecast: 210000  },
-  ],
-
-  // ── Sales Pipeline ────────────────────────────────────────────────────────────
-  sales_pipeline: [
-    { deal: "Acme Corp ERP Suite",       stage: "Proposal",    value: 185000,  probability: 60, close_date: "2026-04-10", rep: "Eve Davis",   industry: "Manufacturing", source: "Outbound" },
-    { deal: "Globex SaaS Expansion",     stage: "Negotiation", value: 342000,  probability: 80, close_date: "2026-03-28", rep: "Jake Torres", industry: "Tech",          source: "Expansion" },
-    { deal: "Initech Platform",          stage: "Discovery",   value: 92000,   probability: 30, close_date: "2026-05-15", rep: "Eve Davis",   industry: "Finance",       source: "Inbound" },
-    { deal: "Umbrella Corp Renewal",     stage: "Closed Won",  value: 510000,  probability: 100,close_date: "2026-03-01", rep: "Jake Torres", industry: "Healthcare",    source: "Renewal" },
-    { deal: "Soylent Analytics Pro",     stage: "Proposal",    value: 167500,  probability: 55, close_date: "2026-04-22", rep: "Wendy Cross", industry: "Food & Bev",    source: "Inbound" },
-    { deal: "Cyberdyne Platform",        stage: "Discovery",   value: 495000,  probability: 25, close_date: "2026-06-30", rep: "Eve Davis",   industry: "Defense",       source: "Outbound" },
-    { deal: "Stark Industries MDM",      stage: "Negotiation", value: 288000,  probability: 75, close_date: "2026-03-31", rep: "Wendy Cross", industry: "Tech",          source: "Outbound" },
-    { deal: "Wayne Enterprises SIEM",    stage: "Proposal",    value: 425000,  probability: 50, close_date: "2026-05-01", rep: "Olivia Hart", industry: "Finance",       source: "Partner" },
-    { deal: "Oscorp Data Ops",           stage: "Closed Won",  value: 128000,  probability: 100,close_date: "2026-02-20", rep: "Jake Torres", industry: "Biotech",       source: "Inbound" },
-    { deal: "LexCorp Cloud Migration",   stage: "Discovery",   value: 210000,  probability: 20, close_date: "2026-07-15", rep: "Olivia Hart", industry: "Energy",        source: "Outbound" },
-    { deal: "Pied Piper API Gateway",    stage: "Negotiation", value: 95000,   probability: 70, close_date: "2026-04-05", rep: "Wendy Cross", industry: "Tech",          source: "Inbound" },
-    { deal: "Hooli Enterprise SSO",      stage: "Closed Lost", value: 380000,  probability: 0,  close_date: "2026-02-15", rep: "Eve Davis",   industry: "Tech",          source: "Outbound" },
-    { deal: "Dunder Mifflin SaaS",       stage: "Proposal",    value: 45000,   probability: 65, close_date: "2026-04-18", rep: "Jake Torres", industry: "Retail",        source: "Inbound" },
-    { deal: "Vehement Capital Analytics",stage: "Closed Won",  value: 840000,  probability: 100,close_date: "2026-03-10", rep: "Olivia Hart", industry: "Finance",       source: "Outbound" },
-  ],
-
-  // ── Support Tickets ───────────────────────────────────────────────────────────
-  support: [
-    { id: "TKT-1052", subject: "OAuth2 tokens expiring prematurely",            priority: "critical", status: "open",        assignee: "Sam Ortiz",     category: "Auth",       hours_open: 2,  created: "2026-03-17" },
-    { id: "TKT-1051", subject: "Login SSO broken after v3.2 deploy",            priority: "critical", status: "in-progress", assignee: "Frank Miller",  category: "Auth",       hours_open: 5,  created: "2026-03-17" },
-    { id: "TKT-1049", subject: "Dashboard export returns empty CSV",            priority: "high",     status: "in-progress", assignee: "Alice Johnson", category: "Reports",    hours_open: 18, created: "2026-03-16" },
-    { id: "TKT-1048", subject: "Slow query on /api/reports endpoint (>8s)",     priority: "high",     status: "in-progress", assignee: "Karen Nguyen",  category: "Performance",hours_open: 26, created: "2026-03-15" },
-    { id: "TKT-1047", subject: "Webhook retry loop causing duplicate charges",  priority: "critical", status: "open",        assignee: "Frank Miller",  category: "Billing",    hours_open: 8,  created: "2026-03-16" },
-    { id: "TKT-1045", subject: "Email notifications not sending (SMTP)",        priority: "high",     status: "open",        assignee: "Frank Miller",  category: "Comms",      hours_open: 42, created: "2026-03-14" },
-    { id: "TKT-1043", subject: "File upload silently fails >50MB",              priority: "medium",   status: "in-progress", assignee: "David Brown",   category: "Upload",     hours_open: 31, created: "2026-03-15" },
-    { id: "TKT-1041", subject: "UI rendering glitch on mobile Safari iOS 17",   priority: "medium",   status: "open",        assignee: "Paul Kim",      category: "Frontend",   hours_open: 71, created: "2026-03-12" },
-    { id: "TKT-1040", subject: "User can't update billing address (400 error)", priority: "medium",   status: "resolved",    assignee: "Alice Johnson", category: "Billing",    hours_open: 8,  created: "2026-03-16" },
-    { id: "TKT-1038", subject: "Password reset link expires in 5min not 1hr",   priority: "low",      status: "resolved",    assignee: "Grace Lee",     category: "Auth",       hours_open: 55, created: "2026-03-13" },
-    { id: "TKT-1037", subject: "CSV import drops unicode characters",           priority: "medium",   status: "open",        assignee: "Karen Nguyen",  category: "Data",       hours_open: 88, created: "2026-03-11" },
-    { id: "TKT-1035", subject: "MFA enrollment page blank on Firefox",          priority: "high",     status: "open",        assignee: "Paul Kim",      category: "Auth",       hours_open: 96, created: "2026-03-10" },
-    { id: "TKT-1033", subject: "Scheduled report email attached wrong file",    priority: "medium",   status: "in-progress", assignee: "David Brown",   category: "Reports",    hours_open: 112,created: "2026-03-09" },
-    { id: "TKT-1030", subject: "API rate limit headers missing from response",  priority: "low",      status: "resolved",    assignee: "Xander Bell",   category: "API",        hours_open: 24, created: "2026-03-15" },
-    { id: "TKT-1028", subject: "Tooltip overlaps chart legend at small viewports",priority: "low",    status: "open",        assignee: "Paul Kim",      category: "Frontend",   hours_open: 140,created: "2026-03-07" },
-  ],
-
-  // ── Inventory ─────────────────────────────────────────────────────────────────
-  inventory: [
-    { item: "MacBook Pro 16\" M3",    sku: "HW-011", qty: 8,  capacity: 20, unit: "units", status: "in-stock",     reorder_point: 5,  unit_cost: 3499, supplier: "Apple",    lead_days: 14 },
-    { item: "Dell XPS 15",            sku: "HW-001", qty: 12, capacity: 20, unit: "units", status: "in-stock",     reorder_point: 5,  unit_cost: 1899, supplier: "Dell",     lead_days: 7  },
-    { item: "USB-C Hub 7-port",       sku: "HW-002", qty: 3,  capacity: 30, unit: "units", status: "low-stock",    reorder_point: 10, unit_cost: 79,   supplier: "Anker",    lead_days: 3  },
-    { item: "Standing Desk Uplift",   sku: "FN-001", qty: 0,  capacity: 10, unit: "units", status: "out-of-stock",  reorder_point: 3,  unit_cost: 1299, supplier: "Uplift",   lead_days: 21 },
-    { item: "Monitor 32\" 4K LG",    sku: "HW-003", qty: 8,  capacity: 15, unit: "units", status: "in-stock",     reorder_point: 4,  unit_cost: 899,  supplier: "LG",       lead_days: 10 },
-    { item: "Mechanical Keyboard",    sku: "HW-004", qty: 2,  capacity: 25, unit: "units", status: "low-stock",    reorder_point: 8,  unit_cost: 149,  supplier: "Keychron", lead_days: 5  },
-    { item: "Webcam Logitech 4K",     sku: "HW-005", qty: 15, capacity: 20, unit: "units", status: "in-stock",     reorder_point: 5,  unit_cost: 199,  supplier: "Logitech", lead_days: 4  },
-    { item: "Ergonomic Chair Steelcase",sku:"FN-002", qty: 1, capacity: 12, unit: "units", status: "low-stock",    reorder_point: 4,  unit_cost: 1650, supplier: "Steelcase",lead_days: 28 },
-    { item: "Sony WH-1000XM5",        sku: "HW-006", qty: 0,  capacity: 15, unit: "units", status: "out-of-stock",  reorder_point: 5,  unit_cost: 349,  supplier: "Sony",     lead_days: 7  },
-    { item: "iPad Pro 12.9\" M4",     sku: "HW-012", qty: 5,  capacity: 10, unit: "units", status: "in-stock",     reorder_point: 3,  unit_cost: 1099, supplier: "Apple",    lead_days: 14 },
-    { item: "Thunderbolt Dock",       sku: "HW-013", qty: 18, capacity: 25, unit: "units", status: "in-stock",     reorder_point: 6,  unit_cost: 249,  supplier: "CalDigit", lead_days: 5  },
-    { item: "Office Chair Mesh Mid",  sku: "FN-003", qty: 6,  capacity: 20, unit: "units", status: "in-stock",     reorder_point: 5,  unit_cost: 425,  supplier: "HON",      lead_days: 14 },
-    { item: "NAS Synology 4-bay",     sku: "HW-014", qty: 2,  capacity: 5,  unit: "units", status: "low-stock",    reorder_point: 2,  unit_cost: 699,  supplier: "Synology", lead_days: 10 },
-  ],
-
-  // ── Sprint / Engineering Velocity ────────────────────────────────────────────
-  sprint: [
-    { story: "OAuth2 token refresh endpoint",       points: 8,  status: "done",        assignee: "Alice Johnson", sprint: "Sprint 22", epic: "Auth" },
-    { story: "Export pipeline to PDF/CSV",          points: 5,  status: "done",        assignee: "David Brown",   sprint: "Sprint 22", epic: "Reports" },
-    { story: "Dark/light mode theme toggle",        points: 3,  status: "done",        assignee: "Paul Kim",      sprint: "Sprint 22", epic: "UI" },
-    { story: "Bulk user import via CSV",            points: 13, status: "in-progress", assignee: "Karen Nguyen",  sprint: "Sprint 22", epic: "Admin" },
-    { story: "Webhook retry with exponential backoff",points:8,  status: "in-progress", assignee: "Frank Miller",  sprint: "Sprint 22", epic: "Infra" },
-    { story: "Rate limiting middleware (Redis)",    points: 5,  status: "todo",        assignee: "Alice Johnson", sprint: "Sprint 22", epic: "Infra" },
-    { story: "Dashboard widget drag-and-drop",      points: 13, status: "todo",        assignee: "Paul Kim",      sprint: "Sprint 22", epic: "UI" },
-    { story: "Mobile push notifications (FCM)",     points: 8,  status: "blocked",     assignee: "David Brown",   sprint: "Sprint 22", epic: "Mobile" },
-    { story: "SAML SSO enterprise connector",       points: 13, status: "done",        assignee: "Sam Ortiz",     sprint: "Sprint 21", epic: "Auth" },
-    { story: "Recharts migration from v1",          points: 8,  status: "done",        assignee: "Paul Kim",      sprint: "Sprint 21", epic: "UI" },
-    { story: "Multi-tenant data isolation audit",   points: 13, status: "done",        assignee: "Sam Ortiz",     sprint: "Sprint 21", epic: "Security" },
-    { story: "Payment webhook idempotency keys",    points: 8,  status: "done",        assignee: "Karen Nguyen",  sprint: "Sprint 21", epic: "Billing" },
-    { story: "Real-time notification service",      points: 13, status: "in-progress", assignee: "Xander Bell",   sprint: "Sprint 21", epic: "Infra" },
-    { story: "Admin role permission matrix",        points: 5,  status: "done",        assignee: "Alice Johnson", sprint: "Sprint 21", epic: "Auth" },
-  ],
-
-  sprint_velocity: [
-    { sprint: "Sprint 17", committed: 52, completed: 45, bugs_closed: 8,  team_size: 6 },
-    { sprint: "Sprint 18", committed: 55, completed: 51, bugs_closed: 12, team_size: 6 },
-    { sprint: "Sprint 19", committed: 58, completed: 48, bugs_closed: 7,  team_size: 7 },
-    { sprint: "Sprint 20", committed: 60, completed: 58, bugs_closed: 14, team_size: 7 },
-    { sprint: "Sprint 21", committed: 65, completed: 61, bugs_closed: 10, team_size: 8 },
-    { sprint: "Sprint 22", committed: 68, completed: 40, bugs_closed: 6,  team_size: 8 }, // in progress
-  ],
-
-  // ── Infrastructure / SRE ─────────────────────────────────────────────────────
-  infra_services: [
-    { service: "API Gateway",        region: "us-east-1", status: "healthy",  uptime_30d: 99.98, p99_latency_ms: 82,  error_rate_pct: 0.02, cost_month: 4200  },
-    { service: "Auth Service",       region: "us-east-1", status: "degraded", uptime_30d: 99.71, p99_latency_ms: 420, error_rate_pct: 0.48, cost_month: 1800  },
-    { service: "Data Pipeline",      region: "us-east-1", status: "healthy",  uptime_30d: 99.95, p99_latency_ms: 340, error_rate_pct: 0.05, cost_month: 8900  },
-    { service: "Notification Worker",region: "us-east-1", status: "down",     uptime_30d: 98.20, p99_latency_ms: 0,   error_rate_pct: 100,  cost_month: 620   },
-    { service: "Report Generator",   region: "us-west-2", status: "healthy",  uptime_30d: 99.91, p99_latency_ms: 1820,error_rate_pct: 0.12, cost_month: 3100  },
-    { service: "File Storage CDN",   region: "us-east-1", status: "healthy",  uptime_30d: 100,   p99_latency_ms: 28,  error_rate_pct: 0.00, cost_month: 2400  },
-    { service: "Search Index",       region: "us-east-1", status: "healthy",  uptime_30d: 99.88, p99_latency_ms: 95,  error_rate_pct: 0.08, cost_month: 5600  },
-    { service: "ML Inference API",   region: "us-west-2", status: "healthy",  uptime_30d: 99.82, p99_latency_ms: 680, error_rate_pct: 0.19, cost_month: 12400 },
-    { service: "Billing Processor",  region: "us-east-1", status: "healthy",  uptime_30d: 99.99, p99_latency_ms: 145, error_rate_pct: 0.01, cost_month: 2100  },
-    { service: "Analytics DB",       region: "us-east-1", status: "degraded", uptime_30d: 99.60, p99_latency_ms: 8400,error_rate_pct: 0.88, cost_month: 18200 },
-  ],
-
-  // ── Marketing / Growth ────────────────────────────────────────────────────────
-  marketing_campaigns: [
-    { campaign: "Q1 SaaS Summit Sponsorship", channel: "Events",      spend: 45000,  leads: 312, opps: 28, closed: 4, revenue: 185000, roi: 311 },
-    { campaign: "LinkedIn ABM Enterprise",    channel: "Paid Social", spend: 28000,  leads: 185, opps: 41, closed: 8, revenue: 420000, roi: 1400},
-    { campaign: "Google Search Brand",        channel: "SEM",         spend: 18500,  leads: 892, opps: 67, closed: 14,revenue: 198000, roi: 970 },
-    { campaign: "Webinar: AI in Finance",     channel: "Content",     spend: 8200,   leads: 541, opps: 38, closed: 7, revenue: 112000, roi: 1266},
-    { campaign: "G2 Review Push",             channel: "Review Sites",spend: 5500,   leads: 228, opps: 19, closed: 5, revenue: 84000,  roi: 1427},
-    { campaign: "Cold Outbound SDR",          channel: "Outbound",    spend: 62000,  leads: 1840,opps: 92, closed: 11,revenue: 295000, roi: 376 },
-    { campaign: "Partner Referral Program",   channel: "Partners",    spend: 15000,  leads: 148, opps: 52, closed: 18,revenue: 680000, roi: 4433},
-    { campaign: "Product Hunt Launch",        channel: "PR/Launch",   spend: 3800,   leads: 2140,opps: 21, closed: 3, revenue: 42000,  roi: 1005},
-  ],
-
-  web_analytics: [
-    { month: "Oct 2025", sessions: 84200,  pageviews: 312000, signups: 1820, trials: 410, paid_conversions: 62 },
-    { month: "Nov 2025", sessions: 91800,  pageviews: 338000, signups: 2140, trials: 488, paid_conversions: 71 },
-    { month: "Dec 2025", sessions: 78400,  pageviews: 281000, signups: 1640, trials: 352, paid_conversions: 58 },
-    { month: "Jan 2026", sessions: 102100, pageviews: 388000, signups: 2580, trials: 540, paid_conversions: 84 },
-    { month: "Feb 2026", sessions: 115400, pageviews: 441000, signups: 2920, trials: 612, paid_conversions: 97 },
-    { month: "Mar 2026", sessions: 124800, pageviews: 478000, signups: 3180, trials: 668, paid_conversions: 108},
-  ],
-
-  // ── Product Usage ─────────────────────────────────────────────────────────────
-  feature_adoption: [
-    { feature: "Dashboard Builder",   mau: 98400,  pct_users: 69, satisfaction: 4.4, p99_load_ms: 820  },
-    { feature: "Report Scheduler",    mau: 62100,  pct_users: 44, satisfaction: 3.9, p99_load_ms: 1240 },
-    { feature: "API Key Management",  mau: 44800,  pct_users: 32, satisfaction: 4.1, p99_load_ms: 310  },
-    { feature: "Team Collaboration",  mau: 38200,  pct_users: 27, satisfaction: 3.6, p99_load_ms: 540  },
-    { feature: "SSO / SAML",          mau: 29700,  pct_users: 21, satisfaction: 4.6, p99_load_ms: 280  },
-    { feature: "Data Connectors",     mau: 25400,  pct_users: 18, satisfaction: 3.8, p99_load_ms: 2100 },
-    { feature: "Mobile App",          mau: 18900,  pct_users: 13, satisfaction: 3.2, p99_load_ms: 1580 },
-    { feature: "AI Insights (Beta)",  mau: 8200,   pct_users: 6,  satisfaction: 4.2, p99_load_ms: 3400 },
-    { feature: "Audit Logs",          mau: 6800,   pct_users: 5,  satisfaction: 4.5, p99_load_ms: 420  },
-    { feature: "Webhooks",            mau: 5100,   pct_users: 4,  satisfaction: 3.7, p99_load_ms: 190  },
-  ],
-};
+const mockData = require("./staticData");
 
 // ── Shared data context builder ───────────────────────────────────────────────
 
-async function buildDataContext() {
-  const merged = { ...mockData };
-  const userSources = getAllSources();
+const richMockData = require("./mockData");
+
+// Rows included per dataset based on whether the prompt references it.
+const ROWS_RELEVANT  = 25;  // dataset name appears in the prompt
+const ROWS_SCHEMA    = 3;   // schema stub for everything else
+
+function sampleDataset(key, rows, maxRows) {
+  if (!Array.isArray(rows) || rows.length === 0) return [];
+  if (rows.length <= maxRows) return rows;
+  const head = Math.ceil(maxRows * 0.7);
+  const tail = maxRows - head;
+  return [...rows.slice(0, head), ...rows.slice(-tail)];
+}
+
+function serialiseDataset(key, rows, maxRows) {
+  if (!Array.isArray(rows) || rows.length === 0) return `### ${key}\n[]`;
+  const total = rows.length;
+  const sample = sampleDataset(key, rows, maxRows);
+  const note = total > maxRows
+    ? ` (${total} rows total — ${sample.length} shown; full data injected on save)`
+    : "";
+  return `### ${key}${note}\n${JSON.stringify(sample, null, 2)}`;
+}
+
+async function buildDataContext(userId = null, prompt = "") {
+  const merged = { ...mockData, ...richMockData };
+  const userSources = getAllSources(userId);
   for (const s of userSources) {
     if (!s.cached_data) continue;
     try { merged[s.name] = JSON.parse(s.cached_data); } catch (_) {}
   }
-  return Object.entries(merged)
-    .map(([k, v]) => `### ${k}\n${JSON.stringify(v, null, 2)}`)
-    .join("\n\n");
+
+  const lowerPrompt = prompt.toLowerCase();
+  const allKeys = Object.keys(merged);
+
+  // Catalog header — lets Claude know every available dataset even if not sampled
+  const catalog = `## AVAILABLE DATASETS\n${allKeys.map(k => {
+    const rows = merged[k];
+    const cols = Array.isArray(rows) && rows[0] ? Object.keys(rows[0]).join(", ") : "";
+    return `- ${k} (${Array.isArray(rows) ? rows.length : 0} rows): ${cols}`;
+  }).join("\n")}\n`;
+
+  const sections = allKeys.map(key => {
+    const isRelevant = lowerPrompt.includes(key.replace(/_/g, " ")) || lowerPrompt.includes(key);
+    return serialiseDataset(key, merged[key], isRelevant ? ROWS_RELEVANT : ROWS_SCHEMA);
+  });
+
+  return catalog + "\n## DATA SAMPLES\n" + sections.join("\n\n");
 }
+
+// ── Data sentinel instruction (injected into every system prompt) ─────────────
+// When Claude embeds dataset rows in JS it wraps the array with sentinel
+// comments so the server can swap in the full dataset on save.
+const DATA_SENTINEL_INSTRUCTION = `
+## DATA EMBEDDING RULE (important)
+When you declare a JavaScript variable containing rows from a named dataset, wrap the array with sentinel comments exactly like this:
+  const myVar = /*DASHY_DATA:dataset_name*/[...rows...]/*END_DASHY_DATA*/;
+Use the exact dataset key name from the DATA CONTEXT (e.g. stock_history, employees, transactions).
+Only wrap arrays that come directly from a named dataset. Do not wrap computed/derived arrays.`;
 
 // ── System prompt: HTML mode ──────────────────────────────────────────────────
 
@@ -380,6 +225,11 @@ Always hard-code computed results as numbers in the HTML.
 7. If the user asks for sorting: add a <script> that wires up <th> click → sort the table rows in the DOM (toggle asc/desc, re-append sorted <tr> elements, update a sort indicator ▲/▼ in the header).
 8. If the user asks for filtering: add a <script> with a filter <select> or <input> above the table that hides non-matching <tr> rows via style.display.
 9. CRITICAL — global scope for onclick: ALL functions called from HTML onclick= attributes (e.g. sortTable, filterRows, toggleTab) MUST be defined at the TOP LEVEL of the <script> block — NOT inside DOMContentLoaded, NOT inside any other function. Event listeners attached via addEventListener can be inside DOMContentLoaded. But any function referenced directly in onclick="fnName()" must be globally accessible via window scope.
+
+## DATA EMBEDDING RULE
+When you declare a JS variable containing rows from a named dataset, wrap the array with sentinel comments:
+  const myVar = /*DASHY_DATA:dataset_name*/[...rows...]/*END_DASHY_DATA*/;
+Use the exact key name from DATA CONTEXT (e.g. stock_history, employees). Only wrap direct dataset arrays, not computed ones.
 
 ## DATA CONTEXT (real data — use these values):
 ${dataContext}`;
@@ -535,6 +385,11 @@ Hard-code all raw data as JS const arrays in the script. Do not fetch at runtime
 5. Make the UI interactive — use at least one useState hook. If the user mentions filters or sorting, implement them fully.
 6. Make the dashboard visually complete and polished.
 7. CRITICAL — JSX tag matching: Every opening tag must have a matching closing tag in the correct order. The most common mistake is writing </Card> before </CardContent>. Always close innermost components first: </CardContent></Card>, </ListItemText></ListItem>, </AccordionDetails></Accordion>. Count your open tags before finishing.
+
+## DATA EMBEDDING RULE
+When you declare a JS variable containing rows from a named dataset, wrap the array with sentinel comments:
+  const myVar = /*DASHY_DATA:dataset_name*/[...rows...]/*END_DASHY_DATA*/;
+Use the exact key name from DATA CONTEXT (e.g. stock_history, employees). Only wrap direct dataset arrays, not computed ones.
 
 ## DATA CONTEXT:
 ${dataContext}`;
@@ -712,6 +567,11 @@ Hard-code all computed arrays. Do not fetch data at runtime.
 6. Mix chart types — don't use only BarChart. Consider ComposedChart, RadarChart, or Treemap for variety.
 7. CRITICAL — JSX tag matching: Every opening tag must have a matching closing tag in the correct order. Close innermost first: </CardContent></Card>, </ResponsiveContainer> before </CardContent>. Count open tags. The most common mistake is </Card> before </CardContent>.
 
+## DATA EMBEDDING RULE
+When you declare a JS variable containing rows from a named dataset, wrap the array with sentinel comments:
+  const myVar = /*DASHY_DATA:dataset_name*/[...rows...]/*END_DASHY_DATA*/;
+Use the exact key name from DATA CONTEXT (e.g. stock_history, employees). Only wrap direct dataset arrays, not computed ones.
+
 ## DATA CONTEXT:
 ${dataContext}`;
 }
@@ -791,6 +651,11 @@ Internalize these aesthetics:
 - CSS @keyframes fadeInUp: translateY(24px)→0 + opacity 0→1, staggered via animation-delay on sections
 - SVG bars: animate height from 0 using a CSS @keyframes on rect elements
 - No external scripts. Vanilla HTML + CSS + inline SVG only.
+
+## DATA EMBEDDING RULE
+When you declare a JS variable containing rows from a named dataset, wrap the array with sentinel comments:
+  const myVar = /*DASHY_DATA:dataset_name*/[...rows...]/*END_DASHY_DATA*/;
+Use the exact key name from DATA CONTEXT (e.g. stock_history, employees). Only wrap direct dataset arrays, not computed ones.
 
 ## DATA CONTEXT:
 ${dataContext}`;
@@ -1588,6 +1453,11 @@ Every SVG you write MUST follow these rules or labels/nodes WILL be clipped:
 - After computing D3 layouts, verify the outermost element fits: \`d3.max(nodes, d => d.x + nodeWidth)\` must be < svgWidth.
 - Container divs holding SVGs: NEVER set \`overflow: hidden\` or a fixed \`max-height\` smaller than the SVG.
 
+## DATA EMBEDDING RULE
+When you declare a JS variable containing rows from a named dataset, wrap the array with sentinel comments:
+  const myVar = /*DASHY_DATA:dataset_name*/[...rows...]/*END_DASHY_DATA*/;
+Use the exact key name from DATA CONTEXT (e.g. stock_history, employees). Only wrap direct dataset arrays, not computed ones.
+
 ## DATA CONTEXT:
 ${dataContext}`;
 }
@@ -1947,16 +1817,23 @@ async function callClaude(systemPrompt, userPrompt, apiKey, maxTokens = 16000, m
 
 // ── Routes ────────────────────────────────────────────────────────────────────
 
-app.post("/generate", async (req, res) => {
-  const { prompt } = req.body;
-  if (!prompt) return res.status(400).json({ error: "prompt is required" });
+const generateSchema = z.object({
+  prompt: z.string().min(1).max(2000),
+  mode: z.enum(["html", "mui", "charts", "infographic", "diagram"]).optional(),
+});
+
+app.post("/generate", requireAuth, generationLimiterHour, generationLimiterDay, async (req, res) => {
+  const parsed = generateSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: parsed.error.errors[0].message });
+  const { prompt } = parsed.data;
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return res.status(500).json({ error: "ANTHROPIC_API_KEY not set" });
 
   try {
-    const dataContext = await buildDataContext();
+    const dataContext = await buildDataContext(req.userId, prompt);
     const html = await callClaude(buildHtmlSystemPrompt(dataContext), prompt, apiKey);
+    logUsageEvent(req.userId, "generation", "html");
     res.json({ html });
   } catch (err) {
     console.error("/generate error:", err.message);
@@ -1964,16 +1841,18 @@ app.post("/generate", async (req, res) => {
   }
 });
 
-app.post("/generate-mui", async (req, res) => {
-  const { prompt } = req.body;
-  if (!prompt) return res.status(400).json({ error: "prompt is required" });
+app.post("/generate-mui", requireAuth, generationLimiterHour, generationLimiterDay, async (req, res) => {
+  const parsed = generateSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: parsed.error.errors[0].message });
+  const { prompt } = parsed.data;
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return res.status(500).json({ error: "ANTHROPIC_API_KEY not set" });
 
   try {
-    const dataContext = await buildDataContext();
+    const dataContext = await buildDataContext(req.userId, prompt);
     const html = await callClaude(buildMuiSystemPrompt(dataContext), prompt, apiKey);
+    logUsageEvent(req.userId, "generation", "mui");
     res.json({ html });
   } catch (err) {
     console.error("/generate-mui error:", err.message);
@@ -1981,16 +1860,18 @@ app.post("/generate-mui", async (req, res) => {
   }
 });
 
-app.post("/generate-charts", async (req, res) => {
-  const { prompt } = req.body;
-  if (!prompt) return res.status(400).json({ error: "prompt is required" });
+app.post("/generate-charts", requireAuth, generationLimiterHour, generationLimiterDay, async (req, res) => {
+  const parsed = generateSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: parsed.error.errors[0].message });
+  const { prompt } = parsed.data;
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return res.status(500).json({ error: "ANTHROPIC_API_KEY not set" });
 
   try {
-    const dataContext = await buildDataContext();
+    const dataContext = await buildDataContext(req.userId, prompt);
     const html = await callClaude(buildChartsSystemPrompt(dataContext), prompt, apiKey);
+    logUsageEvent(req.userId, "generation", "charts");
     res.json({ html });
   } catch (err) {
     console.error("/generate-charts error:", err.message);
@@ -1998,14 +1879,16 @@ app.post("/generate-charts", async (req, res) => {
   }
 });
 
-app.post("/generate-infographic", async (req, res) => {
-  const { prompt } = req.body;
-  if (!prompt) return res.status(400).json({ error: "prompt is required" });
+app.post("/generate-infographic", requireAuth, generationLimiterHour, generationLimiterDay, async (req, res) => {
+  const parsed = generateSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: parsed.error.errors[0].message });
+  const { prompt } = parsed.data;
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return res.status(500).json({ error: "ANTHROPIC_API_KEY not set" });
   try {
-    const dataContext = await buildDataContext();
+    const dataContext = await buildDataContext(req.userId, prompt);
     const html = await callClaude(buildInfographicSystemPrompt(dataContext), prompt, apiKey);
+    logUsageEvent(req.userId, "generation", "infographic");
     res.json({ html });
   } catch (err) {
     console.error("/generate-infographic error:", err.message);
@@ -2013,14 +1896,16 @@ app.post("/generate-infographic", async (req, res) => {
   }
 });
 
-app.post("/generate-diagram", async (req, res) => {
-  const { prompt } = req.body;
-  if (!prompt) return res.status(400).json({ error: "prompt is required" });
+app.post("/generate-diagram", requireAuth, generationLimiterHour, generationLimiterDay, async (req, res) => {
+  const parsed = generateSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: parsed.error.errors[0].message });
+  const { prompt } = parsed.data;
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return res.status(500).json({ error: "ANTHROPIC_API_KEY not set" });
   try {
-    const dataContext = await buildDataContext();
+    const dataContext = await buildDataContext(req.userId, prompt);
     const html = await callClaude(buildDiagramSystemPrompt(dataContext), prompt, apiKey);
+    logUsageEvent(req.userId, "generation", "diagram");
     res.json({ html });
   } catch (err) {
     console.error("/generate-diagram error:", err.message);
@@ -2030,7 +1915,7 @@ app.post("/generate-diagram", async (req, res) => {
 
 // ── POST /generate-pipeline ────────────────────────────────────────────────────
 
-app.post("/generate-pipeline", async (req, res) => {
+app.post("/generate-pipeline", requireAuth, generationLimiterHour, generationLimiterDay, async (req, res) => {
   const { prompt, mode = "html" } = req.body;
   if (!prompt) return res.status(400).json({ error: "prompt is required" });
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -2048,8 +1933,9 @@ app.post("/generate-pipeline", async (req, res) => {
   const heartbeat = setInterval(() => res.write(": ping\n\n"), 15000);
 
   try {
-    const dataContext = await buildDataContext();
+    const dataContext = await buildDataContext(req.userId, prompt);
     const result = await runPipeline(prompt, mode, dataContext, apiKey, emit);
+    logUsageEvent(req.userId, "generation", mode);
     emit({ result });
   } catch (err) {
     console.error("/generate-pipeline error:", err.message);
@@ -2062,7 +1948,7 @@ app.post("/generate-pipeline", async (req, res) => {
 
 // ── POST /edit ────────────────────────────────────────────────────────────────
 
-app.post("/edit", async (req, res) => {
+app.post("/edit", requireAuth, async (req, res) => {
   const { html, instruction } = req.body;
   if (!html || !instruction) return res.status(400).json({ error: "html and instruction are required" });
 

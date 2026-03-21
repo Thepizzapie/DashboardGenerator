@@ -16,9 +16,11 @@ import StepLabel from "@mui/material/StepLabel";
 import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
+import Stack from "@mui/material/Stack";
 import { useTheme, alpha } from "@mui/material/styles";
 import MuiCanvas from "./MuiCanvas";
 import EditPanel from "./EditPanel";
+import SaveDashboardDialog from "./SaveDashboardDialog";
 import { MOCK_SOURCES } from "./Toolbox";
 
 // ── SVG Icons ──────────────────────────────────────────────────────────────────
@@ -507,10 +509,13 @@ export default function GenerationArea({
   pipelineStep, pipelineOutput,
   selectedSources = [], onSourceDrop, onSourceRemove,
   selectedComponents = [], onComponentDrop, onComponentRemove,
+  onSave, dashboardId,
+  onShare, isPublic, shareUrl,
 }) {
   const [prompt, setPrompt] = useState("");
   const [examplesAnchor, setExamplesAnchor] = useState(null);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const textareaRef = useRef(null);
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
@@ -683,7 +688,27 @@ export default function GenerationArea({
           >
             {isLoading ? "Working…" : "Generate"}
           </Button>
+
+          {/* Save button — only when there is output and onSave is wired */}
+          {output && onSave && (
+            <Tooltip title={dashboardId ? "Save changes" : "Save dashboard"} arrow>
+              <Button
+                variant="outlined"
+                onClick={() => setSaveDialogOpen(true)}
+                sx={{ height: 36, minWidth: 72, flexShrink: 0, fontSize: 16, borderRadius: 2.5, mb: "1px" }}
+              >
+                Save
+              </Button>
+            </Tooltip>
+          )}
         </Box>
+
+        {/* ── Save dialog ──────────────────────────────────────────────────── */}
+        <SaveDashboardDialog
+          open={saveDialogOpen}
+          onClose={() => setSaveDialogOpen(false)}
+          onSave={async (title, desc) => { await onSave(title, desc); setSaveDialogOpen(false); }}
+        />
 
         {/* Context chips — sources (blue) + components (purple) */}
         {(selectedSources.length > 0 || selectedComponents.length > 0) && (
@@ -874,7 +899,10 @@ export default function GenerationArea({
       )}
 
       {/* ── Edit panel ─────────────────────────────────────────────────────── */}
-      <EditPanel output={output} mode={mode} onApplyEdit={onApplyEdit} isApplying={isApplying} onToast={showToast} />
+      <EditPanel
+        output={output} mode={mode} onApplyEdit={onApplyEdit} isApplying={isApplying} onToast={showToast}
+        onShare={onShare} isPublic={isPublic} shareUrl={shareUrl} dashboardId={dashboardId}
+      />
     </Box>
   );
 }

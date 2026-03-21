@@ -366,7 +366,7 @@ function printAsPdf(html, mode) {
 
 // ── EditPanel component ────────────────────────────────────────────────────────
 
-export default function EditPanel({ output, mode, onApplyEdit, isApplying, onToast }) {
+export default function EditPanel({ output, mode, onApplyEdit, isApplying, onToast, onShare, isPublic, shareUrl, dashboardId }) {
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
 
@@ -374,6 +374,7 @@ export default function EditPanel({ output, mode, onApplyEdit, isApplying, onToa
   const [instruction, setInstruction] = useState("");
   const [open, setOpen] = useState(true);
   const [editTab, setEditTab] = useState(0); // 0=Layout 1=Style 2=Data 3=Custom
+  const [copyingLink, setCopyingLink] = useState(false);
 
   if (!output) return null;
 
@@ -484,6 +485,35 @@ export default function EditPanel({ output, mode, onApplyEdit, isApplying, onToa
                   Export PDF
                 </Typography>
               </Box>
+            )}
+
+            {/* ── Share toggle — only shown when a dashboardId exists ── */}
+            {onShare && dashboardId && (
+              <Tooltip title={isPublic ? "Disable public link" : "Create public share link"} arrow placement="top">
+                <Box
+                  onClick={async () => {
+                    await onShare(!isPublic);
+                    if (!isPublic && shareUrl) {
+                      setCopyingLink(true);
+                      try { await navigator.clipboard.writeText(shareUrl); onToast("Share link copied!", "success"); } catch { onToast("Link created", "success"); }
+                      setCopyingLink(false);
+                    }
+                  }}
+                  sx={{
+                    display: "flex", alignItems: "center", gap: 0.6,
+                    px: 1.25, py: 0.35, borderRadius: 1.5, fontSize: 11, fontWeight: 700,
+                    cursor: "pointer", border: "1px solid",
+                    borderColor: isPublic ? "rgba(34,197,94,0.5)" : "divider",
+                    bgcolor: isPublic ? "rgba(34,197,94,0.1)" : "transparent",
+                    color: isPublic ? "#22c55e" : "text.secondary",
+                    transition: "all 0.15s",
+                    "&:hover": { borderColor: "rgba(34,197,94,0.4)", color: "#22c55e" },
+                  }}
+                >
+                  <span style={{ fontSize: 12 }}>{isPublic ? "🔗" : "↗"}</span>
+                  {isPublic ? "Shared" : "Share"}
+                </Box>
+              </Tooltip>
             )}
         </Stack>
       </Box>

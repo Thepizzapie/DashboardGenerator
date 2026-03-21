@@ -93,6 +93,79 @@ const ZapIcon = () => (
     <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
   </svg>
 );
+const TrendingIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>
+  </svg>
+);
+const ShoppingCartIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+    <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+  </svg>
+);
+const HeartIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+  </svg>
+);
+const HomeIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+    <polyline points="9 22 9 12 15 12 15 22"/>
+  </svg>
+);
+const CpuIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+    <rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/>
+    <line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/>
+    <line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/>
+    <line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/>
+    <line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/>
+  </svg>
+);
+const GlobeIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+    <circle cx="12" cy="12" r="10"/>
+    <line x1="2" y1="12" x2="22" y2="12"/>
+    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+  </svg>
+);
+const TruckIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+    <rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+    <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+  </svg>
+);
+const BookOpenIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+  </svg>
+);
+const ActivityIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+  </svg>
+);
+const BriefcaseIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+    <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+  </svg>
+);
+const SunIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+    <circle cx="12" cy="12" r="5"/>
+    <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+    <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+  </svg>
+);
+const FlaskIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+    <path d="M9 3h6v8l4 9H5l4-9V3z"/><line x1="9" y1="3" x2="15" y2="3"/>
+  </svg>
+);
 
 // ── Component data ─────────────────────────────────────────────────────────────
 
@@ -154,14 +227,46 @@ const CHARTS_COMPONENTS = [
 ];
 
 export const MOCK_SOURCES = [
-  { id: "employees",      Icon: UsersIcon,   label: "Employees",       desc: "10 staff · name, dept, role, salary, status" },
-  { id: "projects",       Icon: FolderIcon,  label: "Projects",        desc: "7 projects · status, budget, progress %" },
-  { id: "kpi_metrics",    Icon: BarChartIcon,label: "KPI Metrics",     desc: "8 KPIs · value, delta, target" },
-  { id: "inventory",      Icon: PackageIcon, label: "Inventory",       desc: "8 items · qty, capacity, reorder alerts" },
-  { id: "sales_pipeline", Icon: FunnelIcon,  label: "Sales Pipeline",  desc: "7 deals · stage, value, probability" },
-  { id: "support",        Icon: MessageIcon, label: "Support Tickets", desc: "7 tickets · priority, status, hours open" },
-  { id: "budget",         Icon: DollarIcon,  label: "Budget",          desc: "7 depts · allocated, spent, remaining" },
-  { id: "sprint",         Icon: ZapIcon,     label: "Sprint",          desc: "8 stories · points, status, velocity" },
+  // ── Original SaaS internals ───────────────────────────────────────────────
+  { id: "employees",             Icon: UsersIcon,        label: "Employees",              desc: "27 staff · dept, role, salary, performance, location" },
+  { id: "projects",              Icon: FolderIcon,       label: "Projects",               desc: "14 projects · status, budget, spend, due date, priority" },
+  { id: "kpi_metrics",           Icon: BarChartIcon,     label: "KPI Metrics",            desc: "19 KPIs · value, delta, target, trend, category" },
+  { id: "monthly_revenue",       Icon: TrendingIcon,     label: "Monthly Revenue",        desc: "12 months · MRR, new ARR, expansion, churn, net new" },
+  { id: "revenue_by_segment",    Icon: DollarIcon,       label: "Revenue by Segment",     desc: "4 segments · MRR, customers, ACV, churn rate, NDR" },
+  { id: "budget",                Icon: DollarIcon,       label: "Budget",                 desc: "8 depts · allocated, spent, headcount, Q1 forecast" },
+  { id: "sales_pipeline",        Icon: FunnelIcon,       label: "Sales Pipeline",         desc: "14 deals · stage, value, probability, rep, industry" },
+  { id: "support",               Icon: MessageIcon,      label: "Support Tickets",        desc: "15 tickets · priority, status, assignee, hours open" },
+  { id: "inventory",             Icon: PackageIcon,      label: "Inventory",              desc: "13 items · qty, reorder point, cost, supplier, lead time" },
+  { id: "sprint",                Icon: ZapIcon,          label: "Sprint Stories",         desc: "14 stories · points, status, assignee, epic" },
+  { id: "sprint_velocity",       Icon: TrendingIcon,     label: "Sprint Velocity",        desc: "6 sprints · committed, completed, bugs closed, team size" },
+  { id: "infra_services",        Icon: CpuIcon,          label: "Infrastructure",         desc: "10 services · uptime, latency, error rate, cost/mo" },
+  { id: "marketing_campaigns",   Icon: BarChartIcon,     label: "Marketing Campaigns",    desc: "8 campaigns · spend, leads, pipeline, revenue, ROI" },
+  { id: "web_analytics",         Icon: TrendingIcon,     label: "Web Analytics",          desc: "6 months · sessions, signups, trials, paid conversions" },
+  { id: "feature_adoption",      Icon: ActivityIcon,     label: "Feature Adoption",       desc: "10 features · MAU, % users, satisfaction, load time" },
+  // ── Cross-industry datasets ───────────────────────────────────────────────
+  { id: "ecommerce_orders",      Icon: ShoppingCartIcon, label: "E-Commerce Orders",      desc: "20 orders · country, channel, discount, tax, return status" },
+  { id: "ecommerce_products",    Icon: PackageIcon,      label: "Product Catalogue",      desc: "20 SKUs · margin, inventory, reviews, return rate, monthly sales" },
+  { id: "clinical_trial",        Icon: FlaskIcon,        label: "Clinical Trial",         desc: "18 patients · treatment arms, HbA1c reduction, adverse events" },
+  { id: "real_estate",           Icon: HomeIcon,         label: "Real Estate Listings",   desc: "15 listings · beds, price/sqft, HOA, walk score, days on market" },
+  { id: "iot_sensors",           Icon: CpuIcon,          label: "IoT Sensors",            desc: "20 sensors · type, value, threshold status, battery, firmware" },
+  { id: "portfolio",             Icon: TrendingIcon,     label: "Equity Portfolio",       desc: "11 positions · P&L, beta, P/E, dividend yield, analyst rating" },
+  { id: "restaurant_orders",     Icon: ShoppingCartIcon, label: "Restaurant Orders",      desc: "13 orders · channel, covers, tip, kitchen time, ratings" },
+  { id: "student_performance",   Icon: BookOpenIcon,     label: "Student Performance",    desc: "15 students · GPA, SAT, AP courses, extracurriculars, aid" },
+  { id: "premier_league",        Icon: ActivityIcon,     label: "Premier League",         desc: "20 clubs · xG, possession, form, clean sheets, top scorer" },
+  { id: "country_indicators",    Icon: GlobeIcon,        label: "Country Indicators",     desc: "25 countries · HDI, Gini, CO₂, life expectancy, internet %" },
+  // ── Rich generated datasets ───────────────────────────────────────────────
+  { id: "transactions",          Icon: ShoppingCartIcon, label: "Transactions",           desc: "500 rows · multi-channel retail, discounts, tax, statuses" },
+  { id: "stock_history",         Icon: TrendingIcon,     label: "Stock History",          desc: "1,512 rows · 6 tickers × 252 days, OHLCV, % change" },
+  { id: "customer_accounts",     Icon: UsersIcon,        label: "Customer Accounts",      desc: "150 accounts · health score, NPS, churn risk, ARR, CSM" },
+  { id: "hourly_web_traffic",    Icon: ActivityIcon,     label: "Hourly Web Traffic",     desc: "720 rows · 30 days × 24h, sessions, conversions, errors" },
+  { id: "hr_survey",             Icon: UsersIcon,        label: "HR Survey",              desc: "120 respondents · 14 Likert questions, eNPS, by dept/level" },
+  { id: "shipments",             Icon: TruckIcon,        label: "Logistics Shipments",    desc: "200 shipments · mode, carrier, SLA, exceptions, cost" },
+  { id: "marketing_attribution", Icon: FunnelIcon,       label: "Marketing Attribution",  desc: "300 records · 12 campaigns, ROI, CPL, pipeline stages" },
+  { id: "ed_visits",             Icon: HeartIcon,        label: "ED Visits",              desc: "100 visits · acuity, LOS, disposition, imaging, readmit" },
+  { id: "energy_readings",       Icon: SunIcon,          label: "Energy Readings",        desc: "1,460 rows · 4 buildings × 365 days, solar, carbon, cost" },
+  { id: "ab_test_results",       Icon: BarChartIcon,     label: "A/B Test Results",       desc: "400 users · 4 experiments, variant-level conversion data" },
+  { id: "crypto_history",        Icon: TrendingIcon,     label: "Crypto History",         desc: "1,440 rows · 8 coins × 180 days, OHLCV, dominance %" },
+  { id: "recruitment_pipeline",  Icon: BriefcaseIcon,    label: "Recruitment Pipeline",   desc: "180 candidates · stage, interview score, salary, source" },
 ];
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
