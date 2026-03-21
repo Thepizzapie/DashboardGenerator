@@ -58,26 +58,15 @@ const mockData = require("./staticData");
 
 const richMockData = require("./mockData");
 
-// Rows included per dataset based on whether the prompt references it.
-const ROWS_RELEVANT  = 25;  // dataset name appears in the prompt
-const ROWS_SCHEMA    = 3;   // schema stub for everything else
+// Max rows sampled for datasets explicitly mentioned in the prompt
+const ROWS_RELEVANT = 15;
 
-function sampleDataset(key, rows, maxRows) {
+function sampleDataset(rows, maxRows) {
   if (!Array.isArray(rows) || rows.length === 0) return [];
   if (rows.length <= maxRows) return rows;
   const head = Math.ceil(maxRows * 0.7);
   const tail = maxRows - head;
   return [...rows.slice(0, head), ...rows.slice(-tail)];
-}
-
-function serialiseDataset(key, rows, maxRows) {
-  if (!Array.isArray(rows) || rows.length === 0) return `### ${key}\n[]`;
-  const total = rows.length;
-  const sample = sampleDataset(key, rows, maxRows);
-  const note = total > maxRows
-    ? ` (${total} rows total — ${sample.length} shown; full data injected on save)`
-    : "";
-  return `### ${key}${note}\n${JSON.stringify(sample, null, 2)}`;
 }
 
 async function buildDataContext(userId = null, prompt = "") {
@@ -91,19 +80,36 @@ async function buildDataContext(userId = null, prompt = "") {
   const lowerPrompt = prompt.toLowerCase();
   const allKeys = Object.keys(merged);
 
-  // Catalog header — lets Claude know every available dataset even if not sampled
+  // Catalog: one line per dataset — schema visible without sending row data
+  // Cap at 6 fields to keep token count low; full schema visible from sample rows
   const catalog = `## AVAILABLE DATASETS\n${allKeys.map(k => {
     const rows = merged[k];
-    const cols = Array.isArray(rows) && rows[0] ? Object.keys(rows[0]).join(", ") : "";
-    return `- ${k} (${Array.isArray(rows) ? rows.length : 0} rows): ${cols}`;
+    if (!Array.isArray(rows) || !rows[0]) return `- ${k} (0 rows)`;
+    const allCols = Object.keys(rows[0]);
+    const cols = allCols.length > 6 ? allCols.slice(0, 6).join(", ") + ` …+${allCols.length - 6} more` : allCols.join(", ");
+    return `- ${k} (${rows.length} rows): ${cols}`;
   }).join("\n")}\n`;
 
-  const sections = allKeys.map(key => {
-    const isRelevant = lowerPrompt.includes(key.replace(/_/g, " ")) || lowerPrompt.includes(key);
-    return serialiseDataset(key, merged[key], isRelevant ? ROWS_RELEVANT : ROWS_SCHEMA);
+  // Only send sampled rows for datasets the prompt explicitly references
+  const relevantKeys = allKeys.filter(key =>
+    lowerPrompt.includes(key.replace(/_/g, " ")) || lowerPrompt.includes(key)
+  );
+
+  const sections = relevantKeys.map(key => {
+    const rows = merged[key];
+    if (!Array.isArray(rows) || rows.length === 0) return `### ${key}\n[]`;
+    const sample = sampleDataset(rows, ROWS_RELEVANT);
+    const note = rows.length > ROWS_RELEVANT
+      ? ` (${rows.length} rows total — ${sample.length} shown; full data injected on save)`
+      : "";
+    return `### ${key}${note}\n${JSON.stringify(sample)}`;
   });
 
-  return catalog + "\n## DATA SAMPLES\n" + sections.join("\n\n");
+  const samplesBlock = sections.length
+    ? `\n## DATA SAMPLES (referenced datasets only)\n${sections.join("\n\n")}`
+    : `\n(No specific datasets referenced — pick any from the catalog above.)`;
+
+  return catalog + samplesBlock;
 }
 
 // ── Data sentinel instruction (injected into every system prompt) ─────────────
@@ -1791,28 +1797,41 @@ function parseJSON(raw) {
 // ── Shared Claude call ────────────────────────────────────────────────────────
 
 async function callClaude(systemPrompt, userPrompt, apiKey, maxTokens = 16000, model = "claude-sonnet-4-20250514") {
-  const response = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model,
-      max_tokens: maxTokens,
-      system: systemPrompt,
-      messages: [{ role: "user", content: userPrompt }],
-    }),
-  });
+  const RETRY_DELAYS = [15000, 30000]; // wait 15s then 30s on rate limit
+  let lastErr;
+  for (let attempt = 0; attempt <= RETRY_DELAYS.length; attempt++) {
+    if (attempt > 0) {
+      const delay = RETRY_DELAYS[attempt - 1];
+      console.warn(`[callClaude] Rate limited — retrying in ${delay / 1000}s (attempt ${attempt + 1})`);
+      await new Promise(r => setTimeout(r, delay));
+    }
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model,
+        max_tokens: maxTokens,
+        system: systemPrompt,
+        messages: [{ role: "user", content: userPrompt }],
+      }),
+    });
 
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`Anthropic API error: ${text}`);
+    if (response.status === 429) {
+      lastErr = new Error(`Anthropic API error: ${await response.text()}`);
+      continue; // retry
+    }
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Anthropic API error: ${text}`);
+    }
+    const data = await response.json();
+    return data.content?.[0]?.text ?? "";
   }
-
-  const data = await response.json();
-  return data.content?.[0]?.text ?? "";
+  throw lastErr;
 }
 
 // ── Routes ────────────────────────────────────────────────────────────────────
